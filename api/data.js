@@ -85,8 +85,7 @@ function cleanSettings(s) {
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (!REDIS_URL || !REDIS_TOKEN) return res.status(500).json({ error: 'storage_not_configured' });
-  if (!PIN) return res.status(500).json({ error: 'pin_not_configured' });
-  if (!pinOk(req.headers['x-pin'])) {
+  if (PIN && !pinOk(req.headers['x-pin'])) {
     await new Promise(r => setTimeout(r, 800));
     return res.status(401).json({ error: 'bad_pin' });
   }
