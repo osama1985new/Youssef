@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<title>متابعة السكر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: four screens behind a bottom tab bar (Log entry, History, Report, Settings). Each screen shows one job only. */
+:root{
+  color-scheme:light;
+  --bg:#E8EFF2; --surface:#FFFFFF; --field:#F3F7F8; --ink:#17303B; --muted:#587080; --line:#D3DFE4;
+  --accent:#177E89; --on-accent:#FFFFFF; --accent-soft:#DDEFF0;
+  --apidra:#2F6DB5; --tresiba:#6B5BB8;
+  --low:#B83232; --ok:#2E7D4F; --high:#B7650A; --on-solid:#FFFFFF;
+  --tint-read:#EEF4F6; --tint-food:#EAF3EC; --tint-ins:#E8F0F8;
+  --shadow:0 1px 2px rgba(23,48,59,.06), 0 6px 18px rgba(23,48,59,.06);
+  --f-display:'Readex Pro','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Readex Pro',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0D171C; --surface:#15232A; --field:#1B2C35; --ink:#E6EEF2; --muted:#92A6B2; --line:#263A45;
+    --accent:#4FC3CE; --on-accent:#06262A; --accent-soft:#16373D;
+    --apidra:#7EB1F2; --tresiba:#AE9FF2;
+    --low:#FF8A8A; --ok:#66D193; --high:#F2AE5C; --on-solid:#0D171C;
+    --tint-read:#182831; --tint-food:#162B22; --tint-ins:#16273A;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.55;
+  padding-block:calc(18px + env(safe-area-inset-top, 0px)) calc(104px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+[hidden],.tabhide{display:none!important}
+.wrap{max-width:560px; margin-inline:auto; display:flex; flex-direction:column; gap:14px}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.3}
+h1{font-size:24px; font-weight:600}
+h2{font-size:19px; font-weight:600}
+h3{font-size:15px; font-weight:600}
+p{margin:0}
+button,input,select{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.num,.big,.row .val b,.stepper input,.day-sum,table,.calcbig,.qty span{font-variant-numeric:tabular-nums}
+.small{font-size:13.5px; color:var(--muted)}
+
+/* alert */
+.alertbar{position:sticky; top:calc(8px + env(safe-area-inset-top, 0px)); z-index:15; display:flex; gap:12px; align-items:flex-start; justify-content:space-between;
+  padding:14px; border-radius:14px; background:var(--low); color:var(--on-solid); box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.alertbar[data-k="high"]{background:var(--high)}
+.alertbar b{font-family:var(--f-display); font-size:17px; display:block; line-height:1.35}
+.alertbar p{font-size:14px; margin-top:4px}
+.alertbar button{flex:none; min-height:40px; padding:6px 12px; border:1.5px solid currentColor; border-radius:10px; background:transparent; font-weight:600; cursor:pointer}
+
+.top{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.top .date{color:var(--muted); font-size:14.5px}
+.store{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12.5px; flex-basis:100%}
+.store i{width:8px; height:8px; border-radius:50%; background:var(--ok); display:inline-block}
+.store.local i{background:var(--high)}
+
+/* last reading */
+.hero{--st:var(--muted); border:1px solid color-mix(in srgb, var(--st) 32%, var(--line)); border-radius:16px; padding:14px 16px;
+  background:var(--surface); background:color-mix(in srgb, var(--st) 9%, var(--surface))}
+.hero[data-s="low"]{--st:var(--low)} .hero[data-s="ok"]{--st:var(--ok)} .hero[data-s="high"]{--st:var(--high)}
+.hero-top{display:flex; justify-content:space-between; align-items:center; gap:12px}
+.eyebrow{font-size:13px; color:var(--muted)}
+.big{display:flex; align-items:baseline; gap:8px; font-family:var(--f-display)}
+.big .num{font-size:52px; font-weight:600; line-height:1.05}
+.big .unit{font-size:13.5px; color:var(--muted)}
+.pill{display:inline-block; padding:4px 12px; border-radius:999px; font-size:14px; font-weight:600; background:var(--muted); color:var(--on-solid)}
+.pill.low{background:var(--low)} .pill.ok{background:var(--ok)} .pill.high{background:var(--high)}
+.meta{color:var(--muted); font-size:14px; margin-top:2px}
+.today{margin-top:10px; padding-top:10px; border-top:1px solid color-mix(in srgb, var(--st) 22%, var(--line)); font-size:14.5px; display:flex; flex-wrap:wrap; gap:4px 16px}
+.today b{font-family:var(--f-display)}
+.today .a b{color:var(--apidra)} .today .t b{color:var(--tresiba)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px}
+.stack{display:flex; flex-direction:column; gap:14px}
+.field{display:flex; flex-direction:column; min-width:0}
+.field label,.lbl{font-size:14px; font-weight:500; color:var(--muted); margin-bottom:6px; display:block}
+.field label em,.lbl em{font-style:normal; font-weight:400}
+input[type=text],input[type=password],input[type=datetime-local],input[type=date],select{
+  width:100%; min-height:48px; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; background:var(--field); font-size:17px}
+input[type=datetime-local],input[type=date],select{font-size:16px}
+input::placeholder{color:var(--muted); opacity:.7}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.three input{text-align:center; min-height:44px; font-size:16px}
+.stepper{display:grid; grid-template-columns:48px minmax(0,1fr) 48px; border:1.5px solid var(--line); border-radius:10px; background:var(--field); overflow:hidden}
+.stepper:focus-within{border-color:var(--accent)}
+.stepper button{border:0; background:transparent; font-size:24px; line-height:1; cursor:pointer; min-height:48px; color:var(--muted)}
+.stepper button:active{background:color-mix(in srgb, var(--accent) 14%, transparent)}
+.stepper input{border:0; border-radius:0; background:transparent; text-align:center; font-family:var(--f-display); font-size:22px; font-weight:500; min-height:48px; padding:6px 2px}
+.stepper input:focus-visible{outline:none}
+.field.a .stepper{border-color:color-mix(in srgb, var(--apidra) 45%, var(--line))}
+.field.t .stepper{border-color:color-mix(in srgb, var(--tresiba) 45%, var(--line))}
+.field.a label{color:var(--apidra)} .field.t label{color:var(--tresiba)}
+.msg{font-size:14px; margin-top:6px}
+.msg.ok{color:var(--ok)}
+.msg.low,.msg.high{padding:10px 12px; border-radius:10px; font-weight:500; border:1.5px solid currentColor}
+.msg.low{color:var(--low); background:color-mix(in srgb, var(--low) 10%, var(--surface))}
+.msg.high{color:var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface))}
+.hint{font-size:14px; padding:10px 12px; border-radius:10px; background:color-mix(in srgb, var(--tresiba) 9%, var(--surface)); display:flex; flex-direction:column; gap:6px}
+.warn{color:var(--high); font-weight:600}
+.link{border:0; background:none; padding:0; color:var(--accent); font-weight:600; text-decoration:underline; cursor:pointer; margin-inline-start:6px}
+.err{color:var(--low); font-size:14px; font-weight:500}
+.primary{width:100%; min-height:54px; border:0; border-radius:12px; background:var(--accent); color:var(--on-accent); font-weight:600; font-size:17px; cursor:pointer}
+.primary[disabled]{opacity:.6; cursor:default}
+.ghost{min-height:44px; padding:8px 16px; border:1.5px solid var(--line); border-radius:10px; background:transparent; cursor:pointer; font-weight:500}
+.presets{display:flex; flex-wrap:wrap; gap:8px}
+.presets .ghost{min-height:40px; padding:6px 14px; font-size:14.5px}
+.presets .ghost[aria-pressed=true]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface)); font-weight:600}
+.btnrow{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.btnrow .primary{min-height:48px; font-size:16px}
+.btnrow .ghost{min-height:48px}
+
+/* meal */
+.sect{display:flex; flex-direction:column; gap:10px}
+.mlist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.mi{border:1.5px solid var(--line); border-radius:12px; padding:10px 12px; background:var(--field); display:flex; flex-direction:column; gap:8px}
+.mi-top{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+.mi-top b{font-weight:600}
+.mi-top .u{display:block; font-size:13px; color:var(--muted)}
+.mi-top input{min-height:42px; font-size:16px}
+.est{font-size:11.5px; font-weight:600; color:var(--high); border:1px solid currentColor; border-radius:999px; padding:0 7px; margin-inline-start:6px; white-space:nowrap}
+.mi-x{flex:none; width:36px; height:36px; border:0; border-radius:8px; background:transparent; color:var(--muted); font-size:18px; cursor:pointer}
+.mi-bot{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px}
+.qty{display:inline-grid; grid-template-columns:40px 44px 40px; align-items:center; border:1.5px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; text-align:center}
+.qty button{border:0; background:transparent; min-height:40px; font-size:20px; cursor:pointer; color:var(--muted)}
+.qty span{font-family:var(--f-display); font-weight:500}
+.gin{display:inline-flex; align-items:center; gap:6px; font-size:14px}
+.gin input{width:84px; min-height:40px; padding:4px 6px; font-size:16px; text-align:center}
+.mi-t{font-size:14.5px; margin-inline-start:auto}
+.mi-opts{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--muted); align-items:center}
+.mi-opts .link{font-size:13px; margin:0}
+.mi-opts input{width:70px; min-height:34px; padding:2px 6px; font-size:14px; text-align:center}
+.manual{display:grid; grid-template-columns:minmax(0,1fr) 92px; gap:8px; margin-top:8px}
+.manual input{min-height:44px; font-size:16px}
+details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-size:14.5px; padding:4px 0}
+.mtotal{font-size:15px}
+.mtotal b{font-family:var(--f-display)}
+
+.setup{border:1.5px dashed var(--high); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; background:color-mix(in srgb, var(--high) 7%, var(--surface))}
+.setup .row2{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end}
+.setup .ghost{min-height:48px}
+.calc{border:1.5px solid color-mix(in srgb, var(--apidra) 45%, var(--line)); border-radius:12px; padding:12px 14px; background:color-mix(in srgb, var(--apidra) 7%, var(--surface)); display:flex; flex-direction:column; gap:8px}
+.calcbig{font-family:var(--f-display); font-size:38px; font-weight:600; color:var(--apidra); line-height:1.1}
+.calcbig small{font-size:14px; font-weight:400; color:var(--muted); margin-inline-start:6px}
+.calc ul{margin:0; padding-inline-start:20px; display:flex; flex-direction:column; gap:3px; font-size:14.5px}
+.calc .bad{color:var(--low); font-weight:600}
+.calc .guide{border-radius:10px; padding:10px 12px; font-size:14.5px}
+.calc .guide.low{background:color-mix(in srgb, var(--low) 11%, var(--surface)); border:1.5px solid var(--low)}
+.calc .guide.high{background:color-mix(in srgb, var(--high) 11%, var(--surface)); border:1.5px solid var(--high)}
+.calc .guide ul{margin-top:4px}
+.calc .primary{min-height:48px; font-size:16px; background:var(--apidra); color:var(--on-solid)}
+
+.chart svg{display:block; width:100%; height:auto; direction:ltr}
+.cap{font-size:13px; color:var(--muted); margin-top:8px}
+.empty{color:var(--muted); font-size:15px; padding:8px 0}
+
+.log{display:flex; flex-direction:column; gap:12px}
+.day{background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden}
+.day header{padding:12px 16px; border-bottom:1px solid var(--line); background:var(--field)}
+.day h3{font-size:16px}
+.day-sum{font-size:13px; color:var(--muted); margin-top:2px}
+.rows{list-style:none; margin:0; padding:0}
+.row{display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"when val" "doses del" "meal meal" "note note"; gap:6px 12px; padding:12px 16px; align-items:center}
+.row + .row{border-top:1px solid var(--line)}
+.when{grid-area:when; display:flex; flex-direction:column; min-width:0}
+.when b{font-weight:600}
+.when span{font-size:13px; color:var(--muted)}
+.val{grid-area:val; display:flex; align-items:baseline; gap:8px}
+.val b{font-family:var(--f-display); font-size:24px; font-weight:600}
+.tag{font-size:12.5px; font-weight:600; padding:2px 8px; border-radius:999px}
+.tag.low{color:var(--low); background:color-mix(in srgb, var(--low) 13%, var(--surface))}
+.tag.ok{color:var(--ok); background:color-mix(in srgb, var(--ok) 13%, var(--surface))}
+.tag.high{color:var(--high); background:color-mix(in srgb, var(--high) 13%, var(--surface))}
+.doses{grid-area:doses; display:flex; flex-wrap:wrap; gap:6px}
+.dose{font-size:13.5px; font-weight:500; padding:3px 10px; border-radius:8px}
+.dose.a{color:var(--apidra); background:color-mix(in srgb, var(--apidra) 12%, var(--surface))}
+.dose.t{color:var(--tresiba); background:color-mix(in srgb, var(--tresiba) 12%, var(--surface))}
+.mealtxt{grid-area:meal; font-size:14px}
+.note{grid-area:note; font-size:14px; color:var(--muted)}
+.del{grid-area:del; justify-self:end; border:0; background:none; color:var(--muted); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
+.del[data-armed]{color:var(--low); font-weight:600}
+
+.scalerow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.scalerow input{min-height:44px; font-size:16px; text-align:center}
+details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
+
+/* tab bar */
+.tabs{position:fixed; inset-inline:0; bottom:0; z-index:30; background:var(--surface); border-top:1px solid var(--line);
+  padding:6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px))}
+.tabs div{max-width:560px; margin-inline:auto; display:grid; grid-template-columns:repeat(4,1fr); gap:4px}
+.tabs button{border:0; background:transparent; min-height:56px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--muted); font-size:12.5px; cursor:pointer}
+.tabs button svg{width:24px; height:24px}
+.tabs button[aria-current=page]{color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface)); font-weight:600}
+
+.toast{position:fixed; inset-inline:16px; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); max-width:420px; margin-inline:auto; text-align:center;
+  background:var(--ink); color:var(--bg); padding:12px 16px; border-radius:12px; font-weight:500; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .18s, transform .18s; z-index:40}
+.toast.show{opacity:1; transform:none}
+
+/* report */
+.report{background:#fff; color:#111; border:1px solid var(--line); border-radius:14px; padding:18px 16px; --r-line:#cfd8dd; --r-muted:#55656f; --r-low:#B3261E; --r-ok:#1E7F47; --r-high:#A85A00}
+.report h2{font-size:20px; margin-bottom:2px}
+.report .sub{color:var(--r-muted); font-size:14px}
+.report h3{font-size:15px; margin:18px 0 8px}
+.rsum{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 16px; margin:14px 0 0; padding:0}
+.rsum div{border-top:1px solid var(--r-line); padding-top:6px}
+.rsum dt{font-size:12.5px; color:var(--r-muted)}
+.rsum dd{margin:0; font-family:var(--f-display); font-weight:600; font-size:19px}
+.rsum dd small{font-size:12px; font-weight:400; color:var(--r-muted)}
+.tw{overflow-x:auto}
+.report table{width:100%; border-collapse:collapse; font-size:13.5px}
+.report th{background:#EEF3F5; text-align:start; font-weight:600; padding:6px 8px; border-bottom:1.5px solid var(--r-line)}
+.report td{padding:6px 8px; border-bottom:1px solid var(--r-line); vertical-align:top}
+.report tr.dayrow td{background:#F6F9FA; font-weight:600}
+.report td.low{color:var(--r-low); font-weight:700}
+.report td.high{color:var(--r-high); font-weight:700}
+.report .cap{color:var(--r-muted)}
+.report svg text{fill:#55656f!important}
+.report svg line[stroke]{stroke:#cfd8dd}
+.report svg circle{stroke:#fff!important}
+.rfoot{margin-top:16px; font-size:12px; color:var(--r-muted)}
+.report *{print-color-adjust:exact; -webkit-print-color-adjust:exact}
+
+@media (max-width:380px){.big .num{font-size:46px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@page{size:A4; margin:12mm}
+@media print{
+  html,body{background:#fff!important}
+  body{padding:0!important}
+  .wrap{max-width:none; display:block}
+  .wrap > *:not(#report){display:none!important}
+  #report{display:block!important; border:0; padding:0; border-radius:0}
+  .tabs,.toast{display:none!important}
+  .report tr{break-inside:avoid}
+  .report thead{display:table-header-group}
+  .tw{overflow:visible}
+}
+
+/* polish */
+.card,.hero,.day,.report{box-shadow:var(--shadow)}
+.top{align-items:center}
+.brand{display:flex; align-items:center; gap:12px}
+.logo{width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent); flex:none}
+.logo svg{width:24px; height:24px}
+.panel{border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:12px; background:var(--tint-read); border:1px solid color-mix(in srgb, var(--line) 70%, transparent)}
+.panel.p-food{background:var(--tint-food)}
+.panel.p-ins{background:var(--tint-ins)}
+.panel h3{display:flex; align-items:center; gap:8px; color:var(--ink)}
+.panel h3::before{content:""; width:4px; height:16px; border-radius:2px; background:var(--accent)}
+.panel.p-food h3::before{background:var(--ok)}
+.panel.p-ins h3::before{background:var(--apidra)}
+.panel input[type=text],.panel input[type=datetime-local],.panel select{background:var(--surface)}
+.panel .stepper{background:var(--surface)}
+.panel .mi{background:var(--surface)}
+.setup{background:var(--surface)}
+.calc{background:var(--surface); box-shadow:0 1px 2px rgba(23,48,59,.05)}
+.hero{border-radius:16px}
+.primary{box-shadow:0 2px 6px color-mix(in srgb, var(--accent) 35%, transparent); transition:filter .15s, transform .05s}
+.primary:hover{filter:brightness(1.05)} .primary:active{transform:translateY(1px)}
+.ghost{background:var(--surface); transition:border-color .15s, background .15s}
+.ghost:hover{border-color:var(--accent)}
+select,input[type=text],input[type=password],input[type=datetime-local],input[type=date]{transition:border-color .15s, box-shadow .15s}
+select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); outline:none}
+.tabs{box-shadow:0 -4px 18px rgba(23,48,59,.08)}
+.day header{background:var(--tint-read)}
+.alertbar{box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.store{display:none}
+.store.show{display:flex}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="alertbar" id="alertbar" role="alert" hidden></div>
+
+  <header class="top" id="top">
+    <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.6 2.6 0 0 0 2.5 2"/></svg></span><h1>متابعة السكر</h1></div>
+    <p class="date" id="today"></p>
+    <p class="store" id="store"><i></i><span>بيحمّل…</span></p>
+  </header>
+
+  <section class="card stack tabhide" id="gate" data-gate hidden>
+    <h2>الدخول</h2>
+    <p class="small">اكتب الرقم السري اللي اتحدد للعيلة علشان تفتح السجل. هيتحفظ على الموبايل ده.</p>
+    <div class="field"><label for="pin">الرقم السري</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password"></div>
+    <p class="err" id="gerr" role="alert"></p>
+    <button class="primary" id="gbtn" type="button">دخول</button>
+  </section>
+
+  <!-- ===== screen 1: new entry ===== -->
+  <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
+
+  <form class="card stack" id="f" novalidate data-tab="add">
+    <h2>تسجيل جديد</h2>
+    <div class="panel p-read">
+      <div class="two">
+        <div class="field"><label for="slot">وقت القياس</label><select id="slot"></select></div>
+        <div class="field"><label for="g">السكر <em>(mg/dL)</em></label><input id="g" type="text" inputmode="numeric" autocomplete="off" placeholder="120"></div>
+      </div>
+      <p class="msg" id="gmsg" aria-live="assertive" style="margin:0"></p>
+    </div>
+
+    <div class="sect panel p-food">
+      <h3>الأكل</h3>
+      <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
+      <div class="field"><label for="foodpick">أو ضيف صنف</label><select id="foodpick"></select></div>
+      <ul class="mlist" id="mlist"></ul>
+      <details class="more" id="manualbox">
+        <summary>صنف تاني مش في القايمة</summary>
+        <div class="manual"><input id="m1n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m1c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
+        <div class="manual"><input id="m2n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m2c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
+      </details>
+      <p class="mtotal" id="mtotal"></p>
+    </div>
+
+    <div class="panel p-ins">
+    <h3>الأنسولين</h3>
+    <div class="setup" id="icrbox" hidden>
+      <b>علشان الجرعة تتحسب لوحدها</b>
+      <p class="small">اكتب نسبة الدكتور: كام جرام كارب بتغطيها وحدة أبيدرا واحدة (مثلاً 15). تتكتب مرة واحدة.</p>
+      <div class="row2"><div class="field"><label for="qicr">جرام كارب لكل وحدة</label><input id="qicr" type="text" inputmode="decimal" placeholder="15" autocomplete="off"></div><button type="button" class="ghost" id="qicrsave">حفظ</button></div>
+    </div>
+    <div id="calc"></div>
+
+    <div class="two">
+      <div class="field a">
+        <label for="a">أبيدرا اللي أخدتها <em>(وحدات)</em></label>
+        <div class="stepper">
+          <button type="button" data-step="a" data-d="-0.5" aria-label="أقل">−</button>
+          <input id="a" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <button type="button" data-step="a" data-d="0.5" aria-label="أكتر">+</button>
+        </div>
+      </div>
+      <div class="field t" id="tbox" hidden>
+        <label for="t">ترسيبا <em>(وحدات)</em></label>
+        <div class="stepper">
+          <button type="button" data-step="t" data-d="-1" aria-label="أقل">−</button>
+          <input id="t" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <button type="button" data-step="t" data-d="1" aria-label="أكتر">+</button>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="link" id="showt" style="align-self:flex-start; margin:0">+ سجّل ترسيبا</button>
+    <div class="hint" id="thint" hidden></div>
+    </div>
+
+    <details class="more">
+      <summary>الوقت وملاحظة</summary>
+      <div class="stack" style="margin-top:8px">
+        <div class="field"><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
+        <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
+      </div>
+    </details>
+    <p class="err" id="ferr" role="alert"></p>
+    <button class="primary" id="save" type="submit">حفظ التسجيل</button>
+  </form>
+
+  <!-- ===== screen 2: history ===== -->
+  <section class="card chart" id="chartcard" aria-labelledby="ch" data-tab="log">
+    <h2 id="ch" style="margin-bottom:10px">آخر 7 أيام</h2>
+    <div id="chart"></div>
+  </section>
+  <section id="logsec" aria-labelledby="lg" data-tab="log">
+    <h2 id="lg" style="margin-bottom:12px">السجل</h2>
+    <div class="log" id="log"></div>
+  </section>
+
+  <!-- ===== screen 3: report ===== -->
+  <section class="card stack" id="rcard" aria-labelledby="rh" data-tab="report">
+    <h2 id="rh">تقرير للدكتور</h2>
+    <div class="presets" id="presets" role="group" aria-label="الفترة">
+      <button type="button" class="ghost" data-days="7">آخر 7 أيام</button>
+      <button type="button" class="ghost" data-days="14" aria-pressed="true">آخر 14 يوم</button>
+      <button type="button" class="ghost" data-days="30">آخر 30 يوم</button>
+      <button type="button" class="ghost" data-days="90">آخر 3 شهور</button>
+    </div>
+    <div class="two">
+      <div class="field"><label for="rfrom">من</label><input id="rfrom" type="date"></div>
+      <div class="field"><label for="rto">إلى</label><input id="rto" type="date"></div>
+    </div>
+    <div class="btnrow">
+      <button type="button" class="ghost" id="rshow">عرض التقرير</button>
+      <button type="button" class="primary" id="rprint">حفظ PDF</button>
+    </div>
+    <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
+    <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel (CSV)</button>
+  </section>
+  <section class="report" id="report" data-tab="report" hidden></section>
+
+  <!-- ===== screen 4: settings ===== -->
+  <section class="card stack" id="set" data-tab="set">
+    <h2>الإعدادات</h2>
+    <p class="small">الأرقام دي بتيجي من دكتور المتابعة. الصفحة مش بتحط أرقام جرعات من عندها.</p>
+
+    <h3>حدود التنبيه</h3>
+    <div class="two">
+      <div class="field"><label for="slow">نبّهني لو أقل من</label><input id="slow" type="text" inputmode="numeric"></div>
+      <div class="field"><label for="shigh">نبّهني لو أعلى من</label><input id="shigh" type="text" inputmode="numeric"></div>
+    </div>
+
+    <h3>أبيدرا للأكل</h3>
+    <div class="field"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
+    <details class="sub">
+      <summary>نسبة مختلفة لكل وجبة</summary>
+      <div class="three" style="margin-top:8px">
+        <div class="field"><label for="sicrbf">فطار</label><input id="sicrbf" type="text" inputmode="decimal"></div>
+        <div class="field"><label for="sicrln">غدا</label><input id="sicrln" type="text" inputmode="decimal"></div>
+        <div class="field"><label for="sicrdn">عشا</label><input id="sicrdn" type="text" inputmode="decimal"></div>
+      </div>
+    </details>
+
+    <h3>تصحيح السكر العالي</h3>
+    <p class="small">اكتب جدول الدكتور (من كام لكام = كام وحدة)، أو الهدف وكام mg/dL بتنزّلها الوحدة. لو كتبت الجدول هو اللي بيتستخدم.</p>
+    <div id="sscale" class="stack" style="gap:8px"></div>
+    <div class="three">
+      <div class="field"><label for="starget">الهدف</label><input id="starget" type="text" inputmode="numeric" placeholder="120"></div>
+      <div class="field"><label for="sisf">الوحدة تنزّل</label><input id="sisf" type="text" inputmode="numeric" placeholder="50"></div>
+      <div class="field"><label for="smax">أقصى جرعة</label><input id="smax" type="text" inputmode="decimal"></div>
+    </div>
+
+    <h3>ترسيبا</h3>
+    <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
+  </section>
+
+  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا.</p>
+</main>
+
+<nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
+  <div>
+    <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
+    <button type="button" data-go="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>السجل</button>
+    <button type="button" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/></svg>التقرير</button>
+    <button type="button" data-go="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>الإعدادات</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var SLOTS=[['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغدا'],['ln_after','بعد الغدا'],['dn_before','قبل العشا'],['dn_after','بعد العشا'],['bed','قبل النوم'],['other','وقت تاني']];
+var SLOT_LABEL={}; SLOTS.forEach(function(s){SLOT_LABEL[s[0]]=s[1]});
+var BEFORE=['bf_before','ln_before','dn_before'];
+var LOC='ar-EG-u-nu-latn', DAY=864e5;
+
+/* ====== food database: merged from the two PDF tables ====== */
+var DB=[], BY={};
+function pushFood(o){o.i=DB.length; DB.push(o); if(o.k)BY[o.k]=o}
+/* core list: key|name|portion|carbs per portion|grams per portion|e (estimate) */
+var CORE_TXT=[
+'qar|جبنة قريش|ربع كوب (30 جم)|0',
+'egg|2 بيضة|2 بيضة|0',
+'sal|سلطة|كوب|5',
+'ful|فول مدمس|4 ملاعق (75 جم)|15|75',
+'bread|نص رغيف بلدي|نص رغيف|30',
+'bread4|ربع رغيف بلدي|ربع رغيف|15',
+'sote|خضار سوتيه|نص كوب|5',
+'chick|ربع فرخة مشوية|ربع فرخة|0',
+'rice|رز أبيض|ملعقتين مليانين (50 جم)|15|50',
+'basm|رز بسمتي|3 ملاعق (54 جم)|15|54',
+'veg|خضار مطهي|نص كوب|5',
+'liver|كبدة|حصة (100 جم)|5|100',
+'meat|لحمة|حصة|0',
+'fish|سمك|حصة|0',
+'fruit|ثمرة فاكهة (اكتب الاسم)|ثمرة أو نص كوب|15',
+'yog|زبادي|علبة صغيرة (110 جم)|7.5',
+'pasta|مكرونة|ملعقتين مليانين (50 جم)|15|50',
+'pot|بطاطس مشوية|ربع ثمرة (85 جم)|15|85',
+'tuna|تونة|علبة|0',
+'mahshi|محاشي ورق عنب|3 أصابع متوسطة (80 جم)|15|80',
+'mosa|مسقعة|حصة صغيرة|15||e',
+'cheese|جبنة|30 جم|0',
+'burger|برجر|ساندوتش|30||e',
+'pizza|بيتزا|شريحة (1/8 وسط سميكة)|30',
+'crepe|كريب سادة|60 جم|15|60',
+'bech|مكرونة بشاميل|ثلث قطعة (110 جم)|15|110',
+'shaw|شاورما|ساندوتش|30||e',
+'sweets|حلويات (تقدير)|قطعة صغيرة|30||e',
+'milk|كوب لبن|كوب (250 مل)|12.5',
+'molo|ملوخية|كوب (187 مل)|15|187'
+];
+CORE_TXT.forEach(function(l){var p=l.split('|'); pushFood({k:p[0],g:'أكلك المعتاد',n:p[1],d:p[2],c:Number(p[3]),w:Number(p[4])||0,e:p[5]==='e'})});
+/* "point" tables: name|description|grams for one point (15 g carbs) */
+function pts(g,t){t.split('\n').forEach(function(l){l=l.trim(); if(!l)return; var p=l.split('|'); pushFood({g:g,n:p[0],d:p[1]||'',c:15,w:Number(p[2])||0})})}
+/* tables with carbs per piece: name|description|carbs|e */
+function crb(g,t){t.split('\n').forEach(function(l){l=l.trim(); if(!l)return; var p=l.split('|'); pushFood({g:g,n:p[0],d:p[1]||'',c:Number(p[2]),w:0,e:p[3]==='e'})})}
+
+pts('خبز',
+'بقسماط||25\nبقسماط مطحون ناعم||21\nعيش الذرة||27\nعيش بلدي أبيض||30\nعيش بلدي أسمر||30\nعيش بلدي محمص||27\nعيش شامي||26\nعيش فينو الفرن||27\nعيش فينو المطاعم||25');
+crb('خبز',
+'توست|شريحة (30 جم)|15\nوافل أو بانكيك|قطعة صغيرة|15\nكورن فلاور أو دقيق|3 ملاعق كبيرة|15\nرقاق أو جلاش|3 قطع|15');
+pts('أرز ومكرونة ونشويات',
+'أرز أبيض مصري|ملعقتين مليانين|50\nأرز مصري بالشعرية|ملعقتين مليانين|50\nأرز مصري صيادية|ملعقتين مليانين|50\nأرز بسمتي أسمر|3 ملاعق مليانة|65\nبرغل مطبوخ|4 ملاعق|80\nشعرية محمرة أو مسلوقة|4 ملاعق|60\nلسان عصفور|5 ملاعق|100\nنودلز|شوكتين مليانين|43\nكشري|3 ملاعق|60\nفريك مطبوخ|2 ملعقة مليانة|50\nكسكسي مطبوخ|3 ملاعق كبيرة|70\nمكرونة بالصلصة الحمرا|3 ملاعق|60\nمكرونة بصوص الأجبان|4 ملاعق كبيرة|88\nمكرونة بولونيز (صوص اللحم)|3 ملاعق كبيرة|75\nمكرونة رافيولي محشوة لحم|2 ملعقة كبيرة|50\nلازانيا|قطعة بحجم ورقة كوتشينة|80');
+crb('أرز ومكرونة ونشويات',
+'شوفان مطبوخ|نص كوب|15\nكورن فليكس (حبوب جاهزة)|ثلاثة أرباع كوب|15\nبليلة|3 ملاعق كبيرة|15\nذرة مطبوخة (حبوب)|ثلث كوب|15');
+pts('بقوليات',
+'بسلة مسلوقة|4 ملاعق مليانة|75\nحمص|3 ملاعق|56\nعدس أسمر (بجبة)|4 ملاعق مليانة|75\nعدس أصفر|4 ملاعق مليانة|75\nفاصوليا بيضاء|3 ملاعق|60\nفاصوليا حمراء|3 ملاعق|65\nلوبيا|4 ملاعق مليانة|72\nطعمية|3 صغيرة أو 2 وسط أو 1 كبيرة|50\nشوربة عدس|ثلث كوب (136 مل)|136');
+pts('خضار ونشويات الخضار',
+'بطاطس مسلوقة||75\nبطاطس بوريه (باللبن والزبدة)||88\nبطاطس مقلية أو محمرة|حوالي 15 صباع رفيع|47\nبطاطس نص مقلية (معبأة)|حوالي 15 صباع|47\nبطاطا مشوية بقشرها||68\nبطاطا مسلوقة بقشرها||100\nبنجر مسلوق||150\nجزر مسلوق|4 متوسط|200\nجزر نيء|3 متوسط|150\nبسلة بالجزر مطبوخة||116\nبصل مقشر أو أخضر||167\nباذنجان مشوي أو مقلي||250\nباذنجان مقلي بخلطة النيئة (دقيق ولبن وبيض)||137\nقرنبيط مقلي بخلطة النيئة||168\nمحشي فلفل رومي|فلفلاية وسط|115\nمحشي كوسة أو باذنجان|صباع متوسط أو 2 صغيرين|105\nمحشي ورق عنب أو كرنب|3 أصابع متوسطة أو 6 صغيرة|80\nقرع عسلي مسلوق (يقطين)||300\nذرة محمصة|ثلث كوب|21');
+pts('خضار (كارب قليل)',
+'بامية مطبوخة (من غير الصوص)||300\nبروكلي على البخار||376\nبروكلي مسلوق أو نيء||300\nجرجير||300\nخرشوف مسلوق||250\nخس||752\nخيار||600\nسبانخ مطبوخة||376\nطماطم||555\nطماطم مجففة||27\nفاصوليا خضراء على البخار||300\nفاصوليا خضراء مطبوخة||335\nفلفل رومي||376\nقرنبيط مسلوق||376\nكرنب مسلوق||300\nكوسة مطبوخة||600\nمشروم||752\nملوخية مطبوخة|كوب (187 مل)|187');
+pts('فاكهة',
+'أفوكادو بدون بذر وقشر||200\nأناناس طازج||115\nبابايا|ثمرة صغيرة|150\nبرتقال بدون قشر|ثمرة متوسطة|115\nبرقوق|4 وسط|137\nبطيخ|3 قطع كبيرة|188\nبلح|3 بلحات|20\nتفاح|ثمرة متوسطة|107\nتوت أحمر|نص كوب|125\nتوت أزرق|نص كوب|100\nتوت أسود|ثلثين كوب|150\nتوت بري|نص كوب|125\nتين برشومي|2 وسط|79\nتين شوكي|2 وسط|166\nجوافة|ثمرة وسط|107\nحرنكش||136\nخوخ|2 صغيرة أو 1 كبيرة|150\nرمان (حب)|نص كوب|80\nعنب|10 حبات|83\nفراولة|10 حبات صغيرة|215\nكاكا|نص ثمرة كبيرة|75\nكريز|12 حبة|94\nكمثرى|ثمرة متوسطة|94\nكنتالوب|نص ثمرة وسط|166\nكيوي|ثمرة كبيرة|100\nمانجو|نص كوب|94\nمشمش|4 ثمرات|125\nموز|ثمرة صغيرة (نص كبيرة)|65\nيوسفي|2 ثمرة صغيرة|115');
+crb('فاكهة',
+'جريب فروت|نص ثمرة كبيرة|15\nمشمش مجفف|8 أنصاف|15\nفواكه مجففة|2 ملعقة كبيرة|15');
+crb('عصائر ومشروبات',
+'عصير تفاح|نص كوب|15\nعصير فاكهة مشكل 100%|ثلث كوب|15\nعصير عنب|ثلث كوب|15\nعصير جريب فروت|نص كوب|15\nعصير برتقال|نص كوب|15\nعصير أناناس|نص كوب|15\nعصير فاكهة أو ليموناضة|كوب (250 جم)|30\nمشروب طاقة|علبة (250 جم)|30\nصودا عادية|علبة|38\nمشروبات رياضة|كوب|15\nشيكولاتة ساخنة عادية|كيس|22\nشيكولاتة ساخنة بدون سكر|كيس|15');
+pts('مكسرات وتسالي',
+'صنوبر|ملء قبضتين|115\nلوز مقشر||75\nعين جمل مقشر||100\nفستق مقشر||56\nفول سوداني مقشر|ملء قبضة|100\nلب أسمر|ملء قبضتين|83\nلب سوري||83\nلب أبيض||137\nبندق||88\nكاجو||50\nفشار بدون زيت||32\nفشار بالزيت||24\nفشار المايكروويف||41\nجوز هند مبشور|3 ملاعق مليانة|65\nسمسم محمص|3 ملاعق مليانة|58\nترمس|كوب|215\nتمر (بدون نوى)|3 تمرات|20\nقراسيا (برقوق مجفف)|3 حبات|24\nقمر الدين||17\nمشمشية (مشمش مجفف)|4 حبات|25\nتينية (تين مجفف)|2 حبة|24\nزبيب (عنب مجفف)|ملعقة طعام|20\nمكسرات مشكلة|نص كوب|68');
+pts('لبن وزبادي',
+'حليب (كامل أو قليل أو منزوع الدسم)|كوب وثلث (320 مل)|320\nحليب الصويا|كوب وثلث (320 مل)|320\nحليب جوز الهند|كوب (250 مل)|250\nحليب بودرة مجفف|2 معلقة صغيرة|10\nحليب مكثف|ملعقة ونص كبيرة|28\nزبادي بلدي كامل الدسم سادة|علبتين (220 جم)|220\nلبنة|ثلاثة أرباع كوب (200 جم)|200');
+crb('لبن وزبادي',
+'لبن بالشوكولاتة|كوب|30\nلبن بالأرز (خالي الدسم)|كوب|15\nزبادي بالفواكه (سموذيس)|280 جم|45\nزبادي مخلوط بعصير|كوب|30\nلبن صويا (لايت أو كامل)|كوب|15');
+pts('شوربة وسلطات',
+'شوربة بصل فرنسية|نص كوب|100\nشوربة خضار|نص كوب|100\nشوربة فطر بالكريمة|نص كوب|100\nشوربة لسان عصفور|5 ملاعق مع أي مرق|100\nسلطة باذنجان بالطحينة|كوب|100\nسلطة بطاطس بالمايونيز|نص كوب|50\nسلطة بقوليات|نص كوب|60\nسلطة بنجر|كوب|150\nسيزر سلاط|كوب|200\nكول سلو|كوب|100');
+pts('حلويات',
+'أرز باللبن|نص كوب|65\nأم علي|3 ملاعق كبيرة|50\nأيس كريم|نص كوب|80\nتشيز كيك||40\nتيراميسو||50\nجاتوه بالشوكولاتة||40\nجاتوه بالكريمة||60\nجيلي سادة|نص كوب|100\nحلاوة طحينية|ملعقة كبيرة|25\nعسل أسود|ملعقة كبيرة|20\nفطيرة تفاح||40\nكاسترد|نص كوب زبادي بلدي|50\nكريم كراميل||18\nمهلبية|ثلث كوب|70\nنوتيلا|ملعقة كبيرة|25\nهريسة بالمكسرات||25\nبسبوسة شربات زيادة|2 قطعة|25\nبسبوسة شربات قليل|3 قطع وسط|38\nبقلاوة نمورة بالمكسرات|قطعة كبيرة أو 2 صغيرة|27\nبلح الشام|2 قطعة|25\nجلاش بالكريمة|قطعة صغيرة|30\nدانش|قطعة أصغر من كف اليد|30\nقطايف بالمكسرات|2 وسط|30\nكب كيك|واحدة صغيرة|28\nكنافة بالجبنة|مربع وسط|50\nكنافة بالقشطة|ثلث متوسط|42\nكنافة بالمكسرات|مربع وسط|30\nكيك|شريحة رفيعة بحجم كف اليد|28\nلقمة القاضي|3 وحدات|30');
+crb('حلويات',
+'عسل أبيض أو نحل|ملعقة كبيرة|15|e\nمربى أو جيلي|ملعقة كبيرة|15\nسكر|ملعقة كبيرة (أو 3 صغيرة)|15\nكاتشب أو باربيكيو|3 ملاعق صغيرة|15\nدونت أو كيك سادة|واحدة متوسطة (50 جم)|22\nمفن|ربع مفن (30 جم)|15\nدنش|واحدة (70 جم)|38\nبراوني صغيرة|30 جم|15\nكوكيز بالشوكولاتة|2 صغيرة|15\nبودنج عادي|نص كوب|30\nفطيرة باي بالفواكه|سدس فطيرة 20 سم|45\nآيس كريم خالي الدسم|نص كوب|22\nآيس كريم لايت أو بدون سكر|نص كوب|15\nشربات|نص كوب|30');
+pts('بيتزا ومعجنات ووجبات برة',
+'بيتزا (1/8 كبيرة رفيعة)|نقطتين|30\nأصابع دجاج مقلي بقسماط|5 أصابع|75\nبانيه (سمك أو فراخ أو بوفتيك)|قطعة 8×8 تقريبًا|150\nجلاش باللحم|قطعة بحجم ورقة كوتشينة|50\nرقاق|قطعة بحجم الكوتشينة|32\nسمبوسك|2 قطعة|50\nفتة|3 ملاعق|50\nكريب سادة بدون حشو||60\nكبدة بقري أو ضاني متشوحة|6 شرائح|300\nكبدة بقري بانيه|2 شريحة|100\nمكرونة بشاميل|ثلث قطعة|110\nممبار|قطعة 10 سم|60\nناجتس|4 قطع وسط|100\nهوت دوج مقلي|كوب|100');
+crb('بيتزا ومعجنات ووجبات برة',
+'بيتزا (1/8 رفيعة صغيرة)|شريحة|22.5');
+crb('منتجات سوبر ماركت (للقطعة)',
+'أستروس كريسب بالشوكولاتة والفول السوداني||25\nأولكر بسكوت محشو بالبلح||25\nبرنش باتية بالجبنة والزيتون||40\nبرنش باتية جامبو بالجبنة البيضا||33\nبرنش باتية جامبو بالبسطرمة||46\nبرنش باتية جامبو بالجبنة الحارة||34\nبرنش جامبو كرواسون بالشوكولاتة||37\nبرنش ساندويتش غرقان بالجبنة البيضا||49\nبرنش ساندويتش غرقان بالجبنة الرومي||43\nبرنش ساندويتش غرقان بالجبنة والفلفل الحار||35.5\nبرنش ساندويتش غرقان بكريمة الشوكولاتة||51\nبرنش ساندويتش غرقان بمربى فراولة||54\nبسكوت بيمبو بالشوكولاتة||19\nبسكوت لمبادا ويفر بالشوكولاتة||13\nبسكويت بالزبدة جود داي||15\nبسكويت سادة نايس||23\nبسكويت كتاكيتو الشمعدان||17\nبسكويت ميني كتاكيتو الشمعدان||15\nتودو براوني (قطعة كيك شوكولاتة)||24.5\nتورتا ميجا كيكة بالشوكولاتة||15\nتوينكيز بالشوكولاتة||13.8\nتوينكيز بكريمة الفراولة||23\nدوريتوس بالجبنة ناتشوز||48\nدومتي ساندويتش فيتا بلس سادة||60\nراز ميني كب كيك بقطع الشوكولاتة||22\nرقائق البطاطس SPUDS||21\nالشمعدان ويفر محشو (شوكولاتة)||12\nشيبسي زنجر كنتاكي||37.5\nشيتوس بفس||35.5\nشيتوس حار نار||34.5\nفريسكا بسكوت شوكو ستيك (2 قطعة)||12\nفلامنكو بالشطة والليمون||42\nفلامنكو ذرة بالجبنة المتبلة||42\nكادبوري ديري ميلك شوكو أوريو||22\nكادبوري ديري ميلك شوكو دي لايت||22\nكادبوري بالبندق (أصغر وزن)||5\nكرانشي بالشطة والليمون||30\nكورونا بيمبو بسكويت بالشوكولاتة||19\nكورونا شوكولاتة دارك||12\nكوكونتي كوفرتينا جوز هند بالشوكولاتة||27.5\nمندولين بسكوت بالكراميل والشوكولاتة||17\nمولتو فينو بالشوكولاتة بالبندق||53\nمولتو مجنم حشو أكتر||46\nمولتو مجنم تشيز كيك فراولة||51.5\nمولتو ميني بالشوكولاتة||21.5\nمولتو ميني بالبندق||28\nمولتو ميني ماجنم||44\nنايس بسكويت بجوز الهند||23\nهوهوز بالكريمة والكاكاو||16\nهوهوز بجيلي الفراولة||16\nوافل بالكراميل ستروب وافل||18');
+crb('مخبوزات العيد',
+'بتيفور سادة|30 جم = نقطة|15\nبرازق بالسمسم|25 جم = نقطة|15\nبسكوت بالعجوة|24 جم = نقطة|15\nبسكوت نشادر سادة|22 جم = نقطة|15\nبيتيفور بالمربى والفرماسيل|20 جم = نقطة|15\nغريبة|24 جم = نقطة|15\nكحك العيد بالسكر|20 جم = نقطة|15\nكحك العيد بدون حشو وبدون سكر|22 جم = نقطة|15\nمعمول بالعجوة|22 جم = نقطة|15\nمعمول بالمكسرات|30 جم = نقطة|15');
+/* fix per-gram weights for the two groups above that carry 15 g per point */
+DB.forEach(function(f){if(f.g==='مخبوزات العيد'){var m=/^(\d+)/.exec(f.d); if(m)f.w=Number(m[1]); f.d='نقطة = '+f.w+' جم'}});
+
+
+/* ready meals: [group, name, [[key, portions], ...]] */
+var PRESETS=[
+ ['bf','فول وبيض وعيش',[['ful',2],['egg',1],['sal',1],['bread',1]]],
+ ['bf','قريش وبيض وعيش',[['qar',1],['egg',1],['sal',1],['bread',1]]],
+ ['bf','زبادي وفاكهة وعيش',[['yog',2],['fruit',1],['bread4',1]]],
+ ['bf','جبنة وبيض وسلطة',[['cheese',1],['egg',1],['sal',1],['bread4',1]]],
+ ['ln','فرخة مشوية ورز وخضار',[['chick',1],['rice',3],['sote',1],['sal',1]]],
+ ['ln','سمك ورز بسمتي وسلطة',[['fish',1],['basm',3],['sal',1],['veg',1]]],
+ ['ln','كبدة وبطاطس مشوية',[['liver',1],['pot',2],['sal',1]]],
+ ['ln','ملوخية ولحمة ورز',[['molo',1],['meat',1],['rice',2]]],
+ ['ln','مكرونة وتونة وسلطة',[['pasta',3],['tuna',1],['sal',1]]],
+ ['ln','محاشي وفرخة',[['mahshi',3],['chick',1],['sal',1]]],
+ ['ln','مسقعة وعيش',[['mosa',1],['bread4',2],['sal',1]]],
+ ['ln','مكرونة بشاميل وسلطة',[['bech',3],['sal',1]]],
+ ['dn','تونة وسلطة وعيش',[['tuna',1],['sal',1],['bread4',1]]],
+ ['dn','جبنة وبيض (كارب قليل)',[['cheese',1],['egg',1],['sal',1]]],
+ ['dn','لحمة وخضار سوتيه',[['meat',1],['sote',2],['sal',1]]],
+ ['dn','زبادي وقريش وسلطة',[['yog',1],['qar',1],['sal',1]]],
+ ['dn','كريب وجبنة وسلطة',[['crepe',2],['cheese',1],['sal',1]]],
+ ['sn','ثمرة فاكهة',[['fruit',1]]],
+ ['sn','كوب لبن',[['milk',1]]],
+ ['sn','زبادي',[['yog',1]]],
+ ['sn','قريش وسلطة',[['qar',1],['sal',1]]]
+];
+var GROUPS=[['bf','فطار'],['ln','غدا'],['dn','عشا'],['sn','سناك']];
+
+var nf=new Intl.NumberFormat('en',{maximumFractionDigits:1});
+function fmt(n){return nf.format(n)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pad(n){return String(n).padStart(2,'0')}
+function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function toLocalInput(d){return dayKey(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())}
+function timeStr(d){return d.toLocaleTimeString(LOC,{hour:'numeric',minute:'2-digit'})}
+function dayLong(d){return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'long'})}
+function dayFull(d){return d.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'})}
+function relDay(d){
+  var t=new Date(), y=new Date(t.getFullYear(),t.getMonth(),t.getDate()-1);
+  if(dayKey(d)===dayKey(t))return 'النهاردة';
+  if(dayKey(d)===dayKey(y))return 'امبارح';
+  return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'short'});
+}
+function midnight(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}
+function norm(s){
+  return String(s).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٫,،]/g,'.').trim();
+}
+function num(s){var t=norm(s); if(t==='')return null; var n=Number(t); return isFinite(n)?n:NaN}
+function newId(){return 'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function r5(x){return Math.round(x*2)/2}
+function r1(x){return Math.round(x*10)/10}
+
+var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-dismissed-v1';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[]};
+var entries=[], settings=Object.assign({},DEFAULTS);
+var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
+var mealItems=[], shownAlertId=null, cfgErr=false;
+
+function status(v){
+  if(v<settings.low)return ['low','منخفض'];
+  if(v>settings.high)return ['high','مرتفع'];
+  return ['ok','في المعدل'];
+}
+function prep(){
+  return entries.filter(function(e){return e&&e.ts}).map(function(e){var o=Object.assign({},e); o.d=new Date(e.ts); return o})
+    .filter(function(e){return !isNaN(e.d)}).sort(function(a,b){return a.d-b.d});
+}
+var tt; function toast(m){var el=$('#toast'); el.textContent=m; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){el.classList.remove('show')},2800)}
+
+function adviceFor(v){
+  if(v<54)return 'هبوط شديد. اتبع خطة الدكتور للهبوط فورًا، ولو الطفل مش واعي أو مش قادر يبلع اطلب الإسعاف.';
+  if(v<settings.low)return 'اتبع خطة الدكتور للهبوط (كارب سريع) وأعد القياس بعد حوالي 15 دقيقة.';
+  if(v>=300)return 'مرتفع جدًا. اتبع خطة الدكتور (زي قياس الكيتونات) وكلمه لو فضل عالي أو ظهرت أعراض.';
+  if(v>settings.high)return 'اتبع خطة الدكتور للتصحيح، وراجع آخر جرعة أبيدرا، وأعد القياس حسب خطته.';
+  return '';
+}
+
+/* ---------- server ---------- */
+function ApiError(code){this.code=code}
+async function api(body){
+  var r;
+  try{
+    r=await fetch('/api/data',{method:body?'POST':'GET',headers:{'content-type':'application/json','x-pin':pin||''},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  }catch(e){throw new ApiError('net')}
+  if(r.status===401)throw new ApiError('auth');
+  var ct=r.headers.get('content-type')||'';
+  if(!r.ok||ct.indexOf('json')<0)throw new ApiError(r.status===500?'config':'net');
+  return r.json();
+}
+function applyServer(j){
+  entries=j.entries||[];
+  if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
+}
+async function refresh(){
+  try{var j=await api(); applyServer(j); netErr=false; syncSettingsInputs(); render()}
+  catch(e){if(mode==='cloud'){netErr=true; renderStore()}}
+}
+async function start(first){
+  try{
+    var j=await api(); mode='cloud'; applyServer(j); ready();
+  }catch(e){
+    if(e.code==='auth'){showGate(first?'':'الرقم السري غلط، جرب تاني.'); return}
+    cfgErr=(e.code==='config'); mode='local'; entries=lsGet(LS_E,[]); var s=lsGet(LS_S,null); if(s)settings=Object.assign({},DEFAULTS,s); ready();
+  }
+}
+function showGate(msg){
+  authed=false; loaded=true; $('#gate').hidden=false; $('#gate').classList.remove('tabhide'); $('#gerr').textContent=msg||''; $('#tabs').hidden=true; applyTab(); renderStore();
+}
+function ready(){
+  authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; syncSettingsInputs(); render(); applyTab();
+  if(!started){
+    started=true;
+    setInterval(function(){if(mode==='cloud'&&!document.hidden)refresh()},20000);
+    document.addEventListener('visibilitychange',function(){if(mode==='cloud'&&!document.hidden)refresh()});
+  }
+}
+$('#gbtn').addEventListener('click',function(){
+  pin=$('#pin').value.trim(); if(!pin)return;
+  lsSet(LS_P,pin); start(false);
+});
+$('#pin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#gbtn').click()}});
+
+async function addEntry(doc){
+  doc.id=newId();
+  if(mode==='cloud'){await api({action:'add',entry:doc}); entries=entries.concat([doc])}
+  else{entries=entries.concat([doc]); lsSet(LS_E,entries)}
+}
+async function removeEntry(id){
+  if(mode==='cloud'){await api({action:'delete',id:id})}
+  entries=entries.filter(function(e){return e.id!==id});
+  if(mode!=='cloud')lsSet(LS_E,entries);
+}
+function persistSettings(){
+  if(mode==='cloud')api({action:'settings',settings:settings}).catch(function(){toast('تعذّر حفظ الإعدادات')});
+  else lsSet(LS_S,settings);
+}
+
+/* ---------- tabs ---------- */
+function applyTab(){
+  document.querySelectorAll('[data-tab]').forEach(function(el){
+    var t=el.dataset.tab;
+    el.classList.toggle('tabhide',!authed||(t!=='all'&&t!==tab));
+  });
+  document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
+  $('#top').classList.toggle('tabhide',false);
+}
+function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report'&&!$('#report').hidden)buildReport()}
+document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
+
+/* ---------- static UI ---------- */
+function defaultSlot(){var h=new Date().getHours(); return h<11?'bf_before':h<16?'ln_before':h<21?'dn_before':'bed'}
+$('#slot').innerHTML=SLOTS.map(function(s){return '<option value="'+s[0]+'">'+s[1]+'</option>'}).join('');
+$('#slot').value=defaultSlot();
+function curSlot(){return $('#slot').value}
+(function(){
+  var h='<option value="">+ اختار صنف…</option>', cur=null, open=false;
+  DB.forEach(function(f){
+    if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
+    h+='<option value="'+f.i+'">'+esc(f.n)+'</option>';
+  });
+  $('#foodpick').innerHTML=h+'</optgroup>';
+})();
+(function(){var h='';for(var i=0;i<5;i++)h+='<div class="scalerow"><input type="text" inputmode="numeric" data-sc="'+i+'a" placeholder="من"><input type="text" inputmode="numeric" data-sc="'+i+'b" placeholder="إلى"><input type="text" inputmode="decimal" data-sc="'+i+'u" placeholder="وحدات"></div>';$('#sscale').innerHTML=h})();
+function setNow(){$('#dt').value=toLocalInput(new Date())}
+setNow(); $('#today').textContent=dayLong(new Date());
+
+/* ---------- alert banner ---------- */
+function renderBanner(E){
+  var el=$('#alertbar');
+  var gs=E.filter(function(e){return e.glucose!=null}), last=gs[gs.length-1];
+  if(!authed||!last||!(last.glucose<settings.low||last.glucose>settings.high)||Date.now()-last.d.getTime()>6*36e5||lsGet(LS_D,'')===last.id){el.hidden=true; return}
+  var low=last.glucose<settings.low, wasHidden=el.hidden;
+  el.dataset.k=low?'low':'high';
+  el.innerHTML='<div><b>تنبيه: القراءة '+fmt(last.glucose)+' '+(low?'أقل من '+settings.low:'أعلى من '+settings.high)+'</b><p>'+esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d)+'</p><p>'+adviceFor(last.glucose)+'</p></div><button type="button" data-dismiss="'+esc(last.id)+'">تمام، شفت</button>';
+  if(wasHidden&&shownAlertId!==last.id){try{if(navigator.vibrate)navigator.vibrate([250,120,250])}catch(e){}}
+  shownAlertId=last.id; el.hidden=false;
+}
+
+/* ---------- last reading ---------- */
+function renderHero(E){
+  var tk=dayKey(new Date());
+  var T=E.filter(function(e){return dayKey(e.d)===tk});
+  var gs=E.filter(function(e){return e.glucose!=null});
+  var last=gs[gs.length-1];
+  var ap=T.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=T.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
+  var st=last?status(last.glucose):null;
+  var h=$('#hero'); h.dataset.s=st?st[0]:'none';
+  h.innerHTML=
+    '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
+    (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
+    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج اللي تحت.')+'</p>'+
+    '<p class="today"><span>النهاردة:</span><span class="a">أبيدرا <b>'+fmt(ap)+'</b> وحدة</span><span class="t">ترسيبا <b>'+fmt(tr)+'</b> وحدة</span></p>';
+}
+
+/* ---------- chart ---------- */
+function chartSVG(E,startMs,nDays,label){
+  var end=startMs+nDays*DAY, span=end-startMs;
+  var pts=E.filter(function(e){var t=e.d.getTime(); return e.glucose!=null&&t>=startMs&&t<end});
+  if(pts.length<2)return null;
+  var vals=pts.map(function(p){return p.glucose});
+  var yMin=Math.max(0,Math.min(40,Math.floor((Math.min.apply(null,vals)-10)/10)*10));
+  var yMax=Math.max(settings.high+40,Math.ceil((Math.max.apply(null,vals)+10)/10)*10);
+  var W=360,H=200,pl=34,pr=8,pt=10,pb=26;
+  function X(t){return pl+(t-startMs)/span*(W-pl-pr)}
+  function Y(v){return pt+(yMax-v)/(yMax-yMin)*(H-pt-pb)}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(label)+'">';
+  s+='<rect x="'+pl+'" y="'+Y(settings.high)+'" width="'+(W-pl-pr)+'" height="'+(Y(settings.low)-Y(settings.high))+'" fill="var(--ok)" fill-opacity=".13"/>';
+  var gstep=nDays>31?7:1;
+  for(var k=0;k<=nDays;k+=gstep){var gx=X(startMs+k*DAY); s+='<line x1="'+gx+'" y1="'+pt+'" x2="'+gx+'" y2="'+(H-pb)+'" stroke="var(--line)" stroke-width="1"/>'}
+  [settings.low,settings.high].forEach(function(v){
+    s+='<line x1="'+pl+'" y1="'+Y(v)+'" x2="'+(W-pr)+'" y2="'+Y(v)+'" stroke="var(--muted)" stroke-opacity=".55" stroke-dasharray="3 3"/>';
+    s+='<text x="'+(pl-6)+'" y="'+(Y(v)+3.5)+'" text-anchor="end" font-size="10" fill="var(--muted)">'+v+'</text>';
+  });
+  var lstep=nDays<=7?1:Math.ceil(nDays/8);
+  for(var k2=0;k2<nDays;k2+=lstep){
+    var mid=startMs+k2*DAY+DAY/2, dd=new Date(mid);
+    var lab=nDays<=7?dd.toLocaleDateString(LOC,{weekday:'short'}):(dd.getDate()+'/'+(dd.getMonth()+1));
+    s+='<text x="'+X(mid)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="var(--muted)">'+lab+'</text>';
+  }
+  s+='<polyline fill="none" stroke="var(--muted)" stroke-opacity=".6" stroke-width="1.5" stroke-linejoin="round" points="'+pts.map(function(p){return X(p.d.getTime()).toFixed(1)+','+Y(p.glucose).toFixed(1)}).join(' ')+'"/>';
+  pts.forEach(function(p,i){
+    var c='var(--'+status(p.glucose)[0]+')', last=i===pts.length-1;
+    s+='<circle cx="'+X(p.d.getTime()).toFixed(1)+'" cy="'+Y(p.glucose).toFixed(1)+'" r="'+((last||nDays<=14)?(last?5.5:4):3)+'" fill="'+c+'" stroke="var(--surface)" stroke-width="1.5"/>';
+  });
+  return s+'</svg>';
+}
+function renderChart(E){
+  var t0=midnight(new Date()), svg=chartSVG(E,t0-6*DAY,7,'رسم قراءات السكر في آخر 7 أيام');
+  $('#chart').innerHTML=svg?svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>':'<p class="empty">الرسم بيظهر بعد ما تسجّل قراءتين على الأقل في آخر 7 أيام.</p>';
+}
+
+function mealText(e){
+  if(!e.meal||!e.meal.length)return '';
+  var t=e.meal.map(function(m){return esc(m.n)+(m.q!==1?' ×'+fmt(m.q):'')}).join('، ');
+  return t+(e.carbs>0?' ('+fmt(e.carbs)+' جم كارب)':'');
+}
+
+/* ---------- log ---------- */
+function renderLog(E){
+  var el=$('#log');
+  if(!E.length){el.innerHTML='<div class="card"><p class="empty">لسه مفيش تسجيلات. أول قراءة أو جرعة هتظهر هنا بعد ما تحفظها.</p></div>'; return}
+  var groups={}, order=[];
+  E.forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
+  order.sort().reverse();
+  var html='';
+  order.slice(0,daysShown).forEach(function(k){
+    var G=groups[k], d=G[0].d;
+    var gs=G.filter(function(e){return e.glucose!=null});
+    var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
+    var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
+    var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)); if(tr>0)sum.push('ترسيبا '+fmt(tr));
+    html+='<article class="day"><header><h3>'+dayLong(d)+'</h3><p class="day-sum">'+sum.join(' · ')+'</p></header><ul class="rows">';
+    G.forEach(function(e){
+      var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
+      html+='<li class="row"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
+        (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+'</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+'</span>':'')+'</div>'+
+        '<button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button>'+
+        (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
+        (e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</li>';
+    });
+    html+='</ul></article>';
+  });
+  if(order.length>daysShown)html+='<button type="button" class="ghost" id="more">عرض أيام أقدم</button>';
+  el.innerHTML=html;
+}
+
+/* ---------- Tresiba ---------- */
+function renderHint(E){
+  var el=$('#thint'), slot=curSlot(), tk=dayKey(new Date()), h='';
+  var showT=slot==='bed'||tAsked||num($('#t').value)>0;
+  $('#tbox').hidden=!showT; $('#showt').hidden=showT;
+  if(showT){
+    var tr=E.filter(function(e){return e.tresiba>0&&dayKey(e.d)===tk});
+    if(tr.length){
+      var s=tr.reduce(function(a,e){return a+e.tresiba},0);
+      h+='<p><b class="warn">اتسجلت النهاردة:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+timeStr(tr[tr.length-1].d)+'. اتأكد إنك مش بتكرر الجرعة.</p>';
+    }
+    if(settings.plan>0)h+='<p>جرعة الدكتور: <b>'+fmt(settings.plan)+' وحدة</b><button type="button" class="link" data-useplan>اكتبها في الخانة</button></p>';
+    else h+='<p class="small">جرعة ترسيبا بيحددها الدكتور. اكتبها في الإعدادات وهتظهر هنا كتذكير.</p>';
+  }
+  el.innerHTML=h; el.hidden=!h;
+}
+function renderStore(){
+  var el=$('#store'), txt='';
+  if(loaded&&mode==='cloud')txt=netErr?'مفيش اتصال دلوقتي، هيحاول تاني':'متزامن مع باقي الموبايلات';
+  else if(loaded&&cfgErr)txt='السيرفر لسه محتاج ربط قاعدة البيانات (شوف خطوات README)';
+  el.classList.toggle('show',!!txt);
+  el.classList.toggle('local',mode!=='cloud'||netErr);
+  el.querySelector('span').textContent=txt;
+}
+function gmsg(){
+  var el=$('#gmsg'), v=num($('#g').value);
+  if(v==null||isNaN(v)||v<=0){el.textContent=''; el.className='msg'; return}
+  var s=status(v);
+  if(s[0]==='ok'){el.textContent='في المعدل.'; el.className='msg ok'; return}
+  el.className='msg '+s[0];
+  el.innerHTML='<b>تنبيه: '+(s[0]==='low'?'أقل من '+settings.low:'أعلى من '+settings.high)+'.</b> '+adviceFor(v);
+}
+
+/* ---------- meal items ---------- */
+function slotGroup(slot){
+  if(slot){ if(slot.indexOf('bf')===0)return 'bf'; if(slot.indexOf('ln')===0)return 'ln'; if(slot.indexOf('dn')===0)return 'dn'; return 'sn' }
+  return 'sn';
+}
+function icrForGroup(g){var o={bf:settings.icrBf,ln:settings.icrLn,dn:settings.icrDn}[g]; return o||settings.icr||null}
+function manualItems(){
+  var out=[];
+  [['m1n','m1c'],['m2n','m2c']].forEach(function(p){
+    var n=$('#'+p[0]).value.trim(); if(!n)return;
+    var c=num($('#'+p[1]).value);
+    out.push({name:n,q:1,c:(c==null||isNaN(c))?0:c,missing:(c==null||isNaN(c)),manual:true});
+  });
+  return out;
+}
+function itemQ(m){return m.mode==='g'&&m.w>0?(m.gr||0)/m.w:m.q}
+function allMeal(){return mealItems.concat(manualItems())}
+function mealCarbs(items){return items.reduce(function(s,m){return s+itemQ(m)*(m.c||0)},0)}
+function newItem(f,q){
+  return {k:f.k||('x'+f.i),name:f.k==='fruit'?'':f.n,disp:f.n,d:f.d,w:f.w||0,c:f.c,est:!!f.e,q:q||1,mode:'n',gr:f.w||0,fruit:f.k==='fruit',editc:false};
+}
+function addFood(f){
+  var ex=mealItems.filter(function(m){return m.k===(f.k||('x'+f.i))})[0];
+  if(ex&&!ex.fruit){ex.q+=1}
+  else mealItems.push(newItem(f,1));
+  renderMeal(); updateCalc();
+}
+function portionText(m){
+  var d=m.d||''; if(m.w>0&&d.indexOf('جم')<0&&d.indexOf('مل')<0)d=(d?d+' · ':'')+'نقطة = '+m.w+' جم';
+  return d;
+}
+function renderMeal(){
+  var el=$('#mlist');
+  el.innerHTML=mealItems.map(function(m,i){
+    var top=m.fruit
+      ?'<input type="text" data-f="name" placeholder="اسم الفاكهة (مثلاً تفاح)" value="'+esc(m.name)+'" autocomplete="off">'
+      :'<span><b>'+esc(m.disp)+'</b>'+(m.est?'<span class="est">تقدير</span>':'')+'<span class="u">'+esc(portionText(m))+'</span></span>';
+    var q=itemQ(m);
+    var amount=m.mode==='g'
+      ?'<label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label>'
+      :'<div class="qty"><button type="button" data-q="'+i+'" data-d="-0.5" aria-label="أقل">−</button><span>'+fmt(m.q)+'</span><button type="button" data-q="'+i+'" data-d="0.5" aria-label="أكتر">+</button></div>';
+    var opts='';
+    if(m.w>0)opts+='<button type="button" class="link" data-mode="'+i+'">'+(m.mode==='g'?'بالعدد':'بالجرام')+'</button>';
+    if(m.est||m.fruit||m.editc)opts+='<label>كارب الحصة <input type="text" inputmode="decimal" data-f="c" value="'+fmt(m.c)+'"> جم</label>';
+    else opts+='<button type="button" class="link" data-editc="'+i+'">غيّر الكارب</button>';
+    return '<li class="mi" data-i="'+i+'"><div class="mi-top">'+top+'<button type="button" class="mi-x" data-rm="'+i+'" aria-label="شيل الصنف">✕</button></div>'+
+      '<div class="mi-bot">'+amount+'<span class="mi-t">= <b data-tot>'+fmt(r1(q*m.c))+'</b> جم</span></div>'+
+      '<div class="mi-opts">'+opts+'</div></li>';
+  }).join('');
+}
+$('#foodpick').addEventListener('change',function(){var v=this.value; this.value=''; if(v!=='')addFood(DB[Number(v)])});
+$('#presetpick').addEventListener('change',function(){
+  var v=this.value; this.value=''; if(v==='')return;
+  var p=PRESETS[Number(v)]; if(!p)return;
+  mealItems=p[2].map(function(x){return newItem(BY[x[0]],x[1])});
+  renderMeal(); updateCalc(); toast('اتحطت الوجبة: '+p[1]);
+});
+$('#mlist').addEventListener('click',function(ev){
+  var b=ev.target.closest('button'); if(!b)return;
+  if(b.dataset.rm!==undefined){mealItems.splice(Number(b.dataset.rm),1); renderMeal(); updateCalc(); return}
+  if(b.dataset.q!==undefined){
+    var i=Number(b.dataset.q), m=mealItems[i]; if(!m)return;
+    m.q=Math.round((m.q+Number(b.dataset.d))*2)/2;
+    if(m.q<=0)mealItems.splice(i,1);
+    renderMeal(); updateCalc(); return;
+  }
+  if(b.dataset.mode!==undefined){var m2=mealItems[Number(b.dataset.mode)]; if(m2){if(m2.mode==='g'){m2.q=Math.max(0.5,Math.round(itemQ(m2)*2)/2); m2.mode='n'}else{m2.mode='g'; m2.gr=Math.round(m2.q*m2.w)} renderMeal(); updateCalc()} return}
+  if(b.dataset.editc!==undefined){var m3=mealItems[Number(b.dataset.editc)]; if(m3){m3.editc=true; renderMeal()} return}
+});
+$('#mlist').addEventListener('input',function(ev){
+  var inp=ev.target; if(!inp.dataset.f)return;
+  var li=inp.closest('.mi'), m=mealItems[Number(li.dataset.i)]; if(!m)return;
+  if(inp.dataset.f==='name')m.name=inp.value;
+  else{
+    var v=num(inp.value); v=(v==null||isNaN(v))?0:v;
+    if(inp.dataset.f==='gr')m.gr=v; else m.c=v;
+    li.querySelector('[data-tot]').textContent=fmt(r1(itemQ(m)*m.c));
+  }
+  updateCalc();
+});
+['m1n','m1c','m2n','m2c'].forEach(function(id){$('#'+id).addEventListener('input',updateCalc)});
+
+/* ---------- ready meals list (depends on slot and ratio) ---------- */
+function presetGroupOrder(){
+  var g=slotGroup(curSlot()); var o=[g]; GROUPS.forEach(function(x){if(x[0]!==g)o.push(x[0])}); return o;
+}
+function renderPresets(){
+  var h='<option value="">اختار وجبة جاهزة…</option>';
+  presetGroupOrder().forEach(function(g){
+    var label=GROUPS.filter(function(x){return x[0]===g})[0][1], icr=icrForGroup(g), rows='';
+    PRESETS.forEach(function(p,i){
+      if(p[0]!==g)return;
+      var carbs=p[2].reduce(function(s,x){return s+BY[x[0]].c*x[1]},0);
+      rows+='<option value="'+i+'">'+esc(p[1])+' — '+fmt(r1(carbs))+' جم'+(icr?' — ≈ '+fmt(r5(carbs/icr))+' وحدة':'')+'</option>';
+    });
+    h+='<optgroup label="'+label+'">'+rows+'</optgroup>';
+  });
+  var sel=$('#presetpick'); sel.innerHTML=h; sel.value='';
+}
+
+/* ---------- dose calculator ---------- */
+function corrUnits(bg){
+  var sc=settings.scale||[];
+  if(sc.length){
+    var top=Math.max.apply(null,sc.map(function(r){return r.b}));
+    for(var i=0;i<sc.length;i++){if(bg>=sc[i].a&&bg<=sc[i].b)return {u:sc[i].u,how:'جدول الدكتور ('+sc[i].a+'–'+sc[i].b+' = '+fmt(sc[i].u)+' وحدة)'}}
+    var minA=Math.min.apply(null,sc.map(function(r){return r.a}));
+    if(bg<minA)return {u:0,how:'تحت أول خانة في الجدول (مفيش تصحيح)'};
+    if(bg>top)return {u:null,how:'فوق آخر خانة في الجدول',above:true};
+    return {u:0,how:'مش داخل في أي خانة في الجدول'};
+  }
+  if(settings.isf&&settings.target){
+    var u=Math.max(0,(bg-settings.target)/settings.isf);
+    return {u:u,how:'('+bg+' − '+settings.target+') ÷ '+settings.isf+' = '+fmt(r1(u))};
+  }
+  return null;
+}
+function updateCalc(){
+  var el=$('#calc'), slot=curSlot(), g=num($('#g').value); if(isNaN(g))g=null;
+  var items=allMeal(), carbs=mealCarbs(items), has=items.length>0, before=BEFORE.indexOf(slot)>=0;
+  var grp=slotGroup(slot), icr=icrForGroup(grp);
+  $('#mtotal').innerHTML=has?'كارب الوجبة: <b>'+fmt(r1(carbs))+' جم</b>':'';
+  $('#icrbox').hidden=!(has&&!icr);
+  var afterSlot=slot.indexOf('_after')>0;
+  if(!has&&!(g>0&&(before||g>settings.high))){el.innerHTML=''; return}
+  var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>', notes=[], warns=[];
+  if(g!=null&&g>0&&g<settings.low){
+    h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>مفيش جرعة تصحيح للهبوط، التصحيح بيبقى بكارب سريع مش بأنسولين.</li><li>اتبع خطة الدكتور للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li><li>جرعة الأكل بعد ما القراءة تتظبط، وتتحدد حسب خطة الدكتور، يمكن تتقلل أو تتأخر.</li></ul></div></div>';
+    el.innerHTML=h; return;
+  }
+  var meal=null, corr=null;
+  if(has&&afterSlot){notes.push('الجرعة بتتحسب قبل الأكل. اختار "قبل" في وقت القياس لو لسه هتاخد الجرعة.')}
+  else if(has){
+    if(icr){meal=carbs/icr; notes.push('الأكل: '+fmt(r1(carbs))+' جم ÷ '+fmt(icr)+' = '+fmt(r1(meal))+' وحدة')}
+    if(items.some(function(m){return m.missing}))warns.push('في صنف من غير رقم كارب، اكتب كارب الصنف علشان الحساب يبقى صح.');
+    if(items.some(function(m){return m.fruit&&!m.name}))notes.push('اكتب اسم الفاكهة.');
+  }
+  if(g!=null&&g>0){
+    if(before){
+      var c=corrUnits(g);
+      if(c){
+        if(c.above)warns.push('القراءة أعلى من آخر خانة في جدول التصحيح. كلّم الدكتور قبل أي جرعة.');
+        else{corr=c.u; notes.push('التصحيح: '+c.how)}
+      }else if(g>settings.high)notes.push('اكتب جدول التصحيح أو الهدف في الإعدادات علشان التصحيح يتحسب.');
+    }else if(g>settings.high)notes.push('التصحيح في الأوقات دي بيحدده الدكتور، ومش بيتحسب هنا.');
+  }
+  var total=null;
+  if(meal!=null||corr!=null)total=r5((meal||0)+(corr||0));
+  if(g!=null&&g>settings.high){
+    h+='<div class="guide high"><b>السكر عالي ('+fmt(g)+')</b><ul><li>التصحيح بيتحسب من جدول الدكتور، والصفحة مش بتحط رقم من عندها.</li>'+(g>=300?'<li>فوق 300: قيس الكيتونات حسب خطة الدكتور وكلمه لو موجودة أو لو في قيء أو ألم بطن أو تعب.</li>':'')+'<li>اشرب مياه، وأعد القياس حسب خطة الدكتور.</li></ul></div>';
+  }
+  if(total!=null){
+    h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
+    if(settings.maxd&&total>settings.maxd)warns.push('الجرعة أعلى من أقصى جرعة كتبتها ('+fmt(settings.maxd)+'). راجعها مع الدكتور.');
+  }
+  var when=new Date($('#dt').value), recent=prep().filter(function(e){var dt=when-e.d; return e.apidra>0&&dt>=0&&dt<=3*36e5});
+  if(recent.length)warns.push('اتسجلت أبيدرا من أقل من 3 ساعات ('+fmt(recent[recent.length-1].apidra)+' وحدة الساعة '+timeStr(recent[recent.length-1].d)+'). ممكن يكون لسه شغال، اسأل الدكتور قبل التصحيح.');
+  if(notes.length||warns.length){
+    h+='<ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+warns.map(function(w){return '<li class="bad">'+esc(w)+'</li>'}).join('')+'</ul>';
+  }
+  if(total!=null)h+='<button type="button" class="primary" data-usecalc="'+total+'">اكتب '+fmt(total)+' وحدة في خانة أبيدرا</button>';
+  h+='<p class="small">حساب بأرقام الدكتور اللي في الإعدادات. راجعه قبل الحقن، والدكتور هو اللي يحدد الجرعة.</p></div>';
+  el.innerHTML=h;
+}
+
+/* ---------- report ---------- */
+function rangeInputs(){
+  var f=$('#rfrom').value, t=$('#rto').value;
+  if(!f||!t)return null;
+  var a=new Date(f+'T00:00:00'), b=new Date(t+'T00:00:00');
+  if(isNaN(a)||isNaN(b)||a>b)return null;
+  return {from:a.getTime(), to:b.getTime()+DAY, days:Math.round((b-a)/DAY)+1, a:a, b:b};
+}
+function setPreset(n){
+  var t=midnight(new Date());
+  $('#rto').value=dayKey(new Date(t)); $('#rfrom').value=dayKey(new Date(t-(n-1)*DAY));
+  document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed',String(Number(b.dataset.days)===n))});
+}
+function periodEntries(r){return prep().filter(function(e){var t=e.d.getTime(); return t>=r.from&&t<r.to})}
+function buildReport(){
+  var r=rangeInputs(), el=$('#report');
+  if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); return false}
+  var E=periodEntries(r), G=E.filter(function(e){return e.glucose!=null});
+  var vals=G.map(function(e){return e.glucose});
+  var avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
+  var mn=vals.length?Math.min.apply(null,vals):null, mx=vals.length?Math.max.apply(null,vals):null;
+  var lo=vals.filter(function(v){return v<settings.low}).length, hi=vals.filter(function(v){return v>settings.high}).length, okc=vals.length-lo-hi;
+  var pc=function(n){return vals.length?Math.round(n/vals.length*100)+'%':'—'};
+  var dayKeys={}; E.forEach(function(e){dayKeys[dayKey(e.d)]=1}); var nd=Object.keys(dayKeys).length;
+  var apTot=E.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0);
+  var trE=E.filter(function(e){return e.tresiba>0});
+  var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
+  var h='<h2>تقرير متابعة السكر</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
+  if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">مفيش تسجيلات في الفترة دي.</p>'; el.hidden=false; return true}
+  h+='<dl class="rsum">'+
+    '<div><dt>عدد قراءات السكر</dt><dd>'+vals.length+' <small>في '+nd+' يوم</small></dd></div>'+
+    '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
+    '<div><dt>أقل / أعلى قراءة</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
+    '<div><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd></div>'+
+    '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
+    '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
+    '<div><dt>متوسط أبيدرا يوميًا</dt><dd>'+(nd?fmt(apTot/nd):'—')+' <small>وحدة</small></dd></div>'+
+    '<div><dt>ترسيبا</dt><dd>'+(trAvg!=null?fmt(trAvg)+' <small>وحدة، '+trE.length+' جرعة مسجلة</small>':'—')+'</dd></div>'+
+  '</dl>';
+  var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
+  if(svg)h+='<h3>الرسم</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>';
+  h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
+  SLOTS.forEach(function(s){
+    var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
+    if(!v.length)return;
+    h+='<tr><td>'+s[1]+'</td><td>'+v.length+'</td><td>'+Math.round(v.reduce(function(a,b){return a+b},0)/v.length)+'</td><td>'+Math.min.apply(null,v)+'</td><td>'+Math.max.apply(null,v)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<h3>التفاصيل</h3><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
+  var cur='';
+  E.forEach(function(e){
+    var k=dayKey(e.d);
+    if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
+    var st=e.glucose!=null?status(e.glucose)[0]:'';
+    var mark=st==='low'?' ↓':st==='high'?' ↑':'';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+'</td></tr>';
+  });
+  h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
+  el.innerHTML=h; el.hidden=false; return true;
+}
+
+/* ---------- settings ---------- */
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50]];
+function syncSettingsInputs(){
+  var a=document.activeElement;
+  SET_FIELDS.forEach(function(f){var el=$('#'+f[0]); if(el!==a)el.value=settings[f[1]]==null?'':settings[f[1]]});
+  var sc=settings.scale||[];
+  for(var i=0;i<5;i++){
+    var r=sc[i]||{};
+    [['a',r.a],['b',r.b],['u',r.u]].forEach(function(p){var el=document.querySelector('[data-sc="'+i+p[0]+'"]'); if(el&&el!==a)el.value=p[1]==null?'':p[1]});
+  }
+}
+function readSettings(){
+  var out={}, bad=false, incomplete=false;
+  SET_FIELDS.forEach(function(f){
+    var v=num($('#'+f[0]).value);
+    if(isNaN(v)||(v==null&&f[4])||(v!=null&&(v<f[2]||v>f[3])))bad=true;
+    out[f[1]]=v;
+  });
+  if(out.low>=out.high)bad=true;
+  var scale=[];
+  for(var i=0;i<5;i++){
+    var a=num(document.querySelector('[data-sc="'+i+'a"]').value), b=num(document.querySelector('[data-sc="'+i+'b"]').value), u=num(document.querySelector('[data-sc="'+i+'u"]').value);
+    if(a==null&&b==null&&u==null)continue;
+    if(a==null||b==null||u==null){incomplete=true; continue}
+    if(isNaN(a)||isNaN(b)||isNaN(u)||a<40||b>600||a>b||u<0||u>20){bad=true; continue}
+    scale.push({a:a,b:b,u:u});
+  }
+  scale.sort(function(x,y){return x.a-y.a});
+  out.scale=scale;
+  if(incomplete&&!bad)return 'wait';
+  return bad?null:out;
+}
+$('#set').addEventListener('change',function(){
+  var s=readSettings();
+  if(s==='wait')return;
+  if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
+  settings=Object.assign({},DEFAULTS,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
+});
+$('#qicrsave').addEventListener('click',function(){
+  var v=num($('#qicr').value);
+  if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
+  settings=Object.assign({},settings,{icr:v}); persistSettings(); $('#qicr').value=''; syncSettingsInputs(); render(); toast('اتحفظت النسبة');
+});
+
+/* ---------- render all ---------- */
+function render(){
+  var E=prep();
+  renderStore(); renderBanner(E); renderHero(E); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  if(!$('#report').hidden)buildReport();
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest&&ev.target.closest('button'); if(!t)return;
+  if(t.dataset.dismiss){lsSet(LS_D,t.dataset.dismiss); $('#alertbar').hidden=true; return}
+  if(t.dataset.step){
+    var inp=$('#'+t.dataset.step), cur=num(inp.value); if(cur==null||isNaN(cur))cur=0;
+    var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); return;
+  }
+  if(t.id==='showt'){tAsked=true; renderHint(prep()); return}
+  if('useplan' in t.dataset){$('#t').value=String(settings.plan); return}
+  if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
+  if(t.id==='more'){daysShown+=7; renderLog(prep()); return}
+  if(t.classList.contains('del')){
+    if(t.dataset.armed){
+      var id=t.dataset.id; t.disabled=true;
+      removeEntry(id).then(function(){toast('اتحذف'); render()}).catch(function(){toast('تعذّر الحذف'); t.disabled=false});
+    }else{
+      t.dataset.armed='1'; t.textContent='اضغط تاني للتأكيد';
+      setTimeout(function(){if(t.isConnected){delete t.dataset.armed; t.textContent='حذف'}},3000);
+    }
+    return;
+  }
+  if(t.parentNode&&t.parentNode.id==='presets'){setPreset(Number(t.dataset.days)); if(!$('#report').hidden)buildReport(); return}
+});
+['rfrom','rto'].forEach(function(id){$('#'+id).addEventListener('change',function(){
+  document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed','false')});
+  if(!$('#report').hidden)buildReport();
+})});
+$('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
+$('#rprint').addEventListener('click',function(){
+  if(!buildReport())return;
+  var old=document.title;
+  document.title='تقرير-سكر-'+$('#rfrom').value+'-إلى-'+$('#rto').value;
+  setTimeout(function(){window.print(); setTimeout(function(){document.title=old},500)},150);
+});
+$('#csv').addEventListener('click',function(){
+  var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
+  var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة']];
+  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||''])});
+  var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+});
+$('#slot').addEventListener('change',function(){renderHint(prep()); renderPresets(); updateCalc()});
+$('#g').addEventListener('input',function(){gmsg(); updateCalc()});
+$('#t').addEventListener('input',function(){renderHint(prep())});
+$('#dt').addEventListener('change',updateCalc);
+
+$('#f').addEventListener('submit',async function(ev){
+  ev.preventDefault();
+  var err=$('#ferr'); err.textContent='';
+  var slot=curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
+  var d=new Date($('#dt').value);
+  if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='في خانة فيها رقم مش مفهوم. اكتب أرقام بس.'; return}
+  if(g!=null&&(g<20||g>600)){err.textContent='قراءة السكر لازم تكون بين 20 و600. راجع الرقم.'; return}
+  if(a!=null&&(a<0||a>50)){err.textContent='جرعة أبيدرا غريبة. راجع الرقم.'; return}
+  if(t!=null&&(t<0||t>100)){err.textContent='جرعة ترسيبا غريبة. راجع الرقم.'; return}
+  if(isNaN(d)){err.textContent='التاريخ والوقت مش صحيحين.'; return}
+  var items=allMeal().filter(function(m){return (m.name&&m.name.trim())||m.fruit}).map(function(m){
+    var nm=m.fruit?('فاكهة'+(m.name.trim()?': '+m.name.trim():'')):m.name.trim();
+    if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
+    return {n:nm,q:m.q,c:m.c};
+  });
+  if(g==null&&!(a>0)&&!(t>0)&&!items.length){err.textContent='اكتب قراءة سكر أو جرعة أو أكل على الأقل.'; return}
+  var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
+  var btn=$('#save'); btn.disabled=true;
+  try{
+    await addEntry({ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note});
+    ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
+    mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
+    setNow(); toast('اتحفظ'); render();
+    if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    err.textContent=e&&e.code==='auth'?'الرقم السري اتغيّر. اقفل الصفحة وافتحها تاني.':'مقدرتش أحفظ. اتأكد من النت وجرب تاني.';
+  }finally{btn.disabled=false}
+});
+
+/* ---------- start ---------- */
+setPreset(14); renderMeal(); applyTab();
+syncSettingsInputs(); render();
+start(true);
+})();
+</script>
+</body>
+</html>
