@@ -279,6 +279,8 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 .alertbar{box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .store{display:none}
 .store.show{display:flex}
+.store.local{color:var(--high); font-weight:600; font-size:13.5px; align-items:flex-start}
+.store.local i{margin-top:7px; flex:none}
 </style>
 </head>
 <body>
@@ -600,7 +602,7 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[]};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
-var mealItems=[], shownAlertId=null, cfgErr=false;
+var mealItems=[], shownAlertId=null, syncErr='';
 
 function status(v){
   if(v<settings.low)return ['low','منخفض'];
@@ -630,8 +632,10 @@ async function api(body){
   }catch(e){throw new ApiError('net')}
   if(r.status===401)throw new ApiError('auth');
   var ct=r.headers.get('content-type')||'';
-  if(!r.ok||ct.indexOf('json')<0)throw new ApiError(r.status===500?'config':'net');
-  return r.json();
+  if(ct.indexOf('json')<0)throw new ApiError(r.status===404||r.ok?'noapi':'net');
+  var j=await r.json().catch(function(){return {}});
+  if(!r.ok)throw new ApiError(j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
+  return j;
 }
 function applyServer(j){
   entries=j.entries||[];
@@ -646,7 +650,7 @@ async function start(first){
     var j=await api(); mode='cloud'; applyServer(j); ready();
   }catch(e){
     if(e.code==='auth'){showGate(first?'':'الرقم السري غلط، جرب تاني.'); return}
-    cfgErr=(e.code==='config'); mode='local'; entries=lsGet(LS_E,[]); var s=lsGet(LS_S,null); if(s)settings=Object.assign({},DEFAULTS,s); ready();
+    syncErr=e.code||'net'; mode='local'; entries=lsGet(LS_E,[]); var s=lsGet(LS_S,null); if(s)settings=Object.assign({},DEFAULTS,s); ready();
   }
 }
 function showGate(msg){
@@ -827,10 +831,16 @@ function renderHint(E){
   }
   el.innerHTML=h; el.hidden=!h;
 }
+var SYNC_MSG={
+  noapi:'المزامنة مش شغالة: ملف السيرفر (فولدر api) مش مرفوع على Vercel مع index.html',
+  storage:'المزامنة مش شغالة: قاعدة البيانات (Upstash) مش موصّلة بالمشروع',
+  pinenv:'المزامنة مش شغالة: ضيف المتغير FAMILY_PIN في Environment Variables واعمل Redeploy',
+  net:'المزامنة مش شغالة: مفيش اتصال بالسيرفر'
+};
 function renderStore(){
   var el=$('#store'), txt='';
   if(loaded&&mode==='cloud')txt=netErr?'مفيش اتصال دلوقتي، هيحاول تاني':'متزامن مع باقي الموبايلات';
-  else if(loaded&&cfgErr)txt='السيرفر لسه محتاج ربط قاعدة البيانات (شوف خطوات README)';
+  else if(loaded&&syncErr)txt=SYNC_MSG[syncErr]||SYNC_MSG.net;
   el.classList.toggle('show',!!txt);
   el.classList.toggle('local',mode!=='cloud'||netErr);
   el.querySelector('span').textContent=txt;
