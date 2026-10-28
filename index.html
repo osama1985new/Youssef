@@ -193,6 +193,10 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .note{grid-area:note; font-size:14px; color:var(--muted)}
 .del{grid-area:del; justify-self:end; border:0; background:none; color:var(--muted); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
 .del[data-armed]{color:var(--low); font-weight:600}
+.acts{grid-area:del; justify-self:end; display:flex; gap:14px}
+.acts .del,.acts .edt{grid-area:auto}
+.edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
+.editbar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1px solid var(--accent); font-size:14px; font-weight:500}
 
 .scalerow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
 .scalerow input{min-height:44px; font-size:16px; text-align:center}
@@ -366,6 +370,7 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
       </div>
     </details>
+    <div class="editbar" id="editbar" hidden><span>بتعدّل تسجيل قديم</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
     <button class="primary" id="save" type="submit">حفظ التسجيل</button>
   </form>
@@ -671,9 +676,9 @@ $('#gbtn').addEventListener('click',function(){
 $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#gbtn').click()}});
 
 async function addEntry(doc){
-  doc.id=newId();
-  if(mode==='cloud'){await api({action:'add',entry:doc}); entries=entries.concat([doc])}
-  else{entries=entries.concat([doc]); lsSet(LS_E,entries)}
+  doc.id=doc.id||newId();
+  if(mode==='cloud'){await api({action:'add',entry:doc}); entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc])}
+  else{entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc]); lsSet(LS_E,entries)}
 }
 async function removeEntry(id){
   if(mode==='cloud'){await api({action:'delete',id:id})}
@@ -805,7 +810,7 @@ function renderLog(E){
       html+='<li class="row"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+'</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+'</span>':'')+'</div>'+
-        '<button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button>'+
+        '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         (e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</li>';
     });
@@ -1143,6 +1148,7 @@ document.addEventListener('click',function(ev){
   if('useplan' in t.dataset){$('#t').value=String(settings.plan); return}
   if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
   if(t.id==='more'){daysShown+=7; renderLog(prep()); return}
+  if(t.classList.contains('edt')){startEdit(t.dataset.id); return}
   if(t.classList.contains('del')){
     if(t.dataset.armed){
       var id=t.dataset.id; t.disabled=true;
@@ -1181,6 +1187,32 @@ $('#g').addEventListener('input',function(){gmsg(); updateCalc()});
 $('#t').addEventListener('input',function(){renderHint(prep())});
 $('#dt').addEventListener('change',updateCalc);
 
+var editingId=null;
+function setEditing(id){
+  editingId=id; $('#editbar').hidden=!id; $('#save').textContent=id?'حفظ التعديل':'حفظ التسجيل';
+}
+function cancelEdit(){
+  setEditing(null);
+  ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
+  mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot(); setNow(); $('#ferr').textContent=''; render();
+}
+function startEdit(id){
+  var e=entries.filter(function(x){return x.id===id})[0]; if(!e)return;
+  setEditing(id);
+  $('#slot').value=e.slot||defaultSlot();
+  $('#g').value=e.glucose==null?'':String(e.glucose);
+  $('#a').value=e.apidra>0?String(e.apidra):'';
+  $('#t').value=e.tresiba>0?String(e.tresiba):'';
+  tAsked=e.tresiba>0;
+  $('#n').value=e.note||'';
+  ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
+  mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
+  renderMeal();
+  $('#dt').value=toLocalInput(new Date(e.ts));
+  var det=$('#dt').closest('details'); if(det)det.open=true;
+  go('add'); render(); toast('عدّل وبعدين اضغط حفظ التعديل');
+}
+$('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
@@ -1200,10 +1232,11 @@ $('#f').addEventListener('submit',async function(ev){
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note});
+    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
+    var wasEdit=!!editingId; setEditing(null);
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
-    setNow(); toast('اتحفظ'); render();
+    setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
   }catch(e){
     err.textContent=e&&e.code==='auth'?'الرقم السري اتغيّر. اقفل الصفحة وافتحها تاني.':'مقدرتش أحفظ. اتأكد من النت وجرب تاني.';
