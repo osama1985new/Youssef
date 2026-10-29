@@ -305,6 +305,20 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 .store.show{display:flex}
 .store.local{color:var(--high); font-weight:600; font-size:13.5px; align-items:flex-start}
 .store.local i{margin-top:7px; flex:none}
+
+/* ---- soft color touches (kept calm) ---- */
+body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var(--bg)) 0, var(--bg) 340px) no-repeat, var(--bg)}
+.row{border-inline-start:3px solid color-mix(in srgb, var(--rc, var(--muted)) 50%, transparent)}
+.g-bf{--rc:var(--high)} .g-ln{--rc:var(--ok)} .g-dn{--rc:var(--apidra)} .g-bed{--rc:var(--tresiba)} .g-ot{--rc:var(--muted)}
+.day header{background:color-mix(in srgb, var(--accent) 9%, var(--surface)); border-bottom-color:color-mix(in srgb, var(--accent) 22%, var(--line))}
+.dose{border:1px solid transparent}
+.dose.a{background:color-mix(in srgb, var(--apidra) 15%, var(--surface)); border-color:color-mix(in srgb, var(--apidra) 24%, transparent)}
+.dose.t{background:color-mix(in srgb, var(--tresiba) 15%, var(--surface)); border-color:color-mix(in srgb, var(--tresiba) 24%, transparent)}
+.mealtxt{background:color-mix(in srgb, var(--ok) 9%, var(--surface)); padding:6px 10px; border-radius:8px}
+.hero{background:color-mix(in srgb, var(--st) 7%, var(--surface))}
+.primary{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 100%)}
+.card{border-color:color-mix(in srgb, var(--accent) 12%, var(--line))}
+.tabs button[aria-current=page]{background:color-mix(in srgb, var(--accent) 16%, var(--surface))}
 </style>
 </head>
 <body>
@@ -956,6 +970,7 @@ function renderChart(E){
   $('#chart').innerHTML=svg?svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>':'<p class="empty">الرسم بيظهر بعد ما تسجّل قراءتين على الأقل في آخر 7 أيام.</p>';
 }
 
+function rowGroup(sl){return sl==='fast'||sl==='bf_before'||sl==='bf_after'?'bf':sl==='ln_before'||sl==='ln_after'?'ln':sl==='dn_before'||sl==='dn_after'?'dn':sl==='bed'?'bed':'ot'}
 function hm(t){var p=String(t).split(':'); return timeStr(new Date(2000,0,1,Number(p[0])||0,Number(p[1])||0))}
 function extraText(e){
   var p=[]; if(e.corr)p.push('جرعة تصحيح'); if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
@@ -981,13 +996,13 @@ function renderLog(E){
     var gs=G.filter(function(e){return e.glucose!=null});
     var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
     var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
-    var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)); if(tr>0)sum.push('ترسيبا '+fmt(tr));
+    var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
     html+='<article class="day"><header><h3>'+dayLong(d)+'</h3><p class="day-sum">'+sum.join(' · ')+'</p></header><ul class="rows">';
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
-      html+='<li class="row"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
+      html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+'</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+(e.tresibaTime?' · '+hm(e.tresibaTime):'')+'</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة'+(e.tresibaTime?' · '+hm(e.tresibaTime):'')+'</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         (extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+
