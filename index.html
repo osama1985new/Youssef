@@ -800,6 +800,46 @@ function injHint(){
   }
   el.textContent=msgs.join(' '); el.hidden=!msgs.length;
 }
+function mealPairs(E){
+  var aft={bf_before:'bf_after',ln_before:'ln_after',dn_before:'dn_after'}, out=[], L=E.slice().sort(function(a,b){return a.d-b.d});
+  L.forEach(function(e,i){
+    var as=aft[e.slot]; if(!as||e.glucose==null||!e.meal||!e.meal.length)return;
+    for(var j=i+1;j<L.length;j++){var f=L[j], dt=f.d-e.d; if(dt>5*36e5)break; if(f.slot===as&&f.glucose!=null&&dt>=30*6e4){out.push({e:e,f:f,rise:f.glucose-e.glucose}); break}}
+  });
+  return out;
+}
+function doctorNotes(E){
+  var h='', notes=[], P=mealPairs(E);
+  var groups={}, order=[];
+  P.forEach(function(p){
+    var k=p.e.meal.map(function(m){return m.n}).sort().join('، ');
+    if(!groups[k]){groups[k]={n:k,r:[],a:[]}; order.push(k)}
+    groups[k].r.push(p.rise); if(p.e.apidra>0)groups[k].a.push(p.e.apidra);
+  });
+  var rows=order.map(function(k){var g=groups[k]; return {n:g.n,c:g.r.length,r:g.r.reduce(function(a,b){return a+b},0)/g.r.length,a:g.a.length?g.a.reduce(function(a,b){return a+b},0)/g.a.length:null}})
+    .filter(function(x){return x.c>=2}).sort(function(a,b){return b.r-a.r}).slice(0,8);
+  if(rows.length){
+    h+='<h3>تأثير الوجبات على السكر</h3><p class="cap">الفرق بين قراءة قبل الوجبة وقراءة بعدها (بعد نص ساعة لحد 5 ساعات). الوجبات اللي اتسجلت مرتين أو أكتر بس.</p><div class="tw"><table><thead><tr><th>الوجبة</th><th>عدد المرات</th><th>متوسط الفرق</th><th>متوسط أبيدرا</th></tr></thead><tbody>'+
+      rows.map(function(x){return '<tr><td>'+esc(x.n.length>70?x.n.slice(0,70)+'…':x.n)+'</td><td>'+x.c+'</td><td>'+(x.r>0?'+':'')+Math.round(x.r)+'</td><td>'+(x.a!=null?fmt(r1(x.a)):'')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+  [['bf','الفطار'],['ln','الغداء'],['dn','العشاء']].forEach(function(m){
+    var Q=P.filter(function(p){return p.e.slot===m[0]+'_before'});
+    if(Q.length<3)return;
+    var avg=Q.reduce(function(s2,p){return s2+p.rise},0)/Q.length, lows=Q.filter(function(p){return p.f.glucose<settings.low}).length;
+    if(avg>60)notes.push('متوسط ارتفاع السكر بعد '+m[1]+' كان +'+Math.round(avg)+' ('+Q.length+' مرة). ممكن الدكتور يراجع نسبة الأنسولين للكارب في الوجبة دي.');
+    if(lows>=2)notes.push('السكر نزل أقل من '+settings.low+' بعد '+m[1]+' في '+lows+' مرة من '+Q.length+'. ممكن الدكتور يراجع الجرعة.');
+  });
+  var F=E.filter(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')});
+  var fd={}, hasFast={}; F.forEach(function(e){if(e.slot==='fast')hasFast[dayKey(e.d)]=1});
+  F.forEach(function(e){var k=dayKey(e.d); if(hasFast[k]&&e.slot!=='fast')return; if(!fd[k])fd[k]=[]; fd[k].push(e.glucose)});
+  var days=Object.keys(fd), dv=days.map(function(k){return fd[k].reduce(function(a,b){return a+b},0)/fd[k].length});
+  if(days.length>=3){
+    var hi=dv.filter(function(v){return v>130}).length, av=Math.round(dv.reduce(function(a,b){return a+b},0)/dv.length);
+    if(hi/days.length>=0.5)notes.push('السكر الصايم عالي في '+hi+' من '+days.length+' يوم (المتوسط '+av+'، والمرجع المعتاد 80–130 والدكتور هو اللي يحدد الهدف). ممكن يكون ظاهرة الفجر أو يحتاج مراجعة ترسيبا.');
+  }
+  if(notes.length)h+='<h3>ملاحظات للدكتور</h3><p class="cap">ملاحظات حسابية من التسجيلات بس، مش تعليمات علاج.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
+  return h;
+}
 function renderHero(E){
   var tk=dayKey(new Date());
   var T=E.filter(function(e){return dayKey(e.d)===tk});
@@ -1141,6 +1181,7 @@ function buildReport(){
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
   var extra=[]; if(inj.length&&(nw||ru))extra.push('سن قلم الأنسولين: جديد في '+nw+' من '+inj.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':'')); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
   if(extra.length)h+='<p class="sub">'+extra.join(' · ')+'</p>';
+  h+=doctorNotes(E);
   var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
   if(svg)h+='<h3>الرسم</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>';
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
