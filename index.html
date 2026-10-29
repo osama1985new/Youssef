@@ -469,7 +469,8 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
     <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
   </section>
 
-  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا.</p>
+  <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
+  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا. <button type="button" class="link" id="logout" hidden style="margin:0">خروج / تغيير الرقم</button></p>
 </main>
 
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
@@ -639,6 +640,8 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[]};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
+function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
+pin=normPin(pin);
 var mealItems=[], shownAlertId=null, syncErr='', role='edit', prot=false;
 
 function status(v){
@@ -665,7 +668,7 @@ function ApiError(code){this.code=code}
 async function api(body){
   var r;
   try{
-    r=await fetch('/api/data',{method:body?'POST':'GET',headers:{'content-type':'application/json','x-pin':pin||''},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+    r=await fetch('/api/data',{method:body?'POST':'GET',headers:{'content-type':'application/json','x-pin':encodeURIComponent(pin||'')},body:body?JSON.stringify(body):undefined,cache:'no-store'});
   }catch(e){throw new ApiError('net')}
   if(r.status===401)throw new ApiError('auth');
   var ct=r.headers.get('content-type')||'';
@@ -698,10 +701,11 @@ function showGate(msg){
 function renderSecurity(){
   var el=$('#secstat'); if(!el)return;
   $('#authEdit').placeholder=prot?'سيبه فاضي لو مش عايز تغيّره':'4 أرقام على الأقل';
+  $('#logout').hidden=!prot; $('#ronote').hidden=role!=='view';
   el.textContent=mode==='local'?'الحماية بالأرقام متاحة لما البرنامج يتوصل بالسيرفر.':prot?'الحماية شغالة. أي موبايل جديد لازم يكتب الرقم.':'مفيش رقم سري لسه، يعني أي حد معاه الرابط يقدر يشوف ويعدّل. حدد رقم دلوقتي.';
 }
 async function saveAuth(){
-  var ep=$('#authEdit').value.trim()||(prot?pin:''), vp=$('#authView').value.trim(), err=$('#secerr'); err.textContent='';
+  var ep=normPin($('#authEdit').value)||(prot?pin:''), vp=normPin($('#authView').value), err=$('#secerr'); err.textContent='';
   if(mode!=='cloud'){err.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
   if(ep.length<4){err.textContent='رقم التعديل لازم يكون 4 أرقام على الأقل.'; return}
   if(vp&&(vp.length<4||vp===ep)){err.textContent='رقم المتابعة لازم يكون 4 أرقام على الأقل ومختلف عن رقم التعديل.'; return}
@@ -713,6 +717,7 @@ async function saveAuth(){
   finally{b.disabled=false}
 }
 $('#authSave').addEventListener('click',saveAuth);
+$('#logout').addEventListener('click',function(){lsSet(LS_P,''); pin=''; location.reload()});
 function ready(){
   authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; renderSecurity(); syncSettingsInputs(); render(); applyTab();
   if(!started){
@@ -722,7 +727,7 @@ function ready(){
   }
 }
 $('#gbtn').addEventListener('click',function(){
-  pin=$('#pin').value.trim(); if(!pin)return;
+  pin=normPin($('#pin').value); if(!pin)return;
   lsSet(LS_P,pin); start(false);
 });
 $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#gbtn').click()}});
