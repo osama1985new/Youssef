@@ -19,10 +19,27 @@ async function redis(args) {
   return j.result;
 }
 
-function pinOk(given) {
-  const a = Buffer.from(String(given || ''));
-  const b = Buffer.from(String(PIN));
+function same(x, y) {
+  const a = Buffer.from(String(x)), b = Buffer.from(String(y));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+function hashPin(pin, saltHex) {
+  return crypto.scryptSync(String(pin), Buffer.from(saltHex, 'hex'), 32).toString('hex');
+}
+async function loadAuth() {
+  try { const raw = await redis(['GET', 'ysg:auth']); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+// 'edit' = full access, 'view' = read only, null = rejected. Open (edit) until a PIN is set.
+function roleFor(given, auth) {
+  const g = String(given || '');
+  const hasAuth = !!(auth && auth.editHash && auth.salt);
+  if (PIN && same(g, PIN)) return 'edit';
+  if (hasAuth) {
+    const h = hashPin(g, auth.salt);
+    if (same(h, auth.editHash)) return 'edit';
+    if (auth.viewHash && same(h, auth.viewHash)) return 'view';
+  }
+  return (PIN || hasAuth) ? null : 'edit';
 }
 
 const numOrNull = (v, max) => {
@@ -90,11 +107,14 @@ function cleanSettings(s) {
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (!REDIS_URL || !REDIS_TOKEN) return res.status(500).json({ error: 'storage_not_configured' });
-  if (PIN && !pinOk(req.headers['x-pin'])) {
-    await new Promise(r => setTimeout(r, 800));
-    return res.status(401).json({ error: 'bad_pin' });
-  }
   try {
+    const auth = await loadAuth();
+    const role = roleFor(req.headers['x-pin'], auth);
+    if (!role) {
+      await new Promise(r => setTimeout(r, 800));
+      return res.status(401).json({ error: 'bad_pin' });
+    }
+    const isProtected = !!(PIN || (auth && auth.editHash));
     if (req.method === 'GET') {
       const [flat, settingsRaw] = await Promise.all([redis(['HGETALL', 'ysg:entries']), redis(['GET', 'ysg:settings'])]);
       const entries = [];
@@ -103,10 +123,19 @@ module.exports = async (req, res) => {
       }
       let settings = null;
       try { settings = settingsRaw ? JSON.parse(settingsRaw) : null; } catch (e) {}
-      return res.status(200).json({ entries, settings });
+      return res.status(200).json({ entries, settings, role, protected: isProtected });
     }
     if (req.method === 'POST') {
       const b = req.body || {};
+      if (role !== 'edit') return res.status(403).json({ error: 'read_only' });
+      if (b.action === 'setauth') {
+        const ep = String(b.editPin || ''), vp = b.viewPin ? String(b.viewPin) : '';
+        if (ep.length < 4 || ep.length > 32) return res.status(400).json({ error: 'bad_pin_format' });
+        if (vp && (vp.length < 4 || vp.length > 32 || vp === ep)) return res.status(400).json({ error: 'bad_pin_format' });
+        const salt = crypto.randomBytes(16).toString('hex');
+        await redis(['SET', 'ysg:auth', JSON.stringify({ salt, editHash: hashPin(ep, salt), viewHash: vp ? hashPin(vp, salt) : null })]);
+        return res.status(200).json({ ok: true });
+      }
       if (b.action === 'add') {
         const e = cleanEntry(b.entry);
         if (!e) return res.status(400).json({ error: 'bad_entry' });
