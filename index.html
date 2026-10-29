@@ -459,9 +459,9 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 <script>
 (function(){
 var $=function(s){return document.querySelector(s)};
-var SLOTS=[['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغدا'],['ln_after','بعد الغدا'],['dn_before','قبل العشا'],['dn_after','بعد العشا'],['bed','قبل النوم'],['other','وقت تاني']];
+var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={}; SLOTS.forEach(function(s){SLOT_LABEL[s[0]]=s[1]});
-var BEFORE=['bf_before','ln_before','dn_before'];
+var BEFORE=['fast','bf_before','ln_before','dn_before'];
 var LOC='ar-EG-u-nu-latn', DAY=864e5;
 
 /* ====== food database: merged from the two PDF tables ====== */
