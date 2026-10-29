@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const PIN = process.env.FAMILY_PIN;
-const SLOTS = ['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','bed','other'];
+const SLOTS = ['fast','bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','bed','other'];
 
 async function redis(args) {
   const r = await fetch(REDIS_URL, {
