@@ -196,6 +196,14 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
+.care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
+.care p{margin:0; line-height:1.5}
+.care p:before{content:'●'; color:var(--high); margin-inline-end:8px; font-size:10px}
+.injrow{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.supp{display:flex; align-items:center; flex-wrap:wrap; gap:8px}
+.supp .lbl{margin:0}
+.chip{min-height:40px; padding:6px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit; font-size:14.5px; cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface)); font-weight:600}
 .editbar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1px solid var(--accent); font-size:14px; font-weight:500}
 
 .scalerow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
@@ -309,6 +317,8 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
   <!-- ===== screen 1: new entry ===== -->
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
+  <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
+
   <form class="card stack" id="f" novalidate data-tab="add">
     <h2>تسجيل جديد</h2>
     <div class="panel p-read">
@@ -361,6 +371,11 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
     </div>
     <button type="button" class="link" id="showt" style="align-self:flex-start; margin:0">+ سجّل ترسيبا</button>
     <div class="hint" id="thint" hidden></div>
+    <div class="injrow" id="injrow" hidden>
+      <div class="field"><label for="needle">سن قلم الأنسولين</label><select id="needle"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select></div>
+    </div>
+    <p class="msg high" id="injhint" hidden></p>
     </div>
 
     <details class="more">
@@ -370,6 +385,7 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
       </div>
     </details>
+    <div class="supp" id="supp"><span class="lbl">المكملات</span></div>
     <div class="editbar" id="editbar" hidden><span>بتعدّل تسجيل قديم</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
     <button class="primary" id="save" type="submit">حفظ التسجيل</button>
@@ -461,6 +477,11 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 var $=function(s){return document.querySelector(s)};
 var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={}; SLOTS.forEach(function(s){SLOT_LABEL[s[0]]=s[1]});
+var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
+var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','فخذ يمين'],['th_l','فخذ شمال'],['ar_r','دراع يمين'],['ar_l','دراع شمال']];
+var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
+var SUPPS=[['omega','أوميجا'],['vit','فيتامينات']];
+var SUPP_LABEL={}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
 var BEFORE=['fast','bf_before','ln_before','dn_before'];
 var LOC='ar-EG-u-nu-latn', DAY=864e5;
 
@@ -707,6 +728,13 @@ function defaultSlot(){var h=new Date().getHours(); return h<11?'bf_before':h<16
 $('#slot').innerHTML=SLOTS.map(function(s){return '<option value="'+s[0]+'">'+s[1]+'</option>'}).join('');
 $('#slot').value=defaultSlot();
 function curSlot(){return $('#slot').value}
+$('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
+$('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('');
+function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
+function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
+function syncInj(){var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; if(!on)$('#injhint').hidden=true; else injHint()}
+$('#needle').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
+$('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
 (function(){
   var h='<option value="">+ اختار صنف…</option>', cur=null, open=false;
   DB.forEach(function(f){
@@ -732,6 +760,46 @@ function renderBanner(E){
 }
 
 /* ---------- last reading ---------- */
+function suppToday(T){var k={}; T.forEach(function(e){(e.supp||[]).forEach(function(x){k[x]=1})}); var n=SUPPS.filter(function(x){return k[x[0]]}).map(function(x){return x[1]}); return n.length?'<span>'+n.join(' + ')+' ✓</span>':''}
+function ago(ms){var h=Math.floor(ms/36e5); return h>=48?Math.floor(h/24)+' يوم':h>=24?'يوم':h+' ساعة'}
+function careNotes(E){
+  var out=[], now=Date.now(), tk=dayKey(new Date()), yk=dayKey(new Date(now-DAY));
+  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
+  var lastInj=inj[inj.length-1];
+  if(lastInj&&now-lastInj.d.getTime()<2*DAY){
+    var lastNew=null, lastInfo=null;
+    inj.forEach(function(e){if(e.needle==='new')lastNew=e; if(e.needle==='new'||e.needle==='reuse')lastInfo=e});
+    if(lastInfo&&lastInfo.needle==='reuse'&&(!lastNew||now-lastNew.d.getTime()>=DAY))
+      out.push(lastNew?'سن قلم الأنسولين ماتغيّرش بقاله '+ago(now-lastNew.d.getTime())+'. غيّره قبل الحقنة الجاية.':'سن قلم الأنسولين بيتعاد استخدامه. غيّره قبل الحقنة الجاية.');
+    var withSite=inj.filter(function(e){return e.site&&SITE_LABEL[e.site]});
+    if(withSite.length>=2){
+      var a=withSite[withSite.length-1], b=withSite[withSite.length-2];
+      if(a.site===b.site&&now-a.d.getTime()<2*DAY)out.push('آخر حقنتين في نفس المكان ('+SITE_LABEL[a.site]+'). غيّر مكان الحقن.');
+    }
+  }
+  var hasOld=E.some(function(e){return dayKey(e.d)<tk});
+  if(hasOld){
+    var vitDays={}, lastVit=null;
+    E.forEach(function(e){if((e.supp||[]).indexOf('vit')>=0){vitDays[dayKey(e.d)]=1; lastVit=e}});
+    if(!vitDays[tk]&&!vitDays[yk])out.push(lastVit?'الفيتامينات ماتسجلتش من '+relDay(lastVit.d)+'. لو ماخدتهاش خدها النهاردة.':'لسه مسجلتش الفيتامينات.');
+  }
+  return out;
+}
+function renderCare(E){
+  var n=careNotes(E), el=$('#carebar');
+  el.innerHTML=n.map(function(t){return '<p>'+esc(t)+'</p>'}).join(''); el.hidden=!n.length;
+}
+function injHint(){
+  var el=$('#injhint'), msgs=[];
+  if($('#needle').value==='reuse')msgs.push('سن قلم الأنسولين للاستخدام مرة واحدة. غيّره لو تقدر.');
+  var site=$('#site').value;
+  if(site){
+    var inj=prep().filter(function(e){return (e.apidra>0||e.tresiba>0)&&e.site&&e.id!==editingId});
+    var last=inj[inj.length-1];
+    if(last&&last.site===site&&Date.now()-last.d.getTime()<2*DAY)msgs.push('ده نفس مكان آخر حقنة ('+SITE_LABEL[site]+'). يفضّل تغيّره.');
+  }
+  el.textContent=msgs.join(' '); el.hidden=!msgs.length;
+}
 function renderHero(E){
   var tk=dayKey(new Date());
   var T=E.filter(function(e){return dayKey(e.d)===tk});
@@ -744,7 +812,7 @@ function renderHero(E){
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
     '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج اللي تحت.')+'</p>'+
-    '<p class="today"><span>النهاردة:</span><span class="a">أبيدرا <b>'+fmt(ap)+'</b> وحدة</span><span class="t">ترسيبا <b>'+fmt(tr)+'</b> وحدة</span></p>';
+    '<p class="today"><span>النهاردة:</span><span class="a">أبيدرا <b>'+fmt(ap)+'</b> وحدة</span><span class="t">ترسيبا <b>'+fmt(tr)+'</b> وحدة</span>'+suppToday(T)+'</p>';
 }
 
 /* ---------- chart ---------- */
@@ -784,6 +852,11 @@ function renderChart(E){
   $('#chart').innerHTML=svg?svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>':'<p class="empty">الرسم بيظهر بعد ما تسجّل قراءتين على الأقل في آخر 7 أيام.</p>';
 }
 
+function extraText(e){
+  var p=[]; if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
+  (e.supp||[]).forEach(function(k){if(SUPP_LABEL[k])p.push(SUPP_LABEL[k])});
+  return esc(p.join(' · '));
+}
 function mealText(e){
   if(!e.meal||!e.meal.length)return '';
   var t=e.meal.map(function(m){return esc(m.n)+(m.q!==1?' ×'+fmt(m.q):'')}).join('، ');
@@ -812,6 +885,7 @@ function renderLog(E){
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+'</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+'</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
+        (extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+
         (e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</li>';
     });
     html+='</ul></article>';
@@ -1063,6 +1137,10 @@ function buildReport(){
     '<div><dt>متوسط أبيدرا يوميًا</dt><dd>'+(nd?fmt(apTot/nd):'—')+' <small>وحدة</small></dd></div>'+
     '<div><dt>ترسيبا</dt><dd>'+(trAvg!=null?fmt(trAvg)+' <small>وحدة، '+trE.length+' جرعة مسجلة</small>':'—')+'</dd></div>'+
   '</dl>';
+  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), nw=inj.filter(function(e){return e.needle==='new'}).length, ru=inj.filter(function(e){return e.needle==='reuse'}).length;
+  var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
+  var extra=[]; if(inj.length&&(nw||ru))extra.push('سن قلم الأنسولين: جديد في '+nw+' من '+inj.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':'')); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
+  if(extra.length)h+='<p class="sub">'+extra.join(' · ')+'</p>';
   var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
   if(svg)h+='<h3>الرسم</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>';
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
@@ -1079,7 +1157,7 @@ function buildReport(){
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
     var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+'</td></tr>';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+(extraText(e)?(e.note?' · ':'')+extraText(e):'')+'</td></tr>';
   });
   h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
@@ -1132,7 +1210,7 @@ $('#qicrsave').addEventListener('click',function(){
 /* ---------- render all ---------- */
 function render(){
   var E=prep();
-  renderStore(); renderBanner(E); renderHero(E); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderStore(); renderBanner(E); renderCare(E); renderHero(E); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
 }
 
@@ -1142,11 +1220,12 @@ document.addEventListener('click',function(ev){
   if(t.dataset.dismiss){lsSet(LS_D,t.dataset.dismiss); $('#alertbar').hidden=true; return}
   if(t.dataset.step){
     var inp=$('#'+t.dataset.step), cur=num(inp.value); if(cur==null||isNaN(cur))cur=0;
-    var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); return;
+    var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
+  if(t.dataset.supp){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
   if(t.id==='showt'){tAsked=true; renderHint(prep()); return}
-  if('useplan' in t.dataset){$('#t').value=String(settings.plan); return}
-  if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
+  if('useplan' in t.dataset){$('#t').value=String(settings.plan); syncInj(); return}
+  if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; syncInj(); toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
   if(t.id==='more'){daysShown+=7; renderLog(prep()); return}
   if(t.classList.contains('edt')){startEdit(t.dataset.id); return}
   if(t.classList.contains('del')){
@@ -1175,8 +1254,8 @@ $('#rprint').addEventListener('click',function(){
 $('#csv').addEventListener('click',function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة']];
-  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||''])});
+  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','سن قلم الأنسولين','مكان الحقن','مكملات']];
+  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',NEEDLE[e.needle]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + ')])});
   var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
@@ -1194,6 +1273,7 @@ function setEditing(id){
 function cancelEdit(){
   setEditing(null);
   ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
+  $('#needle').value=''; $('#site').value=''; setSupp([]); syncInj();
   mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot(); setNow(); $('#ferr').textContent=''; render();
 }
 function startEdit(id){
@@ -1205,6 +1285,7 @@ function startEdit(id){
   $('#t').value=e.tresiba>0?String(e.tresiba):'';
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
+  $('#needle').value=e.needle||''; $('#site').value=e.site||''; setSupp(e.supp); syncInj();
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
   renderMeal();
@@ -1228,13 +1309,14 @@ $('#f').addEventListener('submit',async function(ev){
     if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
     return {n:nm,q:m.q,c:m.c};
   });
-  if(g==null&&!(a>0)&&!(t>0)&&!items.length){err.textContent='اكتب قراءة سكر أو جرعة أو أكل على الأقل.'; return}
+  var supp=getSupp();
+  if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note});
+    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:(a>0||t>0)?($('#needle').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-    var wasEdit=!!editingId; setEditing(null);
+    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#site').value=''; setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
     setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
