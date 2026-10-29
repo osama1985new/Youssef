@@ -81,10 +81,11 @@ function cleanEntry(e) {
   }
   const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
   const site = SITE_KEYS.includes(e.site) ? e.site : null;
-  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp };
+  const tresibaTime = tresiba > 0 && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(e.tresibaTime || '')) ? e.tresibaTime : null;
+  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp, tresibaTime, corr: e.corr === true && apidra > 0 };
 }
 
-const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50] };
+const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20] };
 function cleanSettings(s) {
   if (!s || typeof s !== 'object') return null;
   const out = {};
@@ -99,6 +100,8 @@ function cleanSettings(s) {
     out[k] = n;
   }
   if (out.low >= out.high) return null;
+  const ad = String(s.a1cDate || '');
+  out.a1cDate = /^\d{4}-\d{2}-\d{2}$/.test(ad) && !isNaN(new Date(ad)) ? ad : null;
   out.scale = [];
   if (s.scale !== undefined && s.scale !== null) {
     if (!Array.isArray(s.scale) || s.scale.length > 10) return null;
