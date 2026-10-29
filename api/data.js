@@ -30,14 +30,21 @@ async function loadAuth() {
   try { const raw = await redis(['GET', 'ysg:auth']); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
 // 'edit' = full access, 'view' = read only, null = rejected. Open (edit) until a PIN is set.
+function normPin(x) {
+  return String(x || '').replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x660)).replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x6F0)).trim();
+}
 function roleFor(given, auth) {
-  const g = String(given || '');
+  let raw = String(given || '');
+  try { raw = decodeURIComponent(raw); } catch (e) {}
+  const cands = Array.from(new Set([raw, normPin(raw)]));
   const hasAuth = !!(auth && auth.editHash && auth.salt);
-  if (PIN && same(g, PIN)) return 'edit';
-  if (hasAuth) {
-    const h = hashPin(g, auth.salt);
-    if (same(h, auth.editHash)) return 'edit';
-    if (auth.viewHash && same(h, auth.viewHash)) return 'view';
+  for (const g of cands) {
+    if (PIN && (same(g, PIN) || same(normPin(g), normPin(PIN)))) return 'edit';
+    if (hasAuth) {
+      const h = hashPin(g, auth.salt);
+      if (same(h, auth.editHash)) return 'edit';
+      if (auth.viewHash && same(h, auth.viewHash)) return 'view';
+    }
   }
   return (PIN || hasAuth) ? null : 'edit';
 }
@@ -129,7 +136,7 @@ module.exports = async (req, res) => {
       const b = req.body || {};
       if (role !== 'edit') return res.status(403).json({ error: 'read_only' });
       if (b.action === 'setauth') {
-        const ep = String(b.editPin || ''), vp = b.viewPin ? String(b.viewPin) : '';
+        const ep = normPin(b.editPin), vp = b.viewPin ? normPin(b.viewPin) : '';
         if (ep.length < 4 || ep.length > 32) return res.status(400).json({ error: 'bad_pin_format' });
         if (vp && (vp.length < 4 || vp.length > 32 || vp === ep)) return res.status(400).json({ error: 'bad_pin_format' });
         const salt = crypto.randomBytes(16).toString('hex');
