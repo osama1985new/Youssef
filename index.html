@@ -463,7 +463,7 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
     <h3>الأمان والمتابعة</h3>
     <p class="small" id="secstat"></p>
     <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
-    <div class="field"><label for="authView">رقم للمتابعة بس <em>(اختياري، مفيش تعديل)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="ابعته للدكتور أو أي حد"></div>
+    <div class="field"><label for="authView">رقم للمتابعة بس <em>(اختياري. لو فاضي بيتلغي)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="ابعته للدكتور أو أي حد"></div>
     <p class="err" id="secerr" role="alert"></p>
     <button type="button" class="ghost" id="authSave">حفظ الأرقام</button>
     <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
@@ -697,10 +697,11 @@ function showGate(msg){
 }
 function renderSecurity(){
   var el=$('#secstat'); if(!el)return;
+  $('#authEdit').placeholder=prot?'سيبه فاضي لو مش عايز تغيّره':'4 أرقام على الأقل';
   el.textContent=mode==='local'?'الحماية بالأرقام متاحة لما البرنامج يتوصل بالسيرفر.':prot?'الحماية شغالة. أي موبايل جديد لازم يكتب الرقم.':'مفيش رقم سري لسه، يعني أي حد معاه الرابط يقدر يشوف ويعدّل. حدد رقم دلوقتي.';
 }
 async function saveAuth(){
-  var ep=$('#authEdit').value.trim(), vp=$('#authView').value.trim(), err=$('#secerr'); err.textContent='';
+  var ep=$('#authEdit').value.trim()||(prot?pin:''), vp=$('#authView').value.trim(), err=$('#secerr'); err.textContent='';
   if(mode!=='cloud'){err.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
   if(ep.length<4){err.textContent='رقم التعديل لازم يكون 4 أرقام على الأقل.'; return}
   if(vp&&(vp.length<4||vp===ep)){err.textContent='رقم المتابعة لازم يكون 4 أرقام على الأقل ومختلف عن رقم التعديل.'; return}
