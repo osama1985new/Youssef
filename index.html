@@ -196,6 +196,9 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
+body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #tabs [data-go=set]{display:none!important}
+body.ro .tabs div{grid-template-columns:repeat(2,1fr)}
+.ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
 .care p{margin:0; line-height:1.5}
 .care p:before{content:'●'; color:var(--high); margin-inline-end:8px; font-size:10px}
@@ -456,6 +459,14 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 
     <h3>ترسيبا</h3>
     <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
+  
+    <h3>الأمان والمتابعة</h3>
+    <p class="small" id="secstat"></p>
+    <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
+    <div class="field"><label for="authView">رقم للمتابعة بس <em>(اختياري، مفيش تعديل)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="ابعته للدكتور أو أي حد"></div>
+    <p class="err" id="secerr" role="alert"></p>
+    <button type="button" class="ghost" id="authSave">حفظ الأرقام</button>
+    <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
   </section>
 
   <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا.</p>
@@ -628,7 +639,7 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[]};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
-var mealItems=[], shownAlertId=null, syncErr='';
+var mealItems=[], shownAlertId=null, syncErr='', role='edit', prot=false;
 
 function status(v){
   if(v<settings.low)return ['low','منخفض'];
@@ -660,11 +671,13 @@ async function api(body){
   var ct=r.headers.get('content-type')||'';
   if(ct.indexOf('json')<0)throw new ApiError(r.status===404||r.ok?'noapi':'net');
   var j=await r.json().catch(function(){return {}});
-  if(!r.ok)throw new ApiError(j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
+  if(r.status===403&&j.error==='read_only')throw new ApiError('readonly');
+  if(!r.ok)throw new ApiError(j.error==='bad_pin_format'?'pinformat':j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
   return j;
 }
 function applyServer(j){
-  entries=j.entries||[];
+  entries=j.entries||[]; role=j.role==='view'?'view':'edit'; prot=!!j.protected;
+  document.body.classList.toggle('ro',role==='view'); if(role==='view'&&(tab==='add'||tab==='set'))tab='log'; renderSecurity();
   if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
 }
 async function refresh(){
@@ -682,8 +695,25 @@ async function start(first){
 function showGate(msg){
   authed=false; loaded=true; $('#gate').hidden=false; $('#gate').classList.remove('tabhide'); $('#gerr').textContent=msg||''; $('#tabs').hidden=true; applyTab(); renderStore();
 }
+function renderSecurity(){
+  var el=$('#secstat'); if(!el)return;
+  el.textContent=mode==='local'?'الحماية بالأرقام متاحة لما البرنامج يتوصل بالسيرفر.':prot?'الحماية شغالة. أي موبايل جديد لازم يكتب الرقم.':'مفيش رقم سري لسه، يعني أي حد معاه الرابط يقدر يشوف ويعدّل. حدد رقم دلوقتي.';
+}
+async function saveAuth(){
+  var ep=$('#authEdit').value.trim(), vp=$('#authView').value.trim(), err=$('#secerr'); err.textContent='';
+  if(mode!=='cloud'){err.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+  if(ep.length<4){err.textContent='رقم التعديل لازم يكون 4 أرقام على الأقل.'; return}
+  if(vp&&(vp.length<4||vp===ep)){err.textContent='رقم المتابعة لازم يكون 4 أرقام على الأقل ومختلف عن رقم التعديل.'; return}
+  var b=$('#authSave'); b.disabled=true;
+  try{
+    await api({action:'setauth',editPin:ep,viewPin:vp||null});
+    pin=ep; lsSet(LS_P,pin); prot=true; $('#authEdit').value=''; $('#authView').value=''; renderSecurity(); toast('اتحفظت الأرقام. باقي الموبايلات هتطلب الرقم.');
+  }catch(e){err.textContent=e.code==='pinformat'?'الأرقام مش مقبولة. جرب أرقام تانية.':'مقدرتش أحفظ. جرب تاني.'}
+  finally{b.disabled=false}
+}
+$('#authSave').addEventListener('click',saveAuth);
 function ready(){
-  authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; syncSettingsInputs(); render(); applyTab();
+  authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; renderSecurity(); syncSettingsInputs(); render(); applyTab();
   if(!started){
     started=true;
     setInterval(function(){if(mode==='cloud'&&!document.hidden)refresh()},20000);
@@ -715,7 +745,8 @@ function persistSettings(){
 function applyTab(){
   document.querySelectorAll('[data-tab]').forEach(function(el){
     var t=el.dataset.tab;
-    el.classList.toggle('tabhide',!authed||(t!=='all'&&t!==tab));
+    var show=(t==='all'||t===tab); if(role==='view'&&el.id==='hero')show=(tab==='log');
+    el.classList.toggle('tabhide',!authed||!show);
   });
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   $('#top').classList.toggle('tabhide',false);
