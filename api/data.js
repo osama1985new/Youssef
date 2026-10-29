@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const PIN = process.env.FAMILY_PIN;
+const SUPP_KEYS = ['omega', 'vit'];
+const SITE_KEYS = ['ab_r', 'ab_l', 'th_r', 'th_l', 'ar_r', 'ar_l'];
 const SLOTS = ['fast','bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','bed','other'];
 
 async function redis(args) {
@@ -40,7 +42,8 @@ function cleanEntry(e) {
   const apidra = numOrNull(e.apidra, 50);
   const tresiba = numOrNull(e.tresiba, 100);
   if (glucose === undefined || apidra === undefined || tresiba === undefined) return null;
-  if (glucose === null && apidra === null && tresiba === null) return null;
+  const supp = Array.isArray(e.supp) ? e.supp.filter(x => SUPP_KEYS.includes(x)).slice(0, 5) : [];
+  if (glucose === null && apidra === null && tresiba === null && supp.length === 0 && !(Array.isArray(e.meal) && e.meal.length)) return null;
   const carbs = numOrNull(e.carbs, 1000);
   if (carbs === undefined) return null;
   let meal = [];
@@ -52,7 +55,9 @@ function cleanEntry(e) {
       meal.push({ n: String(m.n || '').slice(0, 60), q: q === null ? 1 : q, c: c === null ? 0 : c });
     }
   }
-  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300) };
+  const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
+  const site = SITE_KEYS.includes(e.site) ? e.site : null;
+  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp };
 }
 
 const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50] };
