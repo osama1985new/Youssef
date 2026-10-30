@@ -203,7 +203,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
-body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #set,body.ro #aicard,body.ro #medcard{display:none!important}
+body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #set,body.ro #medcard{display:none!important}
 body.ro .tabs div{grid-template-columns:repeat(4,1fr)}
 .ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
@@ -411,12 +411,6 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
 
     <div class="sect panel p-food">
       <h3>الأكل</h3>
-      <div class="photo">
-        <button type="button" class="ghost" id="photobtn">صوّر الأكل واقتراح الأصناف</button>
-        <input type="file" id="photofile" accept="image/*" hidden>
-        <p class="small" id="photomsg" role="status"></p>
-        <ul id="photorev" hidden></ul>
-      </div>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
       <div class="field"><label for="foodpick">أو ضيف صنف</label><select id="foodpick"></select></div>
       <ul class="mlist" id="mlist"></ul>
@@ -623,14 +617,6 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
   </section>
 
-
-  <section class="card stack" id="aicard" data-tab="set">
-    <h2>تصوير الأكل</h2>
-    <p class="small">بتصوّر الأكل والبرنامج يقترح الأصناف والكارب وانت بتراجعها قبل الحفظ. الصورة بتتبعت لخدمة Claude من Anthropic للتحليل بس. محتاج مفتاح خدمة (API key) بيتحاسب بالاستخدام.</p>
-    <div class="field"><label for="aikey">مفتاح الخدمة</label><input id="aikey" type="password" autocomplete="off" placeholder="sk-ant-..."></div>
-    <button type="button" class="ghost" id="aisave">حفظ المفتاح</button>
-    <p class="small" id="aimsg" role="status"></p>
-  </section>
 
   <section class="card stack" id="lgcard" data-tab="set">
     <h2>الحساب</h2>
@@ -1807,63 +1793,6 @@ function renderChat(){
 function ask(q){q=String(q||'').trim(); if(!q)return; chat.push({t:q}); chat.push({bot:true,r:answer(q)}); if(chat.length>40)chat.splice(0,chat.length-40); renderChat(); $('#askin').value=''}
 $('#askform').addEventListener('submit',function(ev){ev.preventDefault(); ask($('#askin').value)});
 $('#askchips').addEventListener('click',function(ev){var b=ev.target.closest('button[data-q]'); if(b)ask(b.dataset.q)});
-
-/* ---------- food photo ---------- */
-var photoItems=[];
-function resizeImage(file){return new Promise(function(res,rej){
-  var u=URL.createObjectURL(file), im=new Image();
-  im.onload=function(){var k=Math.min(1,1024/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.width*k)); c.height=Math.max(1,Math.round(im.height*k)); c.getContext('2d').drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg',0.8).split(',')[1])};
-  im.onerror=function(){URL.revokeObjectURL(u); rej(new Error('img'))}; im.src=u;
-})}
-function renderPhoto(){
-  var el=$('#photorev');
-  if(!photoItems.length){el.hidden=true; el.innerHTML=''; return}
-  el.hidden=false;
-  el.innerHTML=photoItems.map(function(p,i){
-    return '<li class="pr" data-pi="'+i+'"><div class="prn"><input type="checkbox" data-pf="on"'+(p.on?' checked':'')+' aria-label="ضيف الصنف"><input type="text" data-pf="name" value="'+esc(p.name)+'"></div>'+
-      (p.portion?'<small class="small">الوحدة: '+esc(p.portion)+'</small>':'')+
-      '<div class="two"><label>الكمية<input type="text" inputmode="decimal" data-pf="q" value="'+fmt(p.q)+'"></label><label>كارب الوحدة (جم)<input type="text" inputmode="decimal" data-pf="c" value="'+fmt(p.c)+'"></label></div></li>';
-  }).join('')+'<li><div class="btnrow"><button type="button" class="primary" id="photoadd">أضف للوجبة</button><button type="button" class="ghost" id="photocancel">إلغاء</button></div></li>';
-}
-$('#photobtn').addEventListener('click',function(){
-  if(mode!=='cloud'){$('#photomsg').textContent='تصوير الأكل محتاج اتصال بالسيرفر.'; return}
-  $('#photofile').click();
-});
-$('#photofile').addEventListener('change',async function(){
-  var f=this.files&&this.files[0]; this.value=''; if(!f)return;
-  var msg=$('#photomsg'), btn=$('#photobtn'); msg.textContent='بحلل الصورة… ممكن ياخد ثواني.'; btn.disabled=true;
-  try{
-    var b64=await resizeImage(f), j=await api({action:'food',image:b64});
-    photoItems=(j.items||[]).map(function(x){return {on:true,name:x.name,portion:x.portion,q:x.qty,c:x.carbs}});
-    renderPhoto();
-    msg.textContent=photoItems.length?'ده تقدير تقريبي. راجع الأصناف والكميات والكارب وعدّلهم قبل ما تضيفهم.'+(j.note?' '+j.note:''):(j.note||'مقدرتش أتعرف على أكل في الصورة. جرّب صورة أوضح.');
-  }catch(e){
-    msg.textContent=e.code==='noaikey'?'لسه مفيش مفتاح خدمة. حطه من الإعدادات > تصوير الأكل.':e.code==='aifail'?'الخدمة مردتش دلوقتي (ممكن المفتاح غلط أو الرصيد خلص). جرّب تاني.':e.code==='readonly'?'التصوير للتسجيل بس.':'مقدرتش أحلل الصورة. جرّب تاني.';
-  }finally{btn.disabled=false}
-});
-$('#photorev').addEventListener('input',function(ev){
-  var inp=ev.target, li=inp.closest('.pr'); if(!li||!inp.dataset.pf)return; var p=photoItems[Number(li.dataset.pi)]; if(!p)return;
-  if(inp.dataset.pf==='name')p.name=inp.value;
-  else if(inp.dataset.pf==='on')p.on=inp.checked;
-  else{var v=num(inp.value); p[inp.dataset.pf]=(v==null||isNaN(v))?0:v}
-});
-$('#photorev').addEventListener('click',function(ev){
-  var b=ev.target.closest('button'); if(!b)return;
-  if(b.id==='photocancel'){photoItems=[]; renderPhoto(); $('#photomsg').textContent=''; return}
-  if(b.id==='photoadd'){
-    var add=photoItems.filter(function(p){return p.on&&p.name.trim()&&p.q>0});
-    if(!add.length){toast('اختار صنف واحد على الأقل'); return}
-    add.forEach(function(p,i){mealItems.push({k:'ai'+Date.now()+i,name:p.name.trim(),disp:p.name.trim(),d:p.portion||'',w:0,c:p.c||0,est:true,q:p.q,mode:'n',gr:0,fruit:false,editc:true})});
-    photoItems=[]; renderPhoto(); $('#photomsg').textContent=''; renderMeal(); updateCalc(); toast('اتضافت الأصناف للوجبة');
-  }
-});
-$('#aisave').addEventListener('click',async function(){
-  var k=$('#aikey').value.trim(), m=$('#aimsg'); m.textContent='';
-  if(!/^sk-ant-[A-Za-z0-9_\-]{10,300}$/.test(k)){m.textContent='المفتاح شكله غلط. لازم يبدأ بـ sk-ant-'; return}
-  if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
-  try{await api({action:'setaikey',key:k}); $('#aikey').value=''; m.textContent='اتحفظ المفتاح. جرّب تصوّر أكل.'}
-  catch(e){m.textContent='مقدرتش أحفظ المفتاح. جرّب تاني.'}
-});
 
 /* ---------- render all ---------- */
 function render(){
