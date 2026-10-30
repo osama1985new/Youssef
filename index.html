@@ -203,8 +203,8 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
-body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #tabs [data-go=set]{display:none!important}
-body.ro .tabs div{grid-template-columns:repeat(2,1fr)}
+body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #set,body.ro #aicard,body.ro #medcard{display:none!important}
+body.ro .tabs div{grid-template-columns:repeat(4,1fr)}
 .ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
 .care p{margin:0; line-height:1.5}
@@ -225,8 +225,8 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
 /* tab bar */
 .tabs{position:fixed; inset-inline:0; bottom:0; z-index:30; background:var(--surface); border-top:1px solid var(--line);
   padding:6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px))}
-.tabs div{max-width:560px; margin-inline:auto; display:grid; grid-template-columns:repeat(4,1fr); gap:4px}
-.tabs button{border:0; background:transparent; min-height:56px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--muted); font-size:12.5px; cursor:pointer}
+.tabs div{max-width:560px; margin-inline:auto; display:grid; grid-template-columns:repeat(5,1fr); gap:4px}
+.tabs button{border:0; background:transparent; min-height:56px; min-width:0; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--muted); font-size:12.5px; cursor:pointer}
 .tabs button svg{width:24px; height:24px}
 .tabs button[aria-current=page]{color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface)); font-weight:600}
 
@@ -268,10 +268,59 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
   .wrap > *:not(#report){display:none!important}
   #report{display:block!important; border:0; padding:0; border-radius:0}
   .tabs,.toast{display:none!important}
-  .report tr{break-inside:avoid}
+  .report tr,.dcard,.report svg{break-inside:avoid}
+  .report,.report *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   .report thead{display:table-header-group}
   .tw{overflow:visible}
 }
+
+
+/* report dashboard (report is always light) */
+.report{--muted:#55656f; --line:#cfd8dd; --surface:#fff; --ok:#1E7F47; --low:#B3261E; --high:#A85A00; --ink:#111}
+.report h3{margin:18px 0 6px}
+.dcard{border:1px solid var(--r-line); border-radius:12px; padding:12px; margin:10px 0}
+.ctl{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.ctl-n{min-width:84px; text-align:center}
+.ctl-n b{display:block; font-size:34px; line-height:1.1; font-weight:700}
+.ctl-n span{font-size:12.5px; color:var(--r-muted)}
+.goals{list-style:none; margin:0; padding:0; flex:1; min-width:200px; display:grid; gap:6px; font-size:13.5px}
+.goals li{display:flex; gap:8px; align-items:baseline; justify-content:space-between; border-bottom:1px dashed var(--r-line); padding-bottom:4px}
+.goals .tag{font-size:12px; font-weight:600; border:1px solid currentColor; border-radius:999px; padding:0 8px; white-space:nowrap}
+.goals .y{color:var(--r-ok)} .goals .n{color:var(--r-high)}
+.tirbar{display:flex; gap:2px; height:22px; margin:12px 0 8px; direction:ltr}
+.tirbar span{display:block; min-width:2px; border-radius:3px}
+.tirleg{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:4px 12px; font-size:13px}
+.tirleg li{display:flex; align-items:center; gap:6px}
+.tirleg i{width:10px; height:10px; border-radius:3px; flex:none}
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin-top:10px}
+.kpis div{background:#f4f7f8; border-radius:10px; padding:8px 10px}
+.kpis dt,.kpis small{font-size:12px; color:var(--r-muted)}
+.kpis dd{margin:0; font-size:20px; font-weight:700}
+.report .cap{font-size:12.5px; color:var(--r-muted); margin:4px 0}
+.report svg{width:100%; height:auto; display:block}
+.ptn li{margin-bottom:4px}
+.st-late{color:var(--r-low); font-weight:600} .st-soon{color:var(--r-high); font-weight:600}
+
+/* assistant */
+.chatlog{display:flex; flex-direction:column; gap:10px; min-height:120px}
+.bub{max-width:92%; border-radius:14px; padding:10px 12px; font-size:15px; line-height:1.6}
+.bub.me{align-self:flex-start; background:var(--accent); color:#fff; border-end-start-radius:4px}
+.bub.bot{align-self:flex-end; background:var(--surface); border:1px solid var(--line); border-end-end-radius:4px}
+.bub ul{margin:4px 0 0; padding-inline-start:18px}
+.bub .sec b{display:block; font-size:12.5px; color:var(--muted); margin-bottom:2px}
+.bub .sec.med{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:13.5px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chips button{min-height:40px}
+.askrow{display:flex; gap:8px}
+.askrow input{flex:1}
+
+/* food photo review */
+.photo{display:flex; flex-direction:column; gap:8px}
+.pr{list-style:none; border:1px solid var(--line); border-radius:12px; padding:10px; display:grid; gap:8px; background:var(--surface)}
+.pr .prn{display:flex; gap:8px; align-items:center}
+.pr .prn input[type=text]{flex:1}
+.pr .two label{display:block; font-size:13px; color:var(--muted)}
+#photorev{list-style:none; padding:0; margin:0; display:grid; gap:8px}
 
 /* polish */
 .card,.hero,.day,.report{box-shadow:var(--shadow)}
@@ -306,6 +355,11 @@ select:focus,input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-
 .store.local{color:var(--high); font-weight:600; font-size:13.5px; align-items:flex-start}
 .store.local i{margin-top:7px; flex:none}
 
+/* ---- ketone + checkups ---- */
+.ket-ok{color:var(--ok)} .ket-watch{color:var(--high); font-weight:600} .ket-danger{color:var(--low); font-weight:600}
+.ckrow{display:grid; grid-template-columns:1fr 1fr; gap:8px; padding-bottom:12px; border-bottom:1px solid var(--line)}
+.ckrow input[data-ck=n]{grid-column:1/-1}
+.ckrow button{justify-self:start; margin:0}
 /* ---- soft color touches (kept calm) ---- */
 body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var(--bg)) 0, var(--bg) 340px) no-repeat, var(--bg)}
 .row{border-inline-start:3px solid color-mix(in srgb, var(--rc, var(--muted)) 50%, transparent)}
@@ -357,6 +411,12 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
 
     <div class="sect panel p-food">
       <h3>الأكل</h3>
+      <div class="photo">
+        <button type="button" class="ghost" id="photobtn">صوّر الأكل واقتراح الأصناف</button>
+        <input type="file" id="photofile" accept="image/*" hidden>
+        <p class="small" id="photomsg" role="status"></p>
+        <ul id="photorev" hidden></ul>
+      </div>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
       <div class="field"><label for="foodpick">أو ضيف صنف</label><select id="foodpick"></select></div>
       <ul class="mlist" id="mlist"></ul>
@@ -415,6 +475,13 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
       </div>
     </details>
+    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0">+ سجّل كيتون</button>
+    <div class="injrow" id="kbox" hidden>
+      <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="b">دم (mmol/L)</option><option value="u">بول</option></select></div>
+      <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
+      <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
+    </div>
+    <p class="msg" id="khint" hidden></p>
     <div class="supp" id="supp"><span class="lbl">المكملات</span></div>
     <div class="editbar" id="editbar" hidden><span>بتعدّل تسجيل قديم</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
@@ -451,7 +518,50 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
     <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel (CSV)</button>
   </section>
+  <section class="card stack" id="medcard" data-tab="report">
+    <h2>بيانات للتقرير</h2>
+    <p class="small">بتظهر في أول التقرير اللي بيروح للدكتور.</p>
+    <h3>الوزن والطول والضغط</h3>
+    <div class="two">
+      <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
+      <div class="field"><label for="sht">الطول (سم)</label><input id="sht" type="text" inputmode="decimal" placeholder="مثلاً 172"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="sbps">الضغط الانقباضي (الكبير)</label><input id="sbps" type="text" inputmode="numeric" placeholder="مثلاً 115"></div>
+      <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
+    </div>
+    <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
+    <h3>التحليل التراكمي (HbA1c)</h3>
+    <p class="small">كل 3 شهور تقريباً. البرنامج بيفكرك لما الميعاد يقرّب.</p>
+    <div class="two">
+      <div class="field"><label for="a1cd">تاريخ آخر تحليل</label><input id="a1cd" type="date"></div>
+      <div class="field"><label for="a1cv">النتيجة % <em>(اختياري)</em></label><input id="a1cv" type="text" inputmode="decimal" placeholder="مثلاً 7.5"></div>
+    </div>
+
+    <h3>الفحوصات الدورية</h3>
+    <p class="small">سجّل تاريخ آخر مرة، وأفكرك قبل الميعاد بأسبوعين. المدة بالشهور بتحددها الدكتور.</p>
+    <div id="ckwrap" class="stack"></div>
+    <button type="button" class="ghost" id="ckadd">+ أضف فحص</button>
+
+  </section>
   <section class="report" id="report" data-tab="report" hidden></section>
+
+  <!-- ===== assistant ===== -->
+  <section class="card stack" id="askcard" data-tab="ask" aria-labelledby="ah">
+    <h2 id="ah">المساعد</h2>
+    <p class="small">بيجاوب من التسجيلات اللي في البرنامج بس. بيفرّق بين اللي اتسجل وبين التحليل الطبي، ومش بيقترح جرعات ولا بيغيّر علاج.</p>
+    <div class="chips" id="askchips">
+      <button type="button" class="ghost" data-q="السكر ارتفع ليه النهاردة؟">السكر ارتفع ليه النهاردة؟</button>
+      <button type="button" class="ghost" data-q="إيه أكتر وجبة ارتبطت بارتفاع القراءات؟">أكتر وجبة ارتبطت بالارتفاع</button>
+      <button type="button" class="ghost" data-q="اعمل ملخص للأسبوع">ملخص الأسبوع</button>
+      <button type="button" class="ghost" data-q="إيه البيانات الناقصة في سجلي؟">البيانات الناقصة</button>
+    </div>
+    <div class="chatlog" id="chatlog" role="log" aria-live="polite"></div>
+    <form class="askrow" id="askform" autocomplete="off">
+      <input id="askin" type="text" placeholder="اكتب سؤالك…" aria-label="سؤالك">
+      <button class="primary" type="submit" style="min-width:72px">اسأل</button>
+    </form>
+  </section>
 
   <!-- ===== screen 4: settings ===== -->
   <section class="card stack" id="set" data-tab="set">
@@ -487,12 +597,13 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <h3>ترسيبا</h3>
     <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
   
-    <h3>التحليل التراكمي (HbA1c)</h3>
-    <p class="small">كل 3 شهور تقريباً. البرنامج بيفكرك لما الميعاد يقرّب.</p>
+    <h3>الكيتون</h3>
+    <p class="small">الأرقام دي بتحددها خطة الدكتور. المكتوب تقريبي لو سبته فاضي: فوق 300 لمدة 3 ساعات.</p>
     <div class="two">
-      <div class="field"><label for="a1cd">تاريخ آخر تحليل</label><input id="a1cd" type="date"></div>
-      <div class="field"><label for="a1cv">النتيجة % <em>(اختياري)</em></label><input id="a1cv" type="text" inputmode="decimal" placeholder="مثلاً 7.5"></div>
+      <div class="field"><label for="sketh">نبّهني لو السكر فوق</label><input id="sketh" type="text" inputmode="numeric" placeholder="300"></div>
+      <div class="field"><label for="skethr">لمدة (ساعات)</label><input id="skethr" type="text" inputmode="numeric" placeholder="3"></div>
     </div>
+    <div class="field"><label for="sketexp">صلاحية شرايط الكيتون</label><input id="sketexp" type="date"></div>
 
     <h3>نسخة احتياطية</h3>
     <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
@@ -512,8 +623,23 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
   </section>
 
+
+  <section class="card stack" id="aicard" data-tab="set">
+    <h2>تصوير الأكل</h2>
+    <p class="small">بتصوّر الأكل والبرنامج يقترح الأصناف والكارب وانت بتراجعها قبل الحفظ. الصورة بتتبعت لخدمة Claude من Anthropic للتحليل بس. محتاج مفتاح خدمة (API key) بيتحاسب بالاستخدام.</p>
+    <div class="field"><label for="aikey">مفتاح الخدمة</label><input id="aikey" type="password" autocomplete="off" placeholder="sk-ant-..."></div>
+    <button type="button" class="ghost" id="aisave">حفظ المفتاح</button>
+    <p class="small" id="aimsg" role="status"></p>
+  </section>
+
+  <section class="card stack" id="lgcard" data-tab="set">
+    <h2>الحساب</h2>
+    <p class="small">اخرج من البرنامج على الموبايل ده، وهيطلب الرقم السري تاني في الدخول الجاي.</p>
+    <button type="button" class="ghost" id="logout" hidden>تسجيل الخروج</button>
+  </section>
+
   <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
-  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا. <button type="button" class="link" id="logout" hidden style="margin:0">خروج / تغيير الرقم</button></p>
+  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا.</p>
 </main>
 
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
@@ -521,6 +647,7 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
     <button type="button" data-go="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>السجل</button>
     <button type="button" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/></svg>التقرير</button>
+    <button type="button" data-go="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>المساعد</button>
     <button type="button" data-go="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>الإعدادات</button>
   </div>
 </nav>
@@ -539,6 +666,8 @@ var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
 var SUPPS=[['omega','أوميجا'],['vit','فيتامينات']];
 var SUPP_LABEL={}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
 var PREMEAL=['bf_before','ln_before','dn_before'];
+var KET_U={neg:'سالب أو أثر',small:'قليل',mod:'متوسط',large:'كبير'};
+var DEFAULT_CHECKS=[{n:'عيون',d:null,m:12},{n:'كلى',d:null,m:12},{n:'غدة درقية',d:null,m:12},{n:'فحص القدم',d:null,m:12}];
 var BEFORE=['fast','bf_before','ln_before','dn_before'];
 var LOC='ar-EG-u-nu-latn', DAY=864e5;
 
@@ -682,7 +811,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -720,12 +849,12 @@ async function api(body){
   if(ct.indexOf('json')<0)throw new ApiError(r.status===404||r.ok?'noapi':'net');
   var j=await r.json().catch(function(){return {}});
   if(r.status===403&&j.error==='read_only')throw new ApiError('readonly');
-  if(!r.ok)throw new ApiError(j.error==='bad_pin_format'?'pinformat':j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
+  if(!r.ok)throw new ApiError(j.error==='no_ai_key'?'noaikey':j.error==='ai_failed'?'aifail':j.error==='bad_key'?'badkey':j.error==='bad_image'?'badimage':j.error==='bad_pin_format'?'pinformat':j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
   return j;
 }
 function applyServer(j){
   entries=j.entries||[]; role=j.role==='view'?'view':'edit'; prot=!!j.protected;
-  document.body.classList.toggle('ro',role==='view'); if(role==='view'&&(tab==='add'||tab==='set'))tab='log'; renderSecurity();
+  document.body.classList.toggle('ro',role==='view'); if(role==='view'&&tab==='add')tab='log'; renderSecurity();
   if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
 }
 async function refresh(){
@@ -761,6 +890,7 @@ async function saveAuth(){
   }catch(e){err.textContent=e.code==='pinformat'?'الأرقام مش مقبولة. جرب أرقام تانية.':'مقدرتش أحفظ. جرب تاني.'}
   finally{b.disabled=false}
 }
+$('#kt').addEventListener('change',ketUI); $('#ku').addEventListener('change',ketUI); $('#kv').addEventListener('input',ketUI);
 $('#authSave').addEventListener('click',saveAuth);
 async function exportBackup(){
   var m=$('#bkmsg'); m.textContent='';
@@ -832,7 +962,7 @@ function applyTab(){
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   $('#top').classList.toggle('tabhide',false);
 }
-function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report'&&!$('#report').hidden)buildReport()}
+function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report'&&!$('#report').hidden)buildReport(); if(t==='ask')renderChat()}
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
 
 /* ---------- static UI ---------- */
@@ -897,6 +1027,21 @@ function careNotes(E){
     }
   }
   var hasOld=E.some(function(e){return dayKey(e.d)<tk});
+  var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
+  if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
+    var t0=lastR.d; for(var ri=R.length-2;ri>=0&&R[ri].glucose>kHi;ri--)t0=R[ri].d;
+    if(lastR.d-t0>=(kHr-0.25)*36e5&&!E.some(function(e){return e.ketT&&e.d>=t0}))out.push('السكر فوق '+kHi+' من '+ago(now-t0.getTime())+'. اعمل تحليل كيتون حسب خطة الدكتور.');
+  }
+  var lastK=null; E.forEach(function(e){if(e.ketT)lastK=e});
+  if(lastK&&now-lastK.d.getTime()<12*36e5&&ketLevel(lastK.ketT,lastK.ketV)[0]==='danger')out.push('آخر نتيجة كيتون: '+ketText(lastK)+'. كلّم الدكتور فورًا واتبع خطته.');
+  if(settings.ketExp){var kl=Math.ceil((new Date(settings.ketExp+'T12:00:00').getTime()-now)/DAY); if(kl<0)out.push('شرايط الكيتون انتهت صلاحيتها. جدّد الشرايط.'); else if(kl<=30)out.push('شرايط الكيتون هتنتهي بعد '+kl+' يوم.')}
+  var ckMissing=false;
+  checksList().forEach(function(c){
+    if(!c.d){ckMissing=true; return}
+    var nx=new Date(c.d+'T12:00:00'); nx.setMonth(nx.getMonth()+c.m); var cl=Math.ceil((nx.getTime()-now)/DAY);
+    if(cl<=0)out.push('معاد فحص '+c.n+' عدّى (كان '+dayFull(nx)+').'); else if(cl<=14)out.push('باقي '+cl+' يوم على فحص '+c.n+' ('+dayFull(nx)+').');
+  });
+  if(ckMissing&&hasOld&&E.length&&now-E[0].d.getTime()>7*DAY){out.push('سجّل تواريخ آخر الفحوصات الدورية في الإعدادات علشان نفكرك بالمواعيد.')}
   if(settings.a1cDate){
     var nx=new Date(settings.a1cDate+'T12:00:00'); nx.setMonth(nx.getMonth()+3);
     var left=Math.ceil((nx.getTime()-now)/DAY);
@@ -951,8 +1096,8 @@ function doctorNotes(E){
     var Q=P.filter(function(p){return p.e.slot===m[0]+'_before'});
     if(Q.length<3)return;
     var avg=Q.reduce(function(s2,p){return s2+p.rise},0)/Q.length, lows=Q.filter(function(p){return p.f.glucose<settings.low}).length;
-    if(avg>60)notes.push('متوسط ارتفاع السكر بعد '+m[1]+' كان +'+Math.round(avg)+' ('+Q.length+' مرة). ممكن الدكتور يراجع نسبة الأنسولين للكارب في الوجبة دي.');
-    if(lows>=2)notes.push('السكر نزل أقل من '+settings.low+' بعد '+m[1]+' في '+lows+' مرة من '+Q.length+'. ممكن الدكتور يراجع الجرعة.');
+    if(avg>60)notes.push('متوسط ارتفاع السكر بعد '+m[1]+' كان +'+Math.round(avg)+' ('+Q.length+' مرة).');
+    if(lows>=2)notes.push('السكر نزل أقل من '+settings.low+' بعد '+m[1]+' في '+lows+' مرة من '+Q.length+'.');
   });
   var F=E.filter(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')});
   var fd={}, hasFast={}; F.forEach(function(e){if(e.slot==='fast')hasFast[dayKey(e.d)]=1});
@@ -960,9 +1105,9 @@ function doctorNotes(E){
   var days=Object.keys(fd), dv=days.map(function(k){return fd[k].reduce(function(a,b){return a+b},0)/fd[k].length});
   if(days.length>=3){
     var hi=dv.filter(function(v){return v>130}).length, av=Math.round(dv.reduce(function(a,b){return a+b},0)/dv.length);
-    if(hi/days.length>=0.5)notes.push('السكر الصايم عالي في '+hi+' من '+days.length+' يوم (المتوسط '+av+'، والمرجع المعتاد 80–130 والدكتور هو اللي يحدد الهدف). ممكن يكون ظاهرة الفجر أو يحتاج مراجعة ترسيبا.');
+    if(hi/days.length>=0.5)notes.push('السكر الصايم عالي في '+hi+' من '+days.length+' يوم (المتوسط '+av+'، والمرجع المعتاد 80–130 والدكتور هو اللي يحدد الهدف).');
   }
-  if(notes.length)h+='<h3>ملاحظات للدكتور</h3><p class="cap">ملاحظات حسابية من التسجيلات بس، مش تعليمات علاج.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
+  if(notes.length)h+='<h3>ملاحظات من التسجيلات</h3><p class="cap">ملاحظات حسابية من التسجيلات بس، مش تعليمات علاج.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
   return h;
 }
 function renderHero(E){
@@ -1018,7 +1163,27 @@ function renderChart(E){
 }
 
 function rowGroup(sl){return sl==='fast'||sl==='bf_before'||sl==='bf_after'?'bf':sl==='ln_before'||sl==='ln_after'?'ln':sl==='dn_before'||sl==='dn_after'?'dn':sl==='bed'?'bed':'ot'}
+function ketLevel(t,v){
+  if(t==='b'){var n=Number(v); return n<0.6?['ok','طبيعي']:n<1.5?['watch','راقب']:n<=3?['danger','خطر: اتصل بالدكتور فورًا']:['danger','طوارئ: اتصل بالدكتور أو الإسعاف']}
+  return v==='neg'?['ok','طبيعي']:v==='small'?['watch','راقب']:v==='mod'?['danger','خطر: اتصل بالدكتور فورًا']:['danger','طوارئ: اتصل بالدكتور أو الإسعاف'];
+}
+function ketText(e){var l=ketLevel(e.ketT,e.ketV); return 'كيتون '+(e.ketT==='b'?'دم '+e.ketV+' mmol/L':'بول '+(KET_U[e.ketV]||''))+' · '+l[1]}
+function ketUI(){
+  var u=$('#kt').value==='u'; $('#kvwrap').hidden=u; $('#kuwrap').hidden=!u;
+  var h=$('#khint'), v=u?$('#ku').value:$('#kv').value.trim();
+  if(!v||(!u&&isNaN(Number(v.replace(',','.'))))){h.hidden=true; return}
+  var l=ketLevel(u?'u':'b',u?v:Number(v.replace(',','.'))); h.hidden=false; h.className='msg ket-'+l[0]; h.textContent=l[1];
+}
+function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#kt').value='b'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
+function readKet(){
+  if($('#kbox').hidden)return {ok:true,t:null,v:null};
+  if($('#kt').value==='u')return {ok:true,t:'u',v:$('#ku').value};
+  var raw=$('#kv').value.trim().replace(',','.'); if(!raw)return {ok:true,t:null,v:null};
+  var n=Number(raw); if(!isFinite(n)||n<0||n>15)return {ok:false};
+  return {ok:true,t:'b',v:String(n)};
+}
 function hm(t){var p=String(t).split(':'); return timeStr(new Date(2000,0,1,Number(p[0])||0,Number(p[1])||0))}
+function checksList(){return Array.isArray(settings.checks)?settings.checks:DEFAULT_CHECKS}
 function extraText(e){
   var p=[]; if(e.corr)p.push('جرعة تصحيح'); if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
   (e.supp||[]).forEach(function(k){if(SUPP_LABEL[k])p.push(SUPP_LABEL[k])});
@@ -1053,6 +1218,7 @@ function renderLog(E){
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         (extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+
+        (e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+
         (e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</li>';
     });
     html+='</ul></article>';
@@ -1294,8 +1460,10 @@ function buildReport(){
   var trTimes=trE.filter(function(e){return e.tresibaTime}).map(function(e){var p=e.tresibaTime.split(':'); return (Number(p[0])*60+Number(p[1]))/1440*2*Math.PI});
   var trAt=null; if(trTimes.length){var sx=0,sy=0; trTimes.forEach(function(a){sx+=Math.cos(a); sy+=Math.sin(a)}); var am=Math.atan2(sy,sx); if(am<0)am+=2*Math.PI; var mm=Math.round(am/(2*Math.PI)*1440)%1440; trAt=hm(pad(Math.floor(mm/60))+':'+pad(mm%60))}
   var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
-  var h='<h2>تقرير متابعة السكر</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
+  var h='<h2>تقرير متابعة السكر — يوسف</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
+  h+=reportInfo();
   if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">مفيش تسجيلات في الفترة دي.</p>'; el.hidden=false; return true}
+  h+=controlPanel(E);
   h+='<dl class="rsum">'+
     '<div><dt>عدد قراءات السكر</dt><dd>'+vals.length+' <small>في '+nd+' يوم</small></dd></div>'+
     '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
@@ -1309,11 +1477,9 @@ function buildReport(){
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), nw=inj.filter(function(e){return e.needle==='new'}).length, ru=inj.filter(function(e){return e.needle==='reuse'}).length;
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
   var extra=[]; if(inj.length&&(nw||ru))extra.push('سن قلم الأنسولين: جديد في '+nw+' من '+inj.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':'')); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
-  if(settings.a1cDate)extra.push('آخر تحليل تراكمي: '+(settings.a1cVal?fmt(settings.a1cVal)+'% ':'')+'بتاريخ '+dayFull(new Date(settings.a1cDate+'T12:00:00')));
+  var kE=E.filter(function(e){return e.ketT}); if(kE.length){var ord={ok:0,watch:1,danger:2}; var worst=kE.slice().sort(function(a,b){return ord[ketLevel(b.ketT,b.ketV)[0]]-ord[ketLevel(a.ketT,a.ketV)[0]]})[0]; extra.push('تحاليل الكيتون: '+kE.length+' مرة، أعلى نتيجة: '+ketText(worst).replace('كيتون ','').split(' · ')[0])}
   if(extra.length)h+='<p class="sub">'+extra.join(' · ')+'</p>';
-  h+=doctorNotes(E);
-  var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
-  if(svg)h+='<h3>الرسم</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>';
+  h+=dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
     var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
@@ -1328,16 +1494,32 @@ function buildReport(){
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
     var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+(extraText(e)?(e.note?' · ':'')+extraText(e):'')+'</td></tr>';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+(extraText(e)?(e.note?' · ':'')+extraText(e):'')+(e.ketT?((e.note||extraText(e))?' · ':'')+esc(ketText(e)):'')+'</td></tr>';
   });
   h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+function renderChecks(){
+  var w=$('#ckwrap'); if(!w)return;
+  w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
+}
+function readChecks(){
+  var rows=document.querySelectorAll('#ckwrap .ckrow'), out=[], bad=false;
+  [].forEach.call(rows,function(r){
+    var n=r.querySelector('[data-ck=n]').value.trim(), d=r.querySelector('[data-ck=d]').value||null, mv=num(r.querySelector('[data-ck=m]').value);
+    if(!n&&!d)return;
+    if(!n||mv==null||isNaN(mv)||mv<1||mv>60||Math.floor(mv)!==mv){bad=true; return}
+    out.push({n:n,d:d,m:mv});
+  });
+  return bad?null:out;
+}
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||'';
+  if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||'';
+  if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
   SET_FIELDS.forEach(function(f){var el=$('#'+f[0]); if(el!==a)el.value=settings[f[1]]==null?'':settings[f[1]]});
   var sc=settings.scale||[];
   for(var i=0;i<5;i++){
@@ -1353,7 +1535,10 @@ function readSettings(){
     out[f[1]]=v;
   });
   if(out.low>=out.high)bad=true;
-  out.a1cDate=$('#a1cd').value||null;
+  if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
+  out.bodyDate=$('#bodyd').value||null;
+  out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null;
+  var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
   for(var i=0;i<5;i++){
     var a=num(document.querySelector('[data-sc="'+i+'a"]').value), b=num(document.querySelector('[data-sc="'+i+'b"]').value), u=num(document.querySelector('[data-sc="'+i+'u"]').value);
@@ -1367,16 +1552,317 @@ function readSettings(){
   if(incomplete&&!bad)return 'wait';
   return bad?null:out;
 }
-$('#set').addEventListener('change',function(){
+function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   settings=Object.assign({},DEFAULTS,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
-});
+}
+$('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
   if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
   settings=Object.assign({},settings,{icr:v}); persistSettings(); $('#qicr').value=''; syncSettingsInputs(); render(); toast('اتحفظت النسبة');
+});
+
+/* ---------- report: info, control indicator, charts, patterns ---------- */
+var BAND=[['vh','أعلى من 250','#A85A00'],['hi','181–250','#E0A030'],['ok','70–180','#1E7F47'],['lo','54–69','#C2412F'],['vl','أقل من 54','#7A1712']];
+var WD=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+function avgOf(a){return a.reduce(function(x,y){return x+y},0)/a.length}
+function addMonthsISO(iso,m){var d=new Date(iso+'T12:00:00'); d.setMonth(d.getMonth()+m); return d}
+function glStats(E){
+  var v=E.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose}), n=v.length; if(!n)return null;
+  var mean=avgOf(v), sd=Math.sqrt(v.reduce(function(a,b){return a+(b-mean)*(b-mean)},0)/n);
+  var c={vl:0,lo:0,ok:0,hi:0,vh:0};
+  v.forEach(function(x){c[x<54?'vl':x<70?'lo':x<=180?'ok':x<=250?'hi':'vh']++});
+  return {n:n,mean:mean,sd:sd,cv:mean?sd/mean*100:0,gmi:3.31+0.02392*mean,c:c};
+}
+function reportInfo(){
+  var s=settings, t=[], now=Date.now();
+  if(s.wt)t.push(['الوزن',fmt(s.wt)+' <small>كجم</small>']);
+  if(s.ht)t.push(['الطول',fmt(s.ht)+' <small>سم</small>']);
+  if(s.wt&&s.ht)t.push(['مؤشر كتلة الجسم',fmt(r1(s.wt/Math.pow(s.ht/100,2)))+' <small>BMI</small>']);
+  if(s.bps&&s.bpd)t.push(['ضغط الدم',s.bps+'/'+s.bpd+' <small>mmHg</small>']);
+  var h='<h3>بيانات أساسية</h3>';
+  if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. مؤشر الكتلة للمراهقين بيتقيّم بمنحنيات النمو عند الدكتور.':'')+'</p>':'');
+  else h+='<p class="cap">الوزن والطول والضغط: لسه ما اتسجلوش.</p>';
+  var a=s.a1cDate?new Date(s.a1cDate+'T12:00:00'):null, nx=a?addMonthsISO(s.a1cDate,3):null;
+  h+='<dl class="rsum"><div><dt>آخر تحليل تراكمي (HbA1c)</dt><dd>'+(s.a1cVal?fmt(s.a1cVal)+' <small>%</small>':(a?'—':'غير مسجل'))+(a?' <small>بتاريخ '+dayFull(a)+'</small>':'')+'</dd></div>'+
+    (nx?'<div><dt>الميعاد التقريبي للجاي</dt><dd><small>'+dayFull(nx)+(nx<now?' <span class="st-late">(فات ميعاده)</span>':'')+'</small></dd></div>':'')+'</dl>';
+  var C=checksList().filter(function(c){return c.n});
+  if(C.length){
+    h+='<div class="tw"><table><thead><tr><th>الفحص</th><th>آخر مرة</th><th>الميعاد الجاي</th><th>الحالة</th></tr></thead><tbody>'+C.map(function(c){
+      var n=c.d?addMonthsISO(c.d,c.m):null, st=!c.d?'لم يُسجَّل':n<now?'<span class="st-late">متأخر</span>':(n-now<30*DAY?'<span class="st-soon">قرّب ميعاده</span>':'تمام');
+      return '<tr><td>'+esc(c.n)+'</td><td>'+(c.d?dayFull(new Date(c.d+'T12:00:00')):'—')+'</td><td>'+(n?dayFull(n):'—')+'</td><td>'+st+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+  }
+  return h;
+}
+function controlPanel(E){
+  var S=glStats(E); if(!S)return '';
+  var n=S.n, pc=function(k){return S.c[k]/n*100}, r1p=function(x){return fmt(Math.round(x*10)/10)+'%'};
+  var tir=pc('ok'), below=pc('vl')+pc('lo'), vlow=pc('vl');
+  var goals=[['الوقت في المعدل (70–180)','المستهدف: أكتر من 70%',tir>=70,r1p(tir)],['الوقت تحت 70','المستهدف: أقل من 4%',below<4,r1p(below)],['الوقت تحت 54','المستهدف: أقل من 1%',vlow<1,r1p(vlow)],['تذبذب القراءات (CV)','المستهدف: 36% أو أقل',S.cv<=36,Math.round(S.cv)+'%']];
+  var met=goals.filter(function(g){return g[2]}).length;
+  var h='<div class="dcard"><h3 style="margin-top:0">مؤشر التحكم في السكر</h3><div class="ctl"><div class="ctl-n"><b>'+met+' من 4</b><span>أهداف متحققة</span></div><ul class="goals">'+
+    goals.map(function(g){return '<li><span>'+g[0]+': <b>'+g[3]+'</b> <small style="color:var(--r-muted)">'+g[1]+'</small></span><span class="tag '+(g[2]?'y':'n')+'">'+(g[2]?'متحقق':'لسه')+'</span></li>'}).join('')+'</ul></div>';
+  h+='<div class="tirbar" role="img" aria-label="توزيع القراءات حسب المدى">'+BAND.map(function(b){var p=pc(b[0]); return p>0?'<span style="flex:'+p+';background:'+b[2]+'"></span>':''}).join('')+'</div>';
+  h+='<ul class="tirleg">'+BAND.map(function(b){return '<li><i style="background:'+b[2]+'"></i>'+b[1]+': <b>'+Math.round(pc(b[0]))+'%</b> <small style="color:var(--r-muted)">('+S.c[b[0]]+')</small></li>'}).join('')+'</ul>';
+  h+='<dl class="kpis"><div><dt>المتوسط</dt><dd>'+Math.round(S.mean)+' <small>mg/dL</small></dd></div><div><dt>GMI تقريبي</dt><dd>'+fmt(r1(S.gmi))+' <small>%</small></dd></div><div><dt>CV</dt><dd>'+Math.round(S.cv)+' <small>%</small></dd></div><div><dt>عدد القراءات</dt><dd>'+n+'</dd></div></dl>';
+  h+='<p class="cap">الأهداف دي المعايير الدولية للمقارنة، والدكتور هو اللي يحدد الهدف المناسب ليوسف. الحساب من قراءات الصباع مش من حساس مستمر، فالنسب و GMI تقريبية'+(n<14?'، والقراءات قليلة ('+n+') فالمؤشر مش دقيق':'')+'.</p></div>';
+  return h;
+}
+function topRound(x,y,w,h,r){r=Math.min(r,w/2,h); return 'M'+x+','+(y+h)+'V'+(y+r)+'Q'+x+','+y+' '+(x+r)+','+y+'H'+(x+w-r)+'Q'+(x+w)+','+y+' '+(x+w)+','+(y+r)+'V'+(y+h)+'Z'}
+function leftRound(x,y,w,h,r){r=Math.min(r,w,h/2); return 'M'+(x+w)+','+y+'H'+(x+r)+'Q'+x+','+y+' '+x+','+(y+r)+'V'+(y+h-r)+'Q'+x+','+(y+h)+' '+(x+r)+','+(y+h)+'H'+(x+w)+'Z'}
+function hbarSVG(rows,label){
+  var mx=Math.max.apply(null,rows.map(function(r){return r.v}).concat([settings.high]))*1.12;
+  var W=360,rh=28,pl=30,pr=108,H=rows.length*rh+8, base=W-pr, aw=base-pl;
+  function L(v){return Math.min(v,mx)/mx*aw}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" style="direction:ltr" aria-label="'+esc(label)+'">';
+  s+='<rect x="'+(base-L(settings.high))+'" y="2" width="'+(L(settings.high)-L(settings.low))+'" height="'+(H-4)+'" fill="#1E7F47" fill-opacity=".12"/>';
+  s+='<line x1="'+base+'" y1="2" x2="'+base+'" y2="'+(H-2)+'" stroke="#cfd8dd"/>';
+  rows.forEach(function(r,i){
+    var y=4+i*rh, w=Math.max(3,L(r.v));
+    s+='<path d="'+leftRound(base-w,y+5,w,14,4)+'" fill="#4F6F8F"><title>'+esc(r.l)+': '+Math.round(r.v)+' ('+r.n+' قراءة)</title></path>';
+    s+='<text x="'+(base-w-5)+'" y="'+(y+16)+'" text-anchor="end" font-size="11" font-weight="600" fill="#111">'+Math.round(r.v)+'</text>';
+    s+='<text x="'+(W-4)+'" y="'+(y+16)+'" text-anchor="end" font-size="11" fill="#111">'+esc(r.l)+' ('+r.n+')</text>';
+  });
+  return s+'</svg>';
+}
+function insulinSVG(E,r){
+  var days=r.days, tot=[], mx=0;
+  for(var k=0;k<days;k++)tot.push(0);
+  E.forEach(function(e){if(!(e.apidra>0))return; var k=Math.floor((e.d.getTime()-r.from)/DAY); if(k>=0&&k<days){tot[k]+=e.apidra}});
+  tot.forEach(function(v){if(v>mx)mx=v}); if(!mx)return '';
+  var top=Math.ceil(mx*1.15), W=360,H=170,pl=30,pr=8,pt=16,pb=24, aw=W-pl-pr, ah=H-pt-pb, slot=aw/days, bw=Math.max(2,Math.min(18,slot-2));
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" style="direction:ltr" aria-label="أبيدرا يوميًا">';
+  [0,top].forEach(function(v){var y=pt+ah-v/top*ah; s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y+'" y2="'+y+'" stroke="#cfd8dd"/><text x="'+(pl-4)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="#55656f">'+v+'</text>'});
+  var step=days<=14?1:Math.ceil(days/8);
+  tot.forEach(function(v,k){
+    var cx=pl+slot*(k+0.5), h=v/top*ah, d=new Date(r.from+k*DAY+DAY/2);
+    if(v>0){s+='<path d="'+topRound(cx-bw/2,pt+ah-h,bw,h,4)+'" fill="#4F6F8F"><title>'+dayLong(d)+': '+fmt(r1(v))+' وحدة</title></path>'; if(days<=14)s+='<text x="'+cx+'" y="'+(pt+ah-h-4)+'" text-anchor="middle" font-size="10" font-weight="600" fill="#111">'+fmt(r1(v))+'</text>'}
+    if(k%step===0)s+='<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#55656f">'+d.getDate()+'/'+(d.getMonth()+1)+'</text>';
+  });
+  return s+'</svg>';
+}
+function dashCharts(E,r){
+  var G=E.filter(function(e){return e.glucose!=null}), h='';
+  var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
+  if(svg)h+='<div class="dcard"><h3 style="margin-top:0">قراءات السكر على مدار الفترة</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL. اللون: أحمر أقل من الحد، أخضر في المعدل، برتقالي أعلى من الحد.</p></div>';
+  var sl=[]; SLOTS.forEach(function(s){var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose}); if(v.length)sl.push({l:s[1],v:avgOf(v),n:v.length})});
+  if(sl.length)h+='<div class="dcard"><h3 style="margin-top:0">متوسط السكر حسب وقت القياس</h3>'+hbarSVG(sl,'متوسط السكر حسب وقت القياس')+'<p class="cap">المنطقة الخضرا هي المعدل. الرقم بين القوسين عدد القراءات.</p></div>';
+  var wd=[]; for(var d=0;d<7;d++){var v2=G.filter(function(e){return e.d.getDay()===d}).map(function(e){return e.glucose}); if(v2.length)wd.push({l:WD[d],v:avgOf(v2),n:v2.length})}
+  if(wd.length>=3)h+='<div class="dcard"><h3 style="margin-top:0">متوسط السكر حسب اليوم</h3>'+hbarSVG(wd,'متوسط السكر حسب اليوم')+'</div>';
+  var ins=insulinSVG(E,r);
+  if(ins)h+='<div class="dcard"><h3 style="margin-top:0">مجموع أبيدرا يوميًا (وحدة)</h3>'+ins+'</div>';
+  return h;
+}
+function patterns(E){
+  var G=E.filter(function(e){return e.glucose!=null}), out=[];
+  if(G.length<8)return {few:true,list:[]};
+  var lowT=settings.low, highT=settings.high, all=avgOf(G.map(function(e){return e.glucose}));
+  SLOTS.forEach(function(s){
+    var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose}); if(v.length<3)return;
+    var hi=v.filter(function(x){return x>highT}).length, lo=v.filter(function(x){return x<lowT}).length;
+    if(hi>=2&&hi/v.length>=0.4)out.push('قراءات «'+s[1]+'» كانت أعلى من '+highT+' في '+hi+' من '+v.length+' مرة (المتوسط '+Math.round(avgOf(v))+').');
+    if(lo>=2&&lo/v.length>=0.2)out.push('قراءات «'+s[1]+'» كانت أقل من '+lowT+' في '+lo+' من '+v.length+' مرة.');
+  });
+  for(var d=0;d<7;d++){
+    var W=G.filter(function(e){return e.d.getDay()===d}); if(W.length<3)continue;
+    var dk={}; W.forEach(function(e){dk[dayKey(e.d)]=1}); if(Object.keys(dk).length<2)continue;
+    var m=avgOf(W.map(function(e){return e.glucose}));
+    if(m-all>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أعلى من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
+    else if(all-m>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أقل من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
+  }
+  function per(h){return h>=5&&h<11?'الصبح (5–11)':h>=11&&h<17?'الضهر والعصر (11–5)':h>=17&&h<22?'المسا (5–10)':'الليل (10 بالليل–5 الفجر)'}
+  [['lows',function(x){return x<lowT},'القراءات المنخفضة'],['highs',function(x){return x>highT},'القراءات العالية']].forEach(function(t){
+    var L=G.filter(function(e){return t[1](e.glucose)}); if(L.length<3)return;
+    var c={}; L.forEach(function(e){var k=per(e.d.getHours()); c[k]=(c[k]||0)+1});
+    var best=Object.keys(c).sort(function(a,b){return c[b]-c[a]})[0];
+    if(c[best]/L.length>=0.6)out.push('معظم '+t[2]+' ('+c[best]+' من '+L.length+') كانت '+best+'.');
+  });
+  return {few:false,list:out};
+}
+function patternsHTML(E){
+  var P=patterns(E), h='<div class="dcard ptn"><h3 style="margin-top:0">أنماط متكررة</h3>';
+  if(P.few)return h+'<p class="cap">القراءات قليلة لاكتشاف أنماط (محتاج 8 قراءات على الأقل في الفترة).</p></div>';
+  if(!P.list.length)return h+'<p class="cap">مفيش نمط متكرر واضح في الفترة دي.</p></div>';
+  return h+'<ul>'+P.list.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul><p class="cap">ملاحظات حسابية من التسجيلات بس. مش تشخيص ومش اقتراح لتغيير الجرعات، والدكتور هو اللي يفسّرها.</p></div>';
+}
+
+/* ---------- assistant (answers only from the recorded data) ---------- */
+var chat=[];
+function nrm(t){return String(t||'').replace(/[ً-ٟـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[؟?!.,،:]/g,' ')}
+function hasAny(t,a){return a.some(function(w){return t.indexOf(w)>=0})}
+function askIntent(q){
+  var t=nrm(q);
+  if(hasAny(t,['جرعه','جرعات','اخد كام','كام وحده','ازود','اقلل','اغير','يزود','يقلل','علاج','دوا ']))return 'dose';
+  if(hasAny(t,['ناقص','نسيت','مسجلتش']))return 'missing';
+  if(hasAny(t,['ملخص','تلخيص','اسبوع']))return 'week';
+  if(hasAny(t,['وجبه','وجبات','اكل','اكتر']))return 'meal';
+  if(hasAny(t,['ارتفع','ارتفاع','عالي','زاد','زايد','ليه','النهارده','اليوم']))return 'high';
+  return null;
+}
+var MED_DEF='ده عرض لأرقام متسجلة بس. تفسيرها طبيًا وأي قرار في الجرعات أو العلاج بيحدده الدكتور، وتقدر تعرض عليه التقرير.';
+function sinceDays(n){var m=new Date(); m.setHours(0,0,0,0); var a=m.getTime()-(n-1)*DAY; return prep().filter(function(e){return e.d.getTime()>=a&&e.d.getTime()<=Date.now()+36e5})}
+function slotName(e){return SLOT_LABEL[e.slot]||''}
+function ansHigh(){
+  var tk=dayKey(new Date()), all=prep().slice().sort(function(a,b){return a.d-b.d}), T=all.filter(function(e){return dayKey(e.d)===tk&&e.glucose!=null});
+  if(!T.length)return {obs:['لسه مفيش قراءات سكر اتسجلت النهاردة.'],med:MED_DEF};
+  var hi=T.filter(function(e){return e.glucose>settings.high}), obs=[];
+  var mx=T.slice().sort(function(a,b){return b.glucose-a.glucose})[0];
+  if(!hi.length)return {obs:['مفيش قراءة النهاردة أعلى من '+settings.high+' ('+T.length+' قراءات). أعلى قراءة '+fmt(mx.glucose)+' ('+slotName(mx)+' '+timeStr(mx.d)+').'],med:MED_DEF};
+  obs.push('النهاردة '+hi.length+' قراءة أعلى من '+settings.high+' من '+T.length+'.');
+  hi.slice(0,4).forEach(function(e){
+    var line=timeStr(e.d)+' ('+slotName(e)+'): '+fmt(e.glucose)+'. ';
+    if(PREMEAL.indexOf(e.slot)>=0)line+='دي قراءة قبل الوجبة.';
+    else{
+      var prev=all.filter(function(p){var dt=e.d-p.d; return dt>0&&dt<=5*36e5&&(p.apidra>0||(p.meal&&p.meal.length))});
+      var m=prev.filter(function(p){return p.meal&&p.meal.length}).pop();
+      if(m){
+        var hrs=Math.round((e.d-m.d)/36e5*10)/10;
+        line+='قبلها بحوالي '+fmt(hrs)+' ساعة اتسجلت وجبة: '+m.meal.map(function(x){return x.n}).join('، ')+(m.carbs>0?' (حوالي '+fmt(Math.round(m.carbs))+' جم كارب)':'')+'، '+(m.apidra>0?'وأبيدرا '+fmt(m.apidra)+' وحدة.':(m.corr?'':'ومفيش أبيدرا متسجلة معاها.'));
+      }else line+='مفيش وجبة متسجلة في الـ5 ساعات قبلها.';
+    }
+    obs.push(line);
+  });
+  var k=T.filter(function(e){return e.ketT}); if(k.length)obs.push('اتسجل تحليل كيتون النهاردة ('+k.length+').');
+  obs.push('ده ربط زمني بين التسجيلات، مش تأكيد لسبب الارتفاع.');
+  return {obs:obs,med:MED_DEF};
+}
+function ansMeal(){
+  var E=sinceDays(30), P=mealPairs(E), obs=[];
+  if(!P.length)return {obs:['مفيش وجبات كفاية: محتاج وجبة متسجلة مع قراءة قبلها وقراءة بعدها (بعد نص ساعة لحد 5 ساعات).'],med:MED_DEF};
+  var it={}, cb={};
+  P.forEach(function(p){
+    var key=p.e.meal.map(function(m){return m.n}).sort().join('، ');
+    (cb[key]=cb[key]||[]).push(p);
+    p.e.meal.forEach(function(m){(it[m.n]=it[m.n]||[]).push(p)});
+  });
+  function rank(o){return Object.keys(o).filter(function(k){return o[k].length>=2}).map(function(k){return {k:k,n:o[k].length,r:avgOf(o[k].map(function(p){return p.rise})),a:avgOf(o[k].map(function(p){return p.f.glucose}))}}).sort(function(a,b){return b.r-a.r}).slice(0,3)}
+  var rc=rank(cb), ri=rank(it);
+  if(rc.length){obs.push('الوجبات اللي اتسجلت مرتين أو أكتر (آخر 30 يوم)، مرتبة بأعلى فرق بين القراءة قبل الوجبة وبعدها:'); rc.forEach(function(x){obs.push(x.k+': فرق متوسط '+(x.r>0?'+':'')+Math.round(x.r)+' والقراءة بعدها في المتوسط '+Math.round(x.a)+' ('+x.n+' مرات).')})}
+  if(ri.length){obs.push('وبالأصناف لوحدها:'); ri.forEach(function(x){obs.push(x.k+': فرق متوسط '+(x.r>0?'+':'')+Math.round(x.r)+' ('+x.n+' وجبات).')})}
+  if(!rc.length&&!ri.length)obs.push('عندي '+P.length+' وجبة متسجلة بقراءتين، بس مفيش صنف أو وجبة اتكررت مرتين عشان أقارن.');
+  else obs.push('الأصناف بتتاكل مع بعض في الوجبة، فمش ممكن أعرف أنهي صنف بالظبط ورا الارتفاع.');
+  return {obs:obs,med:MED_DEF};
+}
+function ansWeek(){
+  var E=sinceDays(7), S=glStats(E);
+  if(!E.length)return {obs:['مفيش تسجيلات في آخر 7 أيام.'],med:MED_DEF};
+  var obs=[], dk={}; E.forEach(function(e){dk[dayKey(e.d)]=1});
+  obs.push('اتسجل في '+Object.keys(dk).length+' من 7 أيام.');
+  if(S){
+    obs.push('قراءات السكر: '+S.n+'، المتوسط '+Math.round(S.mean)+'.');
+    obs.push('في المعدل (70–180): '+Math.round(S.c.ok/S.n*100)+'%، أقل من 70: '+(S.c.lo+S.c.vl)+' قراءة، أعلى من 180: '+(S.c.hi+S.c.vh)+' قراءة.');
+    var G=E.filter(function(e){return e.glucose!=null}).sort(function(a,b){return a.glucose-b.glucose}), lo=G[0], hi=G[G.length-1];
+    obs.push('أقل قراءة '+fmt(lo.glucose)+' ('+dayLong(lo.d)+'، '+slotName(lo)+')، وأعلى قراءة '+fmt(hi.glucose)+' ('+dayLong(hi.d)+'، '+slotName(hi)+').');
+  }else obs.push('مفيش قراءات سكر في الأسبوع ده.');
+  var ap=E.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=E.filter(function(e){return e.tresiba>0}).length;
+  obs.push('أبيدرا: '+fmt(r1(ap/Math.max(1,Object.keys(dk).length)))+' وحدة في اليوم (على الأيام المسجلة). ترسيبا اتسجلت '+tr+' مرة.');
+  var kt=E.filter(function(e){return e.ketT}); if(kt.length)obs.push('تحاليل الكيتون: '+kt.length+(kt.some(function(e){return ketLevel(e.ketT,e.ketV)[0]!=='ok'})?' (فيها نتيجة فوق الطبيعي)':' (كلها طبيعية)')+'.');
+  var P=patterns(E); P.list.slice(0,2).forEach(function(t){obs.push(t)});
+  return {obs:obs,med:MED_DEF};
+}
+function ansMissing(){
+  var obs=[], all=prep(), tk=dayKey(new Date()), E=sinceDays(7), now=Date.now();
+  var days=[]; for(var k=1;k<=7;k++){days.push(new Date(now-k*DAY))}
+  var dk={}; E.forEach(function(e){dk[dayKey(e.d)]=e});
+  var empty=days.filter(function(d){return !dk[dayKey(d)]});
+  if(empty.length)obs.push('أيام من غير أي تسجيل: '+empty.map(function(d){return dayLong(d)}).join('، ')+'.');
+  var nf=days.filter(function(d){var x=E.filter(function(e){return dayKey(e.d)===dayKey(d)}); return x.length&&!x.some(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')})});
+  if(nf.length)obs.push('أيام من غير قراءة صايم أو قبل الفطار: '+nf.map(function(d){return dayLong(d)}).join('، ')+'.');
+  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), nn=inj.filter(function(e){return !e.needle}).length, ns=inj.filter(function(e){return !e.site}).length;
+  if(nn)obs.push(nn+' حقنة من غير تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة من غير تسجيل مكان الحقن.');
+  var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا من غير وقت الحقن.');
+  if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return dayKey(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
+  var s=settings;
+  if(!s.a1cDate)obs.push('مفيش تاريخ لآخر تحليل تراكمي.'); else if(addMonthsISO(s.a1cDate,3)<now)obs.push('ميعاد التحليل التراكمي فات (آخر مرة '+dayFull(new Date(s.a1cDate+'T12:00:00'))+').');
+  var nd=checksList().filter(function(c){return c.n&&!c.d}).map(function(c){return c.n}); if(nd.length)obs.push('فحوصات من غير تاريخ آخر مرة: '+nd.join('، ')+'.');
+  if(!s.wt||!s.ht||!s.bps)obs.push('الوزن أو الطول أو الضغط لسه ما اتسجلوش (في صفحة التقرير).'); else if(s.bodyDate&&new Date(s.bodyDate+'T12:00:00')<now-90*DAY)obs.push('قياس الوزن والطول والضغط عدّى عليه أكتر من 3 شهور.');
+  if(s.ketExp&&new Date(s.ketExp+'T12:00:00')<now)obs.push('شرايط الكيتون منتهية الصلاحية.'); else if(!s.ketExp)obs.push('مفيش تاريخ صلاحية لشرايط الكيتون.');
+  if(!s.plan)obs.push('جرعة ترسيبا بتاعة الدكتور مش مكتوبة في الإعدادات.');
+  if(!obs.length)obs.push('مفيش بيانات ناقصة واضحة في آخر 7 أيام.');
+  return {obs:obs,med:'دي مجرد تسجيلات ناقصة في البرنامج. أي استفسار عن العلاج نفسه مع الدكتور.'};
+}
+function ansDose(){
+  var tk=dayKey(new Date()), T=prep().filter(function(e){return dayKey(e.d)===tk&&(e.apidra>0||e.tresiba>0)}), obs=[];
+  obs.push(T.length?'اللي اتسجل النهاردة: '+T.map(function(e){return timeStr(e.d)+' '+(e.apidra>0?'أبيدرا '+fmt(e.apidra):'')+(e.tresiba>0?' ترسيبا '+fmt(e.tresiba):'')}).join('، ')+'.':'مفيش جرعات متسجلة النهاردة.');
+  return {obs:obs,med:'مقدرش أقترح جرعات ولا أغيّرها. الجرعات وأي تعديل فيها بيحددهم الدكتور بس، وفي الطوارئ (هبوط شديد أو الطفل مش واعي) اطلب الإسعاف.'};
+}
+function answer(q){
+  var k=askIntent(q);
+  return k==='high'?ansHigh():k==='meal'?ansMeal():k==='week'?ansWeek():k==='missing'?ansMissing():k==='dose'?ansDose():
+    {obs:['مفهمتش السؤال. جرّب واحد من الأسئلة اللي فوق.'],med:null};
+}
+function renderChat(){
+  var el=$('#chatlog'); if(!el)return;
+  if(!chat.length)chat.push({bot:true,r:{obs:['اسألني عن التسجيلات: ليه السكر ارتفع النهاردة، أكتر وجبة ارتبطت بالارتفاع، ملخص الأسبوع، أو البيانات الناقصة.'],med:null}});
+  el.innerHTML=chat.map(function(m){
+    if(!m.bot)return '<div class="bub me">'+esc(m.t)+'</div>';
+    return '<div class="bub bot"><div class="sec"><b>من التسجيلات</b><ul>'+m.r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(m.r.med?'<div class="sec med"><b>التحليل الطبي</b>'+esc(m.r.med)+'</div>':'')+'</div>';
+  }).join('');
+  var last=el.lastElementChild; if(last&&chat.length>1)last.scrollIntoView({block:'nearest'});
+}
+function ask(q){q=String(q||'').trim(); if(!q)return; chat.push({t:q}); chat.push({bot:true,r:answer(q)}); if(chat.length>40)chat.splice(0,chat.length-40); renderChat(); $('#askin').value=''}
+$('#askform').addEventListener('submit',function(ev){ev.preventDefault(); ask($('#askin').value)});
+$('#askchips').addEventListener('click',function(ev){var b=ev.target.closest('button[data-q]'); if(b)ask(b.dataset.q)});
+
+/* ---------- food photo ---------- */
+var photoItems=[];
+function resizeImage(file){return new Promise(function(res,rej){
+  var u=URL.createObjectURL(file), im=new Image();
+  im.onload=function(){var k=Math.min(1,1024/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.width*k)); c.height=Math.max(1,Math.round(im.height*k)); c.getContext('2d').drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg',0.8).split(',')[1])};
+  im.onerror=function(){URL.revokeObjectURL(u); rej(new Error('img'))}; im.src=u;
+})}
+function renderPhoto(){
+  var el=$('#photorev');
+  if(!photoItems.length){el.hidden=true; el.innerHTML=''; return}
+  el.hidden=false;
+  el.innerHTML=photoItems.map(function(p,i){
+    return '<li class="pr" data-pi="'+i+'"><div class="prn"><input type="checkbox" data-pf="on"'+(p.on?' checked':'')+' aria-label="ضيف الصنف"><input type="text" data-pf="name" value="'+esc(p.name)+'"></div>'+
+      (p.portion?'<small class="small">الوحدة: '+esc(p.portion)+'</small>':'')+
+      '<div class="two"><label>الكمية<input type="text" inputmode="decimal" data-pf="q" value="'+fmt(p.q)+'"></label><label>كارب الوحدة (جم)<input type="text" inputmode="decimal" data-pf="c" value="'+fmt(p.c)+'"></label></div></li>';
+  }).join('')+'<li><div class="btnrow"><button type="button" class="primary" id="photoadd">أضف للوجبة</button><button type="button" class="ghost" id="photocancel">إلغاء</button></div></li>';
+}
+$('#photobtn').addEventListener('click',function(){
+  if(mode!=='cloud'){$('#photomsg').textContent='تصوير الأكل محتاج اتصال بالسيرفر.'; return}
+  $('#photofile').click();
+});
+$('#photofile').addEventListener('change',async function(){
+  var f=this.files&&this.files[0]; this.value=''; if(!f)return;
+  var msg=$('#photomsg'), btn=$('#photobtn'); msg.textContent='بحلل الصورة… ممكن ياخد ثواني.'; btn.disabled=true;
+  try{
+    var b64=await resizeImage(f), j=await api({action:'food',image:b64});
+    photoItems=(j.items||[]).map(function(x){return {on:true,name:x.name,portion:x.portion,q:x.qty,c:x.carbs}});
+    renderPhoto();
+    msg.textContent=photoItems.length?'ده تقدير تقريبي. راجع الأصناف والكميات والكارب وعدّلهم قبل ما تضيفهم.'+(j.note?' '+j.note:''):(j.note||'مقدرتش أتعرف على أكل في الصورة. جرّب صورة أوضح.');
+  }catch(e){
+    msg.textContent=e.code==='noaikey'?'لسه مفيش مفتاح خدمة. حطه من الإعدادات > تصوير الأكل.':e.code==='aifail'?'الخدمة مردتش دلوقتي (ممكن المفتاح غلط أو الرصيد خلص). جرّب تاني.':e.code==='readonly'?'التصوير للتسجيل بس.':'مقدرتش أحلل الصورة. جرّب تاني.';
+  }finally{btn.disabled=false}
+});
+$('#photorev').addEventListener('input',function(ev){
+  var inp=ev.target, li=inp.closest('.pr'); if(!li||!inp.dataset.pf)return; var p=photoItems[Number(li.dataset.pi)]; if(!p)return;
+  if(inp.dataset.pf==='name')p.name=inp.value;
+  else if(inp.dataset.pf==='on')p.on=inp.checked;
+  else{var v=num(inp.value); p[inp.dataset.pf]=(v==null||isNaN(v))?0:v}
+});
+$('#photorev').addEventListener('click',function(ev){
+  var b=ev.target.closest('button'); if(!b)return;
+  if(b.id==='photocancel'){photoItems=[]; renderPhoto(); $('#photomsg').textContent=''; return}
+  if(b.id==='photoadd'){
+    var add=photoItems.filter(function(p){return p.on&&p.name.trim()&&p.q>0});
+    if(!add.length){toast('اختار صنف واحد على الأقل'); return}
+    add.forEach(function(p,i){mealItems.push({k:'ai'+Date.now()+i,name:p.name.trim(),disp:p.name.trim(),d:p.portion||'',w:0,c:p.c||0,est:true,q:p.q,mode:'n',gr:0,fruit:false,editc:true})});
+    photoItems=[]; renderPhoto(); $('#photomsg').textContent=''; renderMeal(); updateCalc(); toast('اتضافت الأصناف للوجبة');
+  }
+});
+$('#aisave').addEventListener('click',async function(){
+  var k=$('#aikey').value.trim(), m=$('#aimsg'); m.textContent='';
+  if(!/^sk-ant-[A-Za-z0-9_\-]{10,300}$/.test(k)){m.textContent='المفتاح شكله غلط. لازم يبدأ بـ sk-ant-'; return}
+  if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+  try{await api({action:'setaikey',key:k}); $('#aikey').value=''; m.textContent='اتحفظ المفتاح. جرّب تصوّر أكل.'}
+  catch(e){m.textContent='مقدرتش أحفظ المفتاح. جرّب تاني.'}
 });
 
 /* ---------- render all ---------- */
@@ -1395,6 +1881,13 @@ document.addEventListener('click',function(ev){
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
   if(t.dataset.supp){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
+  if(t.id==='showk'){$('#kbox').hidden=false; t.hidden=true; $('#kv').focus(); return}
+  if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
+  if(t.dataset.ckdel!==undefined){
+    var idx=Number(t.dataset.ckdel), keep=[];
+    [].forEach.call(document.querySelectorAll('#ckwrap .ckrow'),function(r,i){if(i===idx)return; var n=r.querySelector('[data-ck=n]').value.trim(), dd=r.querySelector('[data-ck=d]').value||null, mm=num(r.querySelector('[data-ck=m]').value); if(n&&mm>=1)keep.push({n:n,d:dd,m:mm})});
+    settings=Object.assign({},settings,{checks:keep}); persistSettings(); renderChecks(); render(); return
+  }
   if(t.id==='showt'){tAsked=true; renderHint(prep()); return}
   if('useplan' in t.dataset){$('#t').value=String(settings.plan); syncInj(); return}
   if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; syncInj(); toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
@@ -1426,8 +1919,8 @@ $('#rprint').addEventListener('click',function(){
 $('#csv').addEventListener('click',function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','سن قلم الأنسولين','مكان الحقن','مكملات','وقت الترسيبا']];
-  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',NEEDLE[e.needle]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + '),e.tresibaTime||''])});
+  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','سن قلم الأنسولين','مكان الحقن','مكملات','وقت الترسيبا','كيتون']];
+  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',NEEDLE[e.needle]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + '),e.tresibaTime||'',e.ketT?ketText(e):''])});
   var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
@@ -1445,7 +1938,7 @@ function setEditing(id){
 function cancelEdit(){
   setEditing(null);
   ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-  $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; setSupp([]); syncInj();
+  $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
   mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot(); setNow(); $('#ferr').textContent=''; render();
 }
 function startEdit(id){
@@ -1459,6 +1952,7 @@ function startEdit(id){
   $('#n').value=e.note||'';
   $('#needle').value=e.needle||''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; $('#corr').checked=!!e.corr; setSupp(e.supp); syncInj();
   $('#nodose').checked=PREMEAL.indexOf(e.slot)>=0&&!(e.apidra>0);
+  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
   renderMeal();
@@ -1482,7 +1976,8 @@ $('#f').addEventListener('submit',async function(ev){
     if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
     return {n:nm,q:m.q,c:m.c};
   });
-  var supp=getSupp();
+  var supp=getSupp(), ket=readKet();
+  if(!ket.ok){err.textContent='نتيجة الكيتون (دم) لازم تكون رقم بين 0 و15.'; $('#kv').focus(); return}
   if(PREMEAL.indexOf(slot)>=0){
     var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length)miss.push('الأكل');
     if(!(a>0)&&!$('#nodose').checked)miss.push('جرعة أبيدرا (أو علّم "ماخدتش أبيدرا")');
@@ -1492,13 +1987,13 @@ $('#f').addEventListener('submit',async function(ev){
   if((a>0||t>0)&&(!$('#needle').value||!$('#site').value)){err.textContent='اختار سن قلم الأنسولين ومكان الحقن علشان التسجيل يتحفظ كامل.'; ($('#needle').value?$('#site'):$('#needle')).focus(); return}
   if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا لازم يكون معاها أكل. اختار الأكل، أو علّم "جرعة تصحيح من غير أكل".'; ($('#corrbox').hidden?$('#a'):$('#corr')).focus(); $('#corrbox').hidden=false; return}
   if(t>0&&!$('#ttime').value){err.textContent='اكتب وقت حقن الترسيبا.'; $('#ttime').focus(); return}
-  if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
+  if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:(a>0||t>0)?($('#needle').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?$('#ttime').value:null,corr:(a>0&&!items.length)?$('#corr').checked:false});
+    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:(a>0||t>0)?($('#needle').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?$('#ttime').value:null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; setSupp([]); syncInj();
+    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
     setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
