@@ -494,6 +494,15 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
       <div class="field"><label for="a1cv">النتيجة % <em>(اختياري)</em></label><input id="a1cv" type="text" inputmode="decimal" placeholder="مثلاً 7.5"></div>
     </div>
 
+    <h3>نسخة احتياطية</h3>
+    <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
+    <div class="two">
+      <button type="button" class="ghost" id="bkexp">تنزيل نسخة</button>
+      <button type="button" class="ghost" id="bkimp">استرجاع من ملف</button>
+    </div>
+    <input type="file" id="bkfile" accept=".json,application/json" hidden>
+    <p class="small" id="bkmsg" role="status"></p>
+
     <h3>الأمان والمتابعة</h3>
     <p class="small" id="secstat"></p>
     <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
@@ -753,12 +762,42 @@ async function saveAuth(){
   finally{b.disabled=false}
 }
 $('#authSave').addEventListener('click',saveAuth);
+async function exportBackup(){
+  var m=$('#bkmsg'); m.textContent='';
+  try{
+    var j=mode==='cloud'?await api():{entries:entries,settings:settings};
+    var blob=new Blob([JSON.stringify({app:'sugar-tracker',v:1,exported:new Date().toISOString(),entries:j.entries||[],settings:j.settings||null},null,1)],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sugar-backup-'+dayKey(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
+    m.textContent='اتنزّلت نسخة فيها '+(j.entries||[]).length+' تسجيل.';
+  }catch(e){m.textContent='مقدرتش أنزّل النسخة. جرب تاني.'}
+}
+async function importBackup(file){
+  var m=$('#bkmsg'); m.textContent='';
+  try{
+    var data=JSON.parse(await file.text());
+    var list=Array.isArray(data)?data:data.entries;
+    if(!Array.isArray(list)||!list.length){m.textContent='الملف ده مش نسخة احتياطية صحيحة.'; return}
+    if(!confirm('هيتم إضافة '+list.length+' تسجيل (والتسجيلات الموجودة بنفس الرقم هتتحدّث). تكمل؟'))return;
+    if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+    var n=0, sk=0;
+    for(var i=0;i<list.length;i+=500){
+      var r=await api({action:'import',entries:list.slice(i,i+500),settings:i===0&&!Array.isArray(data)&&data.settings?data.settings:undefined});
+      n+=r.imported||0; sk+=r.skipped||0;
+    }
+    await refresh();
+    m.textContent='اترجّع '+n+' تسجيل'+(sk?' (واتخطّى '+sk+' غير صالح)':'')+'.';
+  }catch(e){m.textContent='الاسترجاع فشل. اتأكد إن الملف سليم وجرب تاني.'}
+}
+$('#bkexp').addEventListener('click',exportBackup);
+$('#bkimp').addEventListener('click',function(){$('#bkfile').click()});
+$('#bkfile').addEventListener('change',function(){var f=this.files&&this.files[0]; this.value=''; if(f)importBackup(f)});
 $('#logout').addEventListener('click',function(){lsSet(LS_P,''); pin=''; location.reload()});
 function ready(){
   authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; renderSecurity(); syncSettingsInputs(); render(); applyTab();
   if(!started){
     started=true;
-    setInterval(function(){if(mode==='cloud'&&!document.hidden)refresh()},20000);
+    setInterval(function(){if(mode==='cloud'&&!document.hidden)refresh()},60000);
     document.addEventListener('visibilitychange',function(){if(mode==='cloud'&&!document.hidden)refresh()});
   }
 }
