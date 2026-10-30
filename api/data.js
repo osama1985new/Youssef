@@ -26,8 +26,14 @@ function same(x, y) {
 function hashPin(pin, saltHex) {
   return crypto.scryptSync(String(pin), Buffer.from(saltHex, 'hex'), 32).toString('hex');
 }
-async function loadAuth() {
-  try { const raw = await redis(['GET', 'ysg:auth']); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+let authCache = { at: 0, val: null };
+async function loadAuth(force) {
+  if (!force && Date.now() - authCache.at < 30000) return authCache.val;
+  try {
+    const raw = await redis(['GET', 'ysg:auth']);
+    authCache = { at: Date.now(), val: raw ? JSON.parse(raw) : null };
+  } catch (e) { /* keep the last known value */ }
+  return authCache.val;
 }
 // 'edit' = full access, 'view' = read only, null = rejected. Open (edit) until a PIN is set.
 function normPin(x) {
@@ -143,8 +149,22 @@ module.exports = async (req, res) => {
         if (ep.length < 4 || ep.length > 32) return res.status(400).json({ error: 'bad_pin_format' });
         if (vp && (vp.length < 4 || vp.length > 32 || vp === ep)) return res.status(400).json({ error: 'bad_pin_format' });
         const salt = crypto.randomBytes(16).toString('hex');
-        await redis(['SET', 'ysg:auth', JSON.stringify({ salt, editHash: hashPin(ep, salt), viewHash: vp ? hashPin(vp, salt) : null })]);
+        const next = { salt, editHash: hashPin(ep, salt), viewHash: vp ? hashPin(vp, salt) : null };
+        await redis(['SET', 'ysg:auth', JSON.stringify(next)]);
+        authCache = { at: Date.now(), val: next };
         return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'import') {
+        if (!Array.isArray(b.entries) || b.entries.length > 1000) return res.status(400).json({ error: 'bad_import' });
+        const args = ['HSET', 'ysg:entries']; let ok = 0, skipped = 0;
+        for (const raw of b.entries) {
+          const e = cleanEntry(raw);
+          if (!e) { skipped++; continue; }
+          args.push(e.id, JSON.stringify(e)); ok++;
+        }
+        if (ok) await redis(args);
+        if (b.settings) { const cs = cleanSettings(b.settings); if (cs) await redis(['SET', 'ysg:settings', JSON.stringify(cs)]); }
+        return res.status(200).json({ ok: true, imported: ok, skipped });
       }
       if (b.action === 'add') {
         const e = cleanEntry(b.entry);
