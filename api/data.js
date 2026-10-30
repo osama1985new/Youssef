@@ -73,7 +73,16 @@ function cleanEntry(e) {
   const tresiba = numOrNull(e.tresiba, 100);
   if (glucose === undefined || apidra === undefined || tresiba === undefined) return null;
   const supp = Array.isArray(e.supp) ? e.supp.filter(x => SUPP_KEYS.includes(x)).slice(0, 5) : [];
-  if (glucose === null && apidra === null && tresiba === null && supp.length === 0 && !(Array.isArray(e.meal) && e.meal.length)) return null;
+  let ketT = null, ketV = null;
+  if (e.ketT === 'b') {
+    const n = Number(e.ketV);
+    if (!Number.isFinite(n) || n < 0 || n > 15) return null;
+    ketT = 'b'; ketV = String(n);
+  } else if (e.ketT === 'u') {
+    if (!['neg', 'small', 'mod', 'large'].includes(e.ketV)) return null;
+    ketT = 'u'; ketV = e.ketV;
+  } else if (e.ketT) return null;
+  if (glucose === null && apidra === null && tresiba === null && supp.length === 0 && !ketT && !(Array.isArray(e.meal) && e.meal.length)) return null;
   const carbs = numOrNull(e.carbs, 1000);
   if (carbs === undefined) return null;
   let meal = [];
@@ -88,10 +97,10 @@ function cleanEntry(e) {
   const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
   const site = SITE_KEYS.includes(e.site) ? e.site : null;
   const tresibaTime = tresiba > 0 && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(e.tresibaTime || '')) ? e.tresibaTime : null;
-  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp, tresibaTime, corr: e.corr === true && apidra > 0 };
+  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
-const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20] };
+const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150] };
 function cleanSettings(s) {
   if (!s || typeof s !== 'object') return null;
   const out = {};
@@ -106,6 +115,19 @@ function cleanSettings(s) {
     out[k] = n;
   }
   if (out.low >= out.high) return null;
+  const dOk = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
+  if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
+  out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
+  out.ketExp = dOk(s.ketExp) ? String(s.ketExp) : null;
+  if (s.checks !== undefined && s.checks !== null) {
+    if (!Array.isArray(s.checks) || s.checks.length > 12) return null;
+    out.checks = [];
+    for (const c of s.checks) {
+      const n = String((c && c.n) || '').trim().slice(0, 40), m = Number(c && c.m);
+      if (!n || !Number.isInteger(m) || m < 1 || m > 60) return null;
+      out.checks.push({ n, d: dOk(c.d) ? String(c.d) : null, m });
+    }
+  }
   const ad = String(s.a1cDate || '');
   out.a1cDate = /^\d{4}-\d{2}-\d{2}$/.test(ad) && !isNaN(new Date(ad)) ? ad : null;
   out.scale = [];
@@ -118,6 +140,32 @@ function cleanSettings(s) {
     }
   }
   return out;
+}
+
+
+const FOOD_PROMPT = 'This is a photo of a meal for a teenager with type 1 diabetes in Egypt. Identify each distinct food item visible. For each item give: name (short Egyptian-Arabic name), portion (short Arabic description of ONE unit, e.g. "رغيف بلدي صغير" or "معلقة كبيرة أرز"), qty (number of units visible, in steps of 0.5), carbs (estimated grams of carbohydrate in ONE unit, a number). Be realistic. If the image has no food return an empty items list and explain in note (Arabic). Reply with JSON only: {"items":[{"name":"","portion":"","qty":1,"carbs":0}],"note":""}. These are rough estimates that a person will review. Never give insulin dose advice.';
+async function analyzeFood(b64) {
+  const key = process.env.ANTHROPIC_API_KEY || await redis(['GET', 'ysg:aikey']);
+  if (!key) { const e = new Error('no_ai_key'); e.code = 'no_ai_key'; throw e; }
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 900, messages: [{ role: 'user', content: [
+      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+      { type: 'text', text: FOOD_PROMPT } ] }] })
+  });
+  if (!r.ok) { const e = new Error('ai_failed'); e.code = 'ai_failed'; throw e; }
+  const j = await r.json();
+  const txt = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+  const m = txt.match(/\{[\s\S]*\}/);
+  let o; try { o = JSON.parse(m[0]); } catch (e) { const er = new Error('ai_failed'); er.code = 'ai_failed'; throw er; }
+  const items = [];
+  for (const x of (Array.isArray(o.items) ? o.items : []).slice(0, 10)) {
+    const qty = Number(x.qty), carbs = Number(x.carbs);
+    if (!x || !String(x.name || '').trim() || !Number.isFinite(qty) || !Number.isFinite(carbs)) continue;
+    items.push({ name: String(x.name).slice(0, 60), portion: String(x.portion || '').slice(0, 60), qty: Math.min(20, Math.max(0.5, Math.round(qty * 2) / 2)), carbs: Math.min(200, Math.max(0, Math.round(carbs))) });
+  }
+  return { items, note: String(o.note || '').slice(0, 200) };
 }
 
 module.exports = async (req, res) => {
@@ -153,6 +201,18 @@ module.exports = async (req, res) => {
         await redis(['SET', 'ysg:auth', JSON.stringify(next)]);
         authCache = { at: Date.now(), val: next };
         return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'setaikey') {
+        const k = String(b.key || '').trim();
+        if (!/^sk-ant-[A-Za-z0-9_\-]{10,300}$/.test(k)) return res.status(400).json({ error: 'bad_key' });
+        await redis(['SET', 'ysg:aikey', k]);
+        return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'food') {
+        const img = String(b.image || '');
+        if (img.length < 100 || img.length > 3000000 || !/^[A-Za-z0-9+/=]+$/.test(img)) return res.status(400).json({ error: 'bad_image' });
+        try { return res.status(200).json(await analyzeFood(img)); }
+        catch (e) { return res.status(e.code === 'no_ai_key' ? 400 : 502).json({ error: e.code || 'ai_failed' }); }
       }
       if (b.action === 'import') {
         if (!Array.isArray(b.entries) || b.entries.length > 1000) return res.status(400).json({ error: 'bad_import' });
@@ -190,3 +250,5 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'server_error' });
   }
 };
+
+module.exports.config = { maxDuration: 30 };
