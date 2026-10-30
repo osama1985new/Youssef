@@ -522,7 +522,8 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
 (function(){
 var $=function(s){return document.querySelector(s)};
 var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
-var SLOT_LABEL={}; SLOTS.forEach(function(s){SLOT_LABEL[s[0]]=s[1]});
+var SLOT_LABEL={}, SLOT_ORD={}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
+function dayOrder(a,b){var ka=dayKey(a.d), kb=dayKey(b.d); return ka<kb?-1:ka>kb?1:((SLOT_ORD[a.slot]||0)-(SLOT_ORD[b.slot]||0))||(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','فخذ يمين'],['th_l','فخذ شمال'],['ar_r','دراع يمين'],['ar_l','دراع شمال']];
 var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
@@ -995,7 +996,7 @@ function renderLog(E){
   var el=$('#log');
   if(!E.length){el.innerHTML='<div class="card"><p class="empty">لسه مفيش تسجيلات. أول قراءة أو جرعة هتظهر هنا بعد ما تحفظها.</p></div>'; return}
   var groups={}, order=[];
-  E.forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
+  E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
   var html='';
   order.slice(0,daysShown).forEach(function(k){
@@ -1283,7 +1284,7 @@ function buildReport(){
   h+='</tbody></table></div>';
   h+='<h3>التفاصيل</h3><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
   var cur='';
-  E.forEach(function(e){
+  E.slice().sort(dayOrder).forEach(function(e){
     var k=dayKey(e.d);
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
