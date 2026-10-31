@@ -118,6 +118,10 @@ function cleanSettings(s) {
   const dOk = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
   if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
+  const dtOk = v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
+  out.visitLast = dtOk(s.visitLast) ? String(s.visitLast) : null;
+  out.visitNext = dtOk(s.visitNext) ? String(s.visitNext) : null;
+  out.visitNote = s.visitNote ? String(s.visitNote).trim().slice(0, 300) || null : null;
   out.ketExp = dOk(s.ketExp) ? String(s.ketExp) : null;
   if (s.checks !== undefined && s.checks !== null) {
     if (!Array.isArray(s.checks) || s.checks.length > 12) return null;
