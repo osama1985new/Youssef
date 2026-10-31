@@ -476,6 +476,19 @@ form#f .panel>h3{color:var(--pc)}
 @media (prefers-color-scheme: dark){.bub.me{color:#1c0a12}}
 .day{border-top:3px solid color-mix(in srgb,var(--c-log) 55%,var(--line))}
 h1{background:linear-gradient(90deg,var(--c-add),var(--c-log)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+
+/* assistant v2 */
+.askout{min-height:140px}
+.askempty{border:1.5px dashed var(--line); border-radius:14px; padding:28px 16px; text-align:center; display:flex; flex-direction:column; gap:4px; color:var(--muted)}
+.askempty b{color:var(--ink); font-family:var(--f-display)}
+.ans{border:1px solid color-mix(in srgb,var(--c-ask) 30%,var(--line)); border-radius:16px; overflow:hidden; background:var(--surface)}
+.ans-q{padding:14px 16px; background:color-mix(in srgb,var(--c-ask) 10%,var(--surface)); color:var(--ink); font-size:16px; border-bottom:1px solid var(--line)}
+.ans .sec{padding:14px 16px}
+.ans .sec b{display:inline-block; font-size:12.5px; font-weight:600; padding:2px 10px; border-radius:999px; margin-bottom:8px; background:color-mix(in srgb,var(--c-log) 14%,var(--surface)); color:var(--c-log)}
+.ans .sec.med{background:color-mix(in srgb,var(--c-set) 7%,var(--surface)); border-top:1px solid var(--line)}
+.ans .sec.med b{background:color-mix(in srgb,var(--c-set) 16%,var(--surface)); color:var(--c-set)}
+.ans ul{margin:0; padding-inline-start:20px; display:grid; gap:8px; line-height:1.65}
+.ans .sec.med p{font-size:14px; line-height:1.65}
 </style>
 </head>
 <body>
@@ -651,17 +664,24 @@ h1{background:linear-gradient(90deg,var(--c-add),var(--c-log)); -webkit-backgrou
   <section class="card stack" id="askcard" data-tab="ask" aria-labelledby="ah">
     <h2 id="ah">المساعد</h2>
     <p class="small">بيجاوب من التسجيلات اللي في البرنامج بس. بيفرّق بين اللي اتسجل وبين التحليل الطبي، ومش بيقترح جرعات ولا بيغيّر علاج.</p>
-    <div class="chips" id="askchips">
-      <button type="button" class="ghost" data-q="السكر ارتفع ليه النهاردة؟">السكر ارتفع ليه النهاردة؟</button>
-      <button type="button" class="ghost" data-q="إيه أكتر وجبة ارتبطت بارتفاع القراءات؟">أكتر وجبة ارتبطت بالارتفاع</button>
-      <button type="button" class="ghost" data-q="اعمل ملخص للأسبوع">ملخص الأسبوع</button>
-      <button type="button" class="ghost" data-q="إيه البيانات الناقصة في سجلي؟">البيانات الناقصة</button>
+    <div class="field">
+      <label for="askpick">اختار السؤال</label>
+      <select id="askpick">
+        <option value="">اختار سؤال…</option>
+        <optgroup label="النهاردة">
+          <option>السكر ارتفع ليه النهاردة؟</option>
+          <option>إيه الجرعات المتسجلة النهاردة؟</option>
+        </optgroup>
+        <optgroup label="الأسبوع والوجبات">
+          <option>اعمل ملخص للأسبوع</option>
+          <option>إيه أكتر وجبة ارتبطت بارتفاع القراءات؟</option>
+        </optgroup>
+        <optgroup label="السجل">
+          <option>إيه البيانات الناقصة في سجلي؟</option>
+        </optgroup>
+      </select>
     </div>
-    <div class="chatlog" id="chatlog" role="log" aria-live="polite"></div>
-    <form class="askrow" id="askform" autocomplete="off">
-      <input id="askin" type="text" placeholder="اكتب سؤالك…" aria-label="سؤالك">
-      <button class="primary" type="submit" style="min-width:72px">اسأل</button>
-    </form>
+    <div id="askout" class="askout" role="region" aria-live="polite"></div>
   </section>
 
   <!-- ===== screen 4: settings ===== -->
@@ -1784,7 +1804,6 @@ function patternsHTML(E){
 }
 
 /* ---------- assistant (answers only from the recorded data) ---------- */
-var chat=[];
 function nrm(t){return String(t||'').replace(/[ً-ٟـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[؟?!.,،:]/g,' ')}
 function hasAny(t,a){return a.some(function(w){return t.indexOf(w)>=0})}
 function askIntent(q){
@@ -1889,18 +1908,15 @@ function answer(q){
     {obs:['مفهمتش السؤال. جرّب واحد من الأسئلة اللي فوق.'],med:null};
 }
 function renderChat(){
-  var el=$('#chatlog'); if(!el)return;
-  if(!chat.length)chat.push({bot:true,r:{obs:['اسألني عن التسجيلات: ليه السكر ارتفع النهاردة، أكتر وجبة ارتبطت بالارتفاع، ملخص الأسبوع، أو البيانات الناقصة.'],med:null}});
-  el.innerHTML=chat.map(function(m){
-    if(!m.bot)return '<div class="bub me">'+esc(m.t)+'</div>';
-    return '<div class="bub bot"><div class="sec"><b>من التسجيلات</b><ul>'+m.r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(m.r.med?'<div class="sec med"><b>التحليل الطبي</b>'+esc(m.r.med)+'</div>':'')+'</div>';
-  }).join('');
-  var last=el.lastElementChild; if(last&&chat.length>1)last.scrollIntoView({block:'nearest'});
+  var el=$('#askout'); if(!el)return;
+  if(!askState){el.innerHTML='<div class="askempty"><b>اختار سؤال من القايمة</b><span>هتلاقي الإجابة هنا من تسجيلاتك.</span></div>'; return}
+  var r=askState.r;
+  el.innerHTML='<div class="ans"><h3 class="ans-q">'+esc(askState.q)+'</h3>'+
+    '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+
+    (r.med?'<div class="sec med"><b>التحليل الطبي</b><p>'+esc(r.med)+'</p></div>':'')+'</div>';
 }
-function ask(q){q=String(q||'').trim(); if(!q)return; chat.push({t:q}); chat.push({bot:true,r:answer(q)}); if(chat.length>40)chat.splice(0,chat.length-40); renderChat(); $('#askin').value=''}
-$('#askform').addEventListener('submit',function(ev){ev.preventDefault(); ask($('#askin').value)});
-$('#askchips').addEventListener('click',function(ev){var b=ev.target.closest('button[data-q]'); if(b)ask(b.dataset.q)});
-
+var askState=null;
+$('#askpick').addEventListener('change',function(){var q=this.value; askState=q?{q:q,r:answer(q)}:null; renderChat()});
 
 /* ---------- collapsible groups in settings and report data ---------- */
 function accordion(root,openFirst){
