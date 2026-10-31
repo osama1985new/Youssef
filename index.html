@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#E8EFF2">
+<meta name="theme-color" content="#F3F6F8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="متابعة السكر">
@@ -312,7 +312,8 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
 .chips{display:flex; flex-wrap:wrap; gap:8px}
 .chips button{min-height:40px}
 .askrow{display:flex; gap:8px}
-.askrow input{flex:1}
+.askrow input{flex:1; min-width:0}
+.askrow .primary{width:auto; flex:none; padding-inline:22px}
 
 /* food photo review */
 .photo{display:flex; flex-direction:column; gap:8px}
@@ -373,6 +374,108 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
 .primary{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 100%)}
 .card{border-color:color-mix(in srgb, var(--accent) 12%, var(--line))}
 .tabs button[aria-current=page]{background:color-mix(in srgb, var(--accent) 16%, var(--surface))}
+
+/* ===== professional look v2 ===== */
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --field:#FFFFFF; --ink:#0F1F2A; --muted:#5B6E7C; --line:#E1E8ED;
+  --accent:#0D7480; --accent-soft:#E3F1F3;
+  --tint-read:#F7F9FA; --tint-food:#F7F9FA; --tint-ins:#F7F9FA;
+  --shadow:0 1px 2px rgba(15,31,42,.05), 0 8px 24px rgba(15,31,42,.06);
+  --ring:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0B1419; --surface:#131F26; --field:#18272F; --line:#24363F; --accent:#4FC3CE; --ink:#E8F0F4; --muted:#9DB1BD; --accent-soft:#16373D;
+    --tint-read:#16232B; --tint-food:#16232B; --tint-ins:#16232B; --ring:0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent)}
+}
+body{letter-spacing:.005em}
+h1{font-size:23px; letter-spacing:-.01em}
+h2{font-size:18px; letter-spacing:-.005em}
+.wrap{gap:16px}
+.top{padding-bottom:2px}
+.logo{background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#000)); color:#fff; border-radius:13px; width:44px; height:44px; box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 35%,transparent)}
+.card{border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow)}
+.card>h2{padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:2px}
+.hero{border-radius:20px; padding:18px; border:1px solid var(--line); border-inline-start:5px solid var(--st);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--st) 7%,var(--surface)),var(--surface)); box-shadow:var(--shadow)}
+.big .num{font-size:60px; letter-spacing:-.02em}
+.pill{padding:5px 14px; font-size:13.5px; letter-spacing:.01em}
+.today{border-top:1px solid var(--line)}
+.panel{background:var(--tint-read); border:1px solid var(--line); border-radius:16px; padding:16px}
+.panel h3{font-size:14px; text-transform:none; color:var(--muted); letter-spacing:.02em}
+.panel h3::before{height:14px; width:3px}
+input[type=text],input[type=password],input[type=time],input[type=datetime-local],input[type=date],select{
+  background:var(--field); border:1.5px solid var(--line); border-radius:12px; min-height:50px; transition:border-color .15s, box-shadow .15s}
+input:focus,select:focus{outline:none; border-color:var(--accent); box-shadow:var(--ring)}
+.stepper{border-radius:12px; background:var(--field)}
+.stepper:focus-within{box-shadow:var(--ring)}
+button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 92%,#fff),var(--accent)); color:var(--on-accent); border:0; border-radius:14px; min-height:54px; font-weight:600; font-size:17px; box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 30%,transparent)}
+button.primary:active{transform:translateY(1px); box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 30%,transparent)}
+button.ghost,.ghost{border-radius:12px; border:1.5px solid var(--line); background:var(--surface); min-height:48px; font-weight:500}
+button.ghost:active{background:var(--accent-soft)}
+.tabs{background:color-mix(in srgb,var(--surface) 88%,transparent); -webkit-backdrop-filter:saturate(1.4) blur(14px); backdrop-filter:saturate(1.4) blur(14px); border-top:1px solid var(--line); box-shadow:0 -6px 24px rgba(15,31,42,.07)}
+.tabs button{font-size:12px; border-radius:14px; position:relative; font-weight:500}
+.tabs button[aria-current=page]{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.alertbar{border-radius:16px}
+.mi{border-radius:14px}
+.day{border-radius:16px}
+table{font-size:14px}
+.empty{color:var(--muted)}
+.report{border-radius:18px}
+.dcard{border-radius:14px; box-shadow:0 1px 2px rgba(15,31,42,.04)}
+.bub.bot{border-radius:16px; border-end-end-radius:6px}
+.bub.me{border-radius:16px; border-end-start-radius:6px}
+
+/* ===== organization v3 ===== */
+form#f{counter-reset:step}
+form#f .panel>h3{counter-increment:step; display:flex; align-items:center; gap:10px; font-size:15px; color:var(--ink)}
+form#f .panel>h3::before{content:counter(step); width:24px; height:24px; border-radius:50%; background:var(--accent); color:var(--on-accent); font-size:13px; font-weight:600; display:grid; place-items:center; flex:none; margin:0}
+form#f .panel.p-food>h3::before,form#f .panel.p-ins>h3::before{background:var(--accent)}
+.stepper input{border:0!important; box-shadow:none!important; background:transparent!important; min-height:48px; border-radius:0!important}
+.acc{border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden}
+.acc>summary{list-style:none; cursor:pointer; padding:14px 16px; font-family:var(--f-display); font-weight:600; font-size:15.5px; display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:52px}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary::after{content:""; width:9px; height:9px; border-inline-end:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); transition:transform .2s; margin-inline-end:4px}
+.acc[open]>summary::after{transform:rotate(-135deg)}
+.acc[open]>summary{border-bottom:1px solid var(--line); background:var(--tint-read)}
+.accb{padding:14px 16px 16px; display:flex; flex-direction:column; gap:14px}
+#set,#medcard{gap:12px}
+
+/* ===== colors v4 ===== */
+:root{--c-add:#0D7480; --c-log:#2F6DB5; --c-rep:#6B5BB8; --c-ask:#C2557A; --c-set:#B8741A; --c-food:#2E8B57; --c-ins:#2F6DB5; --c-ext:#8A63B8}
+@media (prefers-color-scheme: dark){:root{--c-add:#4FC3CE; --c-log:#7EB1F2; --c-rep:#AE9FF2; --c-ask:#F08FB0; --c-set:#F2AE5C; --c-food:#66D193; --c-ins:#7EB1F2; --c-ext:#C3A4F0}}
+body{background:linear-gradient(180deg,color-mix(in srgb,var(--c-add) 9%,var(--bg)) 0,var(--bg) 280px) fixed,var(--bg)}
+/* panels in the entry form */
+.panel{--pc:var(--c-add); background:color-mix(in srgb,var(--pc) 6%,var(--surface)); border-color:color-mix(in srgb,var(--pc) 24%,var(--line))}
+.panel.p-food{--pc:var(--c-food)} .panel.p-ins{--pc:var(--c-ins)} .panel.p-extra{--pc:var(--c-ext)}
+form#f .panel>h3::before{background:var(--pc)!important; color:#fff}
+form#f .panel>h3{color:var(--pc)}
+@media (prefers-color-scheme: dark){form#f .panel>h3::before{color:#06141a}}
+.panel input[type=text],.panel input[type=time],.panel select,.panel input[type=datetime-local]{border-color:color-mix(in srgb,var(--pc) 28%,var(--line))}
+/* page cards get a colored top edge */
+.card[data-tab=add]{border-top:4px solid var(--c-add)} .card[data-tab=log]{border-top:4px solid var(--c-log)}
+.card[data-tab=report]{border-top:4px solid var(--c-rep)} .card[data-tab=ask]{border-top:4px solid var(--c-ask)} .card[data-tab=set]{border-top:4px solid var(--c-set)}
+.card>h2{color:var(--ink)}
+#logsec>h2,#logsec h2{color:var(--c-log)}
+/* tabs: each with its own color when active */
+.tabs button[data-go=add][aria-current=page]{--tc:var(--c-add)} .tabs button[data-go=log][aria-current=page]{--tc:var(--c-log)}
+.tabs button[data-go=report][aria-current=page]{--tc:var(--c-rep)} .tabs button[data-go=ask][aria-current=page]{--tc:var(--c-ask)} .tabs button[data-go=set][aria-current=page]{--tc:var(--c-set)}
+.tabs button[aria-current=page]{color:var(--tc,var(--accent)); background:color-mix(in srgb,var(--tc,var(--accent)) 14%,var(--surface))}
+/* accordion groups: colored marker */
+.acc{border-inline-start:4px solid var(--ac,var(--c-set))}
+.acc:nth-of-type(6n+1){--ac:var(--c-add)} .acc:nth-of-type(6n+2){--ac:var(--c-ins)} .acc:nth-of-type(6n+3){--ac:var(--c-rep)}
+.acc:nth-of-type(6n+4){--ac:var(--c-food)} .acc:nth-of-type(6n+5){--ac:var(--c-set)} .acc:nth-of-type(6n){--ac:var(--c-ask)}
+.acc[open]>summary{background:color-mix(in srgb,var(--ac) 8%,var(--surface)); color:var(--ac)}
+/* chips and buttons */
+.chips button{border-color:color-mix(in srgb,var(--c-ask) 40%,var(--line)); color:var(--ink)}
+.chips button:nth-child(2){border-color:color-mix(in srgb,var(--c-food) 45%,var(--line))}
+.chips button:nth-child(3){border-color:color-mix(in srgb,var(--c-log) 45%,var(--line))}
+.chips button:nth-child(4){border-color:color-mix(in srgb,var(--c-set) 45%,var(--line))}
+#presets button[aria-pressed=true]{background:color-mix(in srgb,var(--c-rep) 14%,var(--surface)); border-color:var(--c-rep); color:var(--c-rep); font-weight:600}
+.logo{background:linear-gradient(145deg,var(--c-add),var(--c-log))}
+.bub.me{background:var(--c-ask)}
+@media (prefers-color-scheme: dark){.bub.me{color:#1c0a12}}
+.day{border-top:3px solid color-mix(in srgb,var(--c-log) 55%,var(--line))}
+h1{background:linear-gradient(90deg,var(--c-add),var(--c-log)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
 </style>
 </head>
 <body>
@@ -402,6 +505,7 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
   <form class="card stack" id="f" novalidate data-tab="add">
     <h2>تسجيل جديد</h2>
     <div class="panel p-read">
+      <h3>قراءة السكر</h3>
       <div class="two">
         <div class="field"><label for="slot">وقت القياس</label><select id="slot"></select><p class="small" id="prehint" hidden style="margin-top:6px">قبل الوجبة: السكر والأكل والأبيدرا وسن القلم ومكان الحقن إجباريين.</p></div>
         <div class="field"><label for="g">السكر <em>(mg/dL)</em></label><input id="g" type="text" inputmode="numeric" autocomplete="off" placeholder="120"></div>
@@ -462,6 +566,8 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     <p class="msg high" id="injhint" hidden></p>
     </div>
 
+    <div class="panel p-extra">
+      <h3>إضافات <em style="font-style:normal;font-weight:400">(اختياري)</em></h3>
     <details class="more">
       <summary>الوقت وملاحظة</summary>
       <div class="stack" style="margin-top:8px">
@@ -477,6 +583,7 @@ body{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var
     </div>
     <p class="msg" id="khint" hidden></p>
     <div class="supp" id="supp"><span class="lbl">المكملات</span></div>
+    </div>
     <div class="editbar" id="editbar" hidden><span>بتعدّل تسجيل قديم</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
     <button class="primary" id="save" type="submit">حفظ التسجيل</button>
@@ -1793,6 +1900,21 @@ function renderChat(){
 function ask(q){q=String(q||'').trim(); if(!q)return; chat.push({t:q}); chat.push({bot:true,r:answer(q)}); if(chat.length>40)chat.splice(0,chat.length-40); renderChat(); $('#askin').value=''}
 $('#askform').addEventListener('submit',function(ev){ev.preventDefault(); ask($('#askin').value)});
 $('#askchips').addEventListener('click',function(ev){var b=ev.target.closest('button[data-q]'); if(b)ask(b.dataset.q)});
+
+
+/* ---------- collapsible groups in settings and report data ---------- */
+function accordion(root,openFirst){
+  if(!root)return;
+  [].slice.call(root.children).filter(function(h){return h.tagName==='H3'}).forEach(function(h,i){
+    var d=document.createElement('details'); d.className='acc'; if(openFirst&&i===0)d.open=true;
+    var sm=document.createElement('summary'); sm.textContent=h.textContent;
+    var body=document.createElement('div'); body.className='accb';
+    root.insertBefore(d,h); d.appendChild(sm); d.appendChild(body);
+    var n=h.nextSibling; h.remove();
+    while(n&&!(n.nodeType===1&&n.tagName==='H3')){var nx=n.nextSibling; if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))body.appendChild(n); else if(n.parentNode)n.parentNode.removeChild(n); n=nx}
+  });
+}
+accordion($('#set'),true); accordion($('#medcard'),true);
 
 /* ---------- render all ---------- */
 function render(){
