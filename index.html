@@ -645,6 +645,10 @@ h1{background:linear-gradient(90deg,var(--c-add),var(--c-log)); -webkit-backgrou
       <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
     </div>
     <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
+    <h3>زيارة الدكتور</h3>
+    <div class="field"><label for="vlast">آخر زيارة (التاريخ والوقت)</label><input id="vlast" type="datetime-local"></div>
+    <div class="field"><label for="vnext">الزيارة الجاية (التاريخ والوقت)</label><input id="vnext" type="datetime-local"></div>
+    <div class="field"><label for="vnote">ملاحظات الدكتور <em>(اختياري)</em></label><input id="vnote" type="text" maxlength="300" autocomplete="off" placeholder="مثلاً: يراجع الأكل، تحليل دم الأسبوع الجاي"></div>
     <h3>التحليل التراكمي (HbA1c)</h3>
     <p class="small">كل 3 شهور تقريباً. البرنامج بيفكرك لما الميعاد يقرّب.</p>
     <div class="two">
@@ -924,7 +928,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1139,6 +1143,7 @@ function careNotes(E){
       if(a.site===b.site&&now-a.d.getTime()<2*DAY)out.push('آخر حقنتين في نفس المكان ('+SITE_LABEL[a.site]+'). غيّر مكان الحقن.');
     }
   }
+  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&vh<=72)out.push('زيارة الدكتور '+(vh<24?'النهاردة':'بعد '+Math.ceil(vh/24)+' يوم')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
   var hasOld=E.some(function(e){return dayKey(e.d)<tk});
   var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
   if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
@@ -1630,7 +1635,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||'';
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
   SET_FIELDS.forEach(function(f){var el=$('#'+f[0]); if(el!==a)el.value=settings[f[1]]==null?'':settings[f[1]]});
@@ -1649,7 +1654,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null;
+  out.bodyDate=$('#bodyd').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
@@ -1699,6 +1704,10 @@ function reportInfo(){
   var h='<h3>بيانات أساسية</h3>';
   if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. مؤشر الكتلة للمراهقين بيتقيّم بمنحنيات النمو عند الدكتور.':'')+'</p>':'');
   else h+='<p class="cap">الوزن والطول والضغط: لسه ما اتسجلوش.</p>';
+  var vl=s.visitLast?new Date(s.visitLast):null, vn=s.visitNext?new Date(s.visitNext):null;
+  if(vl||vn||s.visitNote){
+    h+='<h3>زيارة الدكتور</h3><dl class="rsum">'+(vl?'<div><dt>آخر زيارة</dt><dd><small>'+dayFull(vl)+' · '+timeStr(vl)+'</small></dd></div>':'')+(vn?'<div><dt>الزيارة الجاية</dt><dd><small>'+dayFull(vn)+' · '+timeStr(vn)+(vn<now?' <span class="st-late">(فات ميعادها)</span>':'')+'</small></dd></div>':'')+'</dl>'+(s.visitNote?'<p class="cap">ملاحظات الدكتور: '+esc(s.visitNote)+'</p>':'');
+  }
   var a=s.a1cDate?new Date(s.a1cDate+'T12:00:00'):null, nx=a?addMonthsISO(s.a1cDate,3):null;
   h+='<dl class="rsum"><div><dt>آخر تحليل تراكمي (HbA1c)</dt><dd>'+(s.a1cVal?fmt(s.a1cVal)+' <small>%</small>':(a?'—':'غير مسجل'))+(a?' <small>بتاريخ '+dayFull(a)+'</small>':'')+'</dd></div>'+
     (nx?'<div><dt>الميعاد التقريبي للجاي</dt><dd><small>'+dayFull(nx)+(nx<now?' <span class="st-late">(فات ميعاده)</span>':'')+'</small></dd></div>':'')+'</dl>';
@@ -1889,6 +1898,7 @@ function ansMissing(){
   var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا من غير وقت الحقن.');
   if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return dayKey(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
   var s=settings;
+  if(s.visitNext&&new Date(s.visitNext)<now)obs.push('تاريخ الزيارة الجاية للدكتور فات. حدّث الموعد.');
   if(!s.a1cDate)obs.push('مفيش تاريخ لآخر تحليل تراكمي.'); else if(addMonthsISO(s.a1cDate,3)<now)obs.push('ميعاد التحليل التراكمي فات (آخر مرة '+dayFull(new Date(s.a1cDate+'T12:00:00'))+').');
   var nd=checksList().filter(function(c){return c.n&&!c.d}).map(function(c){return c.n}); if(nd.length)obs.push('فحوصات من غير تاريخ آخر مرة: '+nd.join('، ')+'.');
   if(!s.wt||!s.ht||!s.bps)obs.push('الوزن أو الطول أو الضغط لسه ما اتسجلوش (في صفحة التقرير).'); else if(s.bodyDate&&new Date(s.bodyDate+'T12:00:00')<now-90*DAY)obs.push('قياس الوزن والطول والضغط عدّى عليه أكتر من 3 شهور.');
