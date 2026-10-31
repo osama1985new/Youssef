@@ -197,7 +197,9 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .dose.a{color:var(--apidra); background:color-mix(in srgb, var(--apidra) 12%, var(--surface))}
 .dose.t{color:var(--tresiba); background:color-mix(in srgb, var(--tresiba) 12%, var(--surface))}
 .mealtxt{grid-area:meal; font-size:14px}
-.note{grid-area:note; font-size:14px; color:var(--muted)}
+.notes{grid-area:note; display:flex; flex-direction:column; gap:4px}
+.note{font-size:14px; color:var(--muted)}
+.dose.c{color:var(--high); background:color-mix(in srgb, var(--high) 13%, var(--surface)); border:1px solid color-mix(in srgb, var(--high) 35%, transparent)}
 .del{grid-area:del; justify-self:end; border:0; background:none; color:var(--muted); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
 .del[data-armed]{color:var(--low); font-weight:600}
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
@@ -1303,7 +1305,7 @@ function readKet(){
 function hm(t){var p=String(t).split(':'); return timeStr(new Date(2000,0,1,Number(p[0])||0,Number(p[1])||0))}
 function checksList(){return Array.isArray(settings.checks)?settings.checks:DEFAULT_CHECKS}
 function extraText(e){
-  var p=[]; if(e.corr)p.push('جرعة تصحيح'); if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
+  var p=[]; if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
   (e.supp||[]).forEach(function(k){if(SUPP_LABEL[k])p.push(SUPP_LABEL[k])});
   return esc(p.join(' · '));
 }
@@ -1332,12 +1334,10 @@ function renderLog(E){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة'+(e.tresibaTime?' · '+hm(e.tresibaTime):'')+'</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (من غير أكل)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة'+(e.tresibaTime?' · '+hm(e.tresibaTime):'')+'</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
-        (extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+
-        (e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+
-        (e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</li>';
+        ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
     });
     html+='</ul></article>';
   });
