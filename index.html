@@ -734,6 +734,9 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
 .dcnt{min-width:28px; height:28px; border-radius:999px; background:var(--c-log); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:600; padding:0 8px; font-variant-numeric:tabular-nums}
 @media (prefers-color-scheme: dark){.dcnt{color:#0b1217}}
 #log{display:flex; flex-direction:column; gap:10px}
+
+.wkh{margin:6px 2px 0; font-size:13px; font-weight:600; color:var(--muted); font-family:var(--f-body)}
+.dcnt.z{background:var(--line); color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1175,7 +1178,7 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
-var mode='local', pin=lsGet(LS_P,''), daysShown=7, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
+var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
 pin=normPin(pin);
 var mealItems=[], shownAlertId=null, syncErr='', role='edit', prot=false;
@@ -1570,14 +1573,16 @@ function renderLog(E){
   E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
   var html='';
-  var cutoff=dayKey(new Date(Date.now()-(daysShown-1)*DAY)), shown=order.filter(function(k){return k>=cutoff});
-  shown.forEach(function(k){
-    var G=groups[k], d=G[0].d;
+  var t0=new Date(), since=(t0.getDay()+1)%7, nDays=since+1+(weeksShown-1)*7, cutoff='';
+  for(var di=0;di<nDays;di++){
+    var d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()-di,12), k=dayKey(d), G=groups[k]||[];
+    cutoff=k;
+    if(di===0||d.getDay()===5){var ws=new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+1)%7),12); html+='<h4 class="wkh">أسبوع من السبت '+esc(ws.toLocaleDateString(LOC,{day:'numeric',month:'long'}))+'</h4>'}
     var gs=G.filter(function(e){return e.glucose!=null});
     var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
     var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
     var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
-    html+='<details class="day" data-k="'+k+'"'+(openDays[k]?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt">'+G.length+'</span></summary><ul class="rows">';
+    html+='<details class="day" data-k="'+k+'"'+(openDays[k]?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">مفيش تسجيلات في اليوم ده</p></li>');
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
@@ -1588,9 +1593,8 @@ function renderLog(E){
         ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
     });
     html+='</ul></details>';
-  });
-  if(!shown.length)html+='<div class="card"><p class="empty">مفيش تسجيلات في الأسبوع ده.</p></div>';
-  if(order.length>shown.length)html+='<button type="button" class="ghost" id="more">عرض أسبوع أقدم</button>';
+  }
+  if(order.some(function(k){return k<cutoff}))html+='<button type="button" class="ghost" id="more">عرض الأسبوع الأقدم</button>';
   el.innerHTML=html;
 }
 
@@ -2219,7 +2223,7 @@ document.addEventListener('click',function(ev){
   if(t.id==='showt'){tAsked=true; renderHint(prep()); return}
   if('useplan' in t.dataset){$('#t').value=String(settings.plan); syncInj(); return}
   if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; syncInj(); toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
-  if(t.id==='more'){daysShown+=7; renderLog(prep()); return}
+  if(t.id==='more'){weeksShown++; renderLog(prep()); return}
   if(t.classList.contains('edt')){startEdit(t.dataset.id); return}
   if(t.classList.contains('del')){
     if(t.dataset.armed){
