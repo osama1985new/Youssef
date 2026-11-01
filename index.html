@@ -1570,13 +1570,14 @@ function renderLog(E){
   E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
   var html='';
-  order.slice(0,daysShown).forEach(function(k){
+  var cutoff=dayKey(new Date(Date.now()-(daysShown-1)*DAY)), shown=order.filter(function(k){return k>=cutoff});
+  shown.forEach(function(k){
     var G=groups[k], d=G[0].d;
     var gs=G.filter(function(e){return e.glucose!=null});
     var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
     var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
     var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
-    html+='<details class="day" data-k="'+k+'"'+(openDays[k]?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3><p class="day-sum">'+sum.join(' · ')+'</p></div><span class="dcnt">'+G.length+'</span></summary><ul class="rows">';
+    html+='<details class="day" data-k="'+k+'"'+(openDays[k]?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt">'+G.length+'</span></summary><ul class="rows">';
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
@@ -1588,7 +1589,8 @@ function renderLog(E){
     });
     html+='</ul></details>';
   });
-  if(order.length>daysShown)html+='<button type="button" class="ghost" id="more">عرض أيام أقدم</button>';
+  if(!shown.length)html+='<div class="card"><p class="empty">مفيش تسجيلات في الأسبوع ده.</p></div>';
+  if(order.length>shown.length)html+='<button type="button" class="ghost" id="more">عرض أسبوع أقدم</button>';
   el.innerHTML=html;
 }
 
