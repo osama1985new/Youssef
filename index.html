@@ -722,6 +722,18 @@ h3{color:var(--ink)}
 /* primary buttons follow page color */
 button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 88%,#fff),var(--pt))}
 @media (prefers-color-scheme: dark){.top .date,.top .date .clk{color:var(--c-add)!important} .rsum>div,.kpis div{color:#111}}
+
+/* ===== v12: each day is a collapsible list ===== */
+.day>summary{list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:color-mix(in srgb,var(--c-log) 11%,var(--surface)); min-height:64px}
+.day>summary::-webkit-details-marker{display:none}
+.day>summary::after{content:""; width:9px; height:9px; border-inline-end:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); transition:transform .2s; flex:none; margin-inline-start:2px}
+.day[open]>summary::after{transform:rotate(-135deg)}
+.day[open]>summary{border-bottom:1px solid var(--line)}
+.dsum{flex:1; min-width:0}
+.dsum h3{font-size:16px; color:var(--c-log); margin:0}
+.dcnt{min-width:28px; height:28px; border-radius:999px; background:var(--c-log); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:600; padding:0 8px; font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme: dark){.dcnt{color:#0b1217}}
+#log{display:flex; flex-direction:column; gap:10px}
 </style>
 </head>
 <body>
@@ -1550,6 +1562,7 @@ function mealText(e){
 }
 
 /* ---------- log ---------- */
+var openDays={};
 function renderLog(E){
   var el=$('#log');
   if(!E.length){el.innerHTML='<div class="card"><p class="empty">لسه مفيش تسجيلات. أول قراءة أو جرعة هتظهر هنا بعد ما تحفظها.</p></div>'; return}
@@ -1563,7 +1576,7 @@ function renderLog(E){
     var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
     var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
     var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
-    html+='<article class="day"><header><h3>'+dayLong(d)+'</h3><p class="day-sum">'+sum.join(' · ')+'</p></header><ul class="rows">';
+    html+='<details class="day" data-k="'+k+'"'+(openDays[k]?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3><p class="day-sum">'+sum.join(' · ')+'</p></div><span class="dcnt">'+G.length+'</span></summary><ul class="rows">';
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
@@ -1573,7 +1586,7 @@ function renderLog(E){
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
     });
-    html+='</ul></article>';
+    html+='</ul></details>';
   });
   if(order.length>daysShown)html+='<button type="button" class="ghost" id="more">عرض أيام أقدم</button>';
   el.innerHTML=html;
@@ -2161,6 +2174,8 @@ function renderChat(){
 }
 var askState=null;
 $('#askpick').addEventListener('change',function(){var q=this.value; askState=q?{q:q,r:answer(q)}:null; renderChat()});
+
+$('#log').addEventListener('toggle',function(ev){var d=ev.target; if(d&&d.classList&&d.classList.contains('day'))openDays[d.dataset.k]=d.open},true);
 
 /* ---------- collapsible groups in settings and report data ---------- */
 function accordion(root,openFirst){
