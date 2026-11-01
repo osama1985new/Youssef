@@ -819,7 +819,8 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
     <button type="button" class="link" id="showt" style="align-self:flex-start; margin:0">+ سجّل ترسيبا</button>
     <div class="hint" id="thint" hidden></div>
     <div class="injrow" id="injrow" hidden>
-      <div class="field"><label for="needle">سن قلم الأنسولين</label><select id="needle"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select></div>
     </div>
     <label class="chk" id="nodosebox" hidden><input type="checkbox" id="nodose"> ماخدتش أبيدرا في الوجبة دي</label>
@@ -1345,8 +1346,8 @@ function syncCorr(){
   var nd=pre&&!hasA; $('#nodosebox').hidden=!nd; if(!nd)$('#nodose').checked=false;
   $('#prehint').hidden=!pre;
 }
-function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
-$('#needle').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
+function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+$('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
 $('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
 (function(){
@@ -1383,10 +1384,12 @@ function careNotes(E){
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var lastInj=inj[inj.length-1];
   if(lastInj&&now-lastInj.d.getTime()<2*DAY){
-    var lastNew=null, lastInfo=null;
-    inj.forEach(function(e){if(e.needle==='new')lastNew=e; if(e.needle==='new'||e.needle==='reuse')lastInfo=e});
-    if(lastInfo&&lastInfo.needle==='reuse'&&(!lastNew||now-lastNew.d.getTime()>=DAY))
-      out.push(lastNew?'سن قلم الأنسولين ماتغيّرش بقاله '+ago(now-lastNew.d.getTime())+'. غيّره قبل الحقنة الجاية.':'سن قلم الأنسولين بيتعاد استخدامه. غيّره قبل الحقنة الجاية.');
+    [['a','أبيدرا'],['t','ترسيبا']].forEach(function(pn){
+      var lastNew=null, lastInfo=null, lastUse=null;
+      inj.forEach(function(e){var v=penNeedle(e,pn[0]); if(!v)return; lastUse=e; if(v==='new')lastNew=e; lastInfo=e});
+      if(lastInfo&&penNeedle(lastInfo,pn[0])==='reuse'&&(!lastNew||now-lastNew.d.getTime()>=DAY)&&now-lastUse.d.getTime()<2*DAY)
+        out.push(lastNew?'سن قلم '+pn[1]+' ماتغيّرش بقاله '+ago(now-lastNew.d.getTime())+'. غيّره قبل حقنة '+pn[1]+' الجاية.':'سن قلم '+pn[1]+' بيتعاد استخدامه. غيّره قبل حقنة '+pn[1]+' الجاية.');
+    });
     var withSite=inj.filter(function(e){return e.site&&SITE_LABEL[e.site]});
     if(withSite.length>=2){
       var a=withSite[withSite.length-1], b=withSite[withSite.length-2];
@@ -1430,7 +1433,8 @@ function renderCare(E){
 }
 function injHint(){
   var el=$('#injhint'), msgs=[];
-  if($('#needle').value==='reuse')msgs.push('سن قلم الأنسولين للاستخدام مرة واحدة. غيّره لو تقدر.');
+  if($('#needle').value==='reuse'&&num($('#a').value)>0)msgs.push('سن قلم أبيدرا للاستخدام مرة واحدة. غيّره لو تقدر.');
+  if($('#needleT').value==='reuse'&&num($('#t').value)>0)msgs.push('سن قلم ترسيبا للاستخدام مرة واحدة. غيّره لو تقدر.');
   var site=$('#site').value;
   if(site){
     var inj=prep().filter(function(e){return (e.apidra>0||e.tresiba>0)&&e.site&&e.id!==editingId});
@@ -1553,8 +1557,13 @@ function readKet(){
 }
 function hm(t){var p=String(t).split(':'); return timeStr(new Date(2000,0,1,Number(p[0])||0,Number(p[1])||0))}
 function checksList(){return Array.isArray(settings.checks)?settings.checks:DEFAULT_CHECKS}
+function penNeedle(e,pen){
+  if(pen==='a')return e.apidra>0?(e.needle||null):null;
+  return e.tresiba>0?(e.needleT||(e.apidra>0?null:e.needle)||null):null;
+}
+function penLbl(name,v){return v==='new'?'سن '+name+' جديد':v==='reuse'?'نفس سن '+name:''}
 function extraText(e){
-  var p=[]; if(e.needle&&NEEDLE[e.needle])p.push(NEEDLE[e.needle]); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
+  var p=[]; var na=penNeedle(e,'a'), nt=penNeedle(e,'t'); if(na)p.push(penLbl('أبيدرا',na)); if(nt)p.push(penLbl('ترسيبا',nt)); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
   (e.supp||[]).forEach(function(k){if(SUPP_LABEL[k])p.push(SUPP_LABEL[k])});
   return esc(p.join(' · '));
 }
@@ -1845,9 +1854,9 @@ function buildReport(){
     '<div><dt>متوسط أبيدرا يوميًا</dt><dd>'+(nd?fmt(apTot/nd):'—')+' <small>وحدة</small></dd></div>'+
     '<div><dt>ترسيبا</dt><dd>'+(trAvg!=null?fmt(trAvg)+' <small>وحدة، '+trE.length+' جرعة مسجلة'+(trAt?'، عادةً حوالي '+trAt:'')+'</small>':'—')+'</dd></div>'+
   '</dl>';
-  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), nw=inj.filter(function(e){return e.needle==='new'}).length, ru=inj.filter(function(e){return e.needle==='reuse'}).length;
+  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
-  var extra=[]; if(inj.length&&(nw||ru))extra.push('سن قلم الأنسولين: جديد في '+nw+' من '+inj.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':'')); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
+  var extra=[]; [['a','أبيدرا'],['t','ترسيبا']].forEach(function(pn){var L=inj.filter(function(e){return penNeedle(e,pn[0])}), nw=L.filter(function(e){return penNeedle(e,pn[0])==='new'}).length, ru=L.length-nw; if(L.length)extra.push('سن قلم '+pn[1]+': جديد في '+nw+' من '+L.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':''))}); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
   var kE=E.filter(function(e){return e.ketT}); if(kE.length){var ord={ok:0,watch:1,danger:2}; var worst=kE.slice().sort(function(a,b){return ord[ketLevel(b.ketT,b.ketV)[0]]-ord[ketLevel(a.ketT,a.ketV)[0]]})[0]; extra.push('تحاليل الكيتون: '+kE.length+' مرة، أعلى نتيجة: '+ketText(worst).replace('كيتون ','').split(' · ')[0])}
   if(extra.length)h+='<p class="sub">'+extra.join(' · ')+'</p>';
   h+=dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
@@ -2146,8 +2155,9 @@ function ansMissing(){
   if(empty.length)obs.push('أيام من غير أي تسجيل: '+empty.map(function(d){return dayLong(d)}).join('، ')+'.');
   var nf=days.filter(function(d){var x=E.filter(function(e){return dayKey(e.d)===dayKey(d)}); return x.length&&!x.some(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')})});
   if(nf.length)obs.push('أيام من غير قراءة صايم أو قبل الفطار: '+nf.map(function(d){return dayLong(d)}).join('، ')+'.');
-  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), nn=inj.filter(function(e){return !e.needle}).length, ns=inj.filter(function(e){return !e.site}).length;
-  if(nn)obs.push(nn+' حقنة من غير تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة من غير تسجيل مكان الحقن.');
+  var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), ns=inj.filter(function(e){return !e.site}).length;
+  var na2=E.filter(function(e){return e.apidra>0&&!penNeedle(e,'a')}).length, nt2=E.filter(function(e){return e.tresiba>0&&!penNeedle(e,'t')}).length;
+  if(na2)obs.push(na2+' حقنة أبيدرا من غير تسجيل سن القلم.'); if(nt2)obs.push(nt2+' حقنة ترسيبا من غير تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة من غير تسجيل مكان الحقن.');
   var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا من غير وقت الحقن.');
   if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return dayKey(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
   var s=settings;
@@ -2270,7 +2280,7 @@ function setEditing(id){
 function cancelEdit(){
   setEditing(null);
   ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-  $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
+  $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
   mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot(); setNow(); $('#ferr').textContent=''; render();
 }
 function startEdit(id){
@@ -2282,7 +2292,7 @@ function startEdit(id){
   $('#t').value=e.tresiba>0?String(e.tresiba):'';
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
-  $('#needle').value=e.needle||''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; $('#corr').checked=!!e.corr; setSupp(e.supp); syncInj();
+  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; $('#corr').checked=!!e.corr; setSupp(e.supp); syncInj();
   $('#nodose').checked=PREMEAL.indexOf(e.slot)>=0&&!(e.apidra>0);
   clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
@@ -2316,16 +2326,18 @@ $('#f').addEventListener('submit',async function(ev){
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة لازم تسجّل: '+miss.join('، ')+'.'; return}
   }
-  if((a>0||t>0)&&(!$('#needle').value||!$('#site').value)){err.textContent='اختار سن قلم الأنسولين ومكان الحقن علشان التسجيل يتحفظ كامل.'; ($('#needle').value?$('#site'):$('#needle')).focus(); return}
+  if(a>0&&!$('#needle').value){err.textContent='اختار سن قلم أبيدرا (جديد ولا نفس السن).'; $('#needle').focus(); return}
+  if(t>0&&!$('#needleT').value){err.textContent='اختار سن قلم ترسيبا (جديد ولا نفس السن).'; $('#needleT').focus(); return}
+  if((a>0||t>0)&&!$('#site').value){err.textContent='اختار مكان الحقن علشان التسجيل يتحفظ كامل.'; $('#site').focus(); return}
   if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا لازم يكون معاها أكل. اختار الأكل، أو علّم "جرعة تصحيح من غير أكل".'; ($('#corrbox').hidden?$('#a'):$('#corr')).focus(); $('#corrbox').hidden=false; return}
   if(t>0&&!$('#ttime').value){err.textContent='اكتب وقت حقن الترسيبا.'; $('#ttime').focus(); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:(a>0||t>0)?($('#needle').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?$('#ttime').value:null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
+    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?$('#ttime').value:null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
+    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
     setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
