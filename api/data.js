@@ -95,9 +95,10 @@ function cleanEntry(e) {
     }
   }
   const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
+  const needleT = tresiba > 0 && (e.needleT === 'new' || e.needleT === 'reuse') ? e.needleT : null;
   const site = SITE_KEYS.includes(e.site) ? e.site : null;
   const tresibaTime = tresiba > 0 && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(e.tresibaTime || '')) ? e.tresibaTime : null;
-  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
+  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
 const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150] };
