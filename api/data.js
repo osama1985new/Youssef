@@ -6,7 +6,7 @@ const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_R
 const PIN = process.env.FAMILY_PIN;
 const SUPP_KEYS = ['omega', 'vit'];
 const SITE_KEYS = ['ab_r', 'ab_l', 'th_r', 'th_l', 'ar_r', 'ar_l'];
-const SLOTS = ['fast','bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','bed','other'];
+const SLOTS = ['fast','bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','sn','bed','other'];
 
 async function redis(args) {
   const r = await fetch(REDIS_URL, {
