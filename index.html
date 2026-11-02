@@ -1572,8 +1572,8 @@ function penNeedle(e,pen){
   return e.tresiba>0?(e.needleT||(e.apidra>0?null:e.needle)||null):null;
 }
 function penLbl(name,v){return v==='new'?'سن '+name+' جديد':v==='reuse'?'نفس سن '+name:''}
-function extraText(e){
-  var p=[]; var na=penNeedle(e,'a'), nt=penNeedle(e,'t'); if(na)p.push(penLbl('أبيدرا',na)); if(nt)p.push(penLbl('ترسيبا',nt)); if(e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
+function extraText(e,rep){
+  var p=[]; var na=penNeedle(e,'a'), nt=penNeedle(e,'t'); if(!rep&&na)p.push(penLbl('أبيدرا',na)); if(!rep&&nt)p.push(penLbl('ترسيبا',nt)); if(!rep&&e.site&&SITE_LABEL[e.site])p.push(SITE_LABEL[e.site]);
   (e.supp||[]).forEach(function(k){if(SUPP_LABEL[k])p.push(SUPP_LABEL[k])});
   return esc(p.join(' · '));
 }
@@ -1866,9 +1866,6 @@ function buildReport(){
   '</dl>';
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
-  var extra=[]; [['a','أبيدرا'],['t','ترسيبا']].forEach(function(pn){var L=inj.filter(function(e){return penNeedle(e,pn[0])}), nw=L.filter(function(e){return penNeedle(e,pn[0])==='new'}).length, ru=L.length-nw; if(L.length)extra.push('سن قلم '+pn[1]+': جديد في '+nw+' من '+L.length+' حقنة'+(ru?' (أُعيد استخدامه '+ru+' مرة)':''))}); if(Object.keys(sd).length)extra.push('المكملات اتسجلت في '+Object.keys(sd).length+' من '+nd+' يوم');
-  var kE=E.filter(function(e){return e.ketT}); if(kE.length){var ord={ok:0,watch:1,danger:2}; var worst=kE.slice().sort(function(a,b){return ord[ketLevel(b.ketT,b.ketV)[0]]-ord[ketLevel(a.ketT,a.ketV)[0]]})[0]; extra.push('تحاليل الكيتون: '+kE.length+' مرة، أعلى نتيجة: '+ketText(worst).replace('كيتون ','').split(' · ')[0])}
-  if(extra.length)h+='<p class="sub">'+extra.join(' · ')+'</p>';
   h+=dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
@@ -1884,7 +1881,7 @@ function buildReport(){
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
     var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba)+'':'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',extraText(e)?extraText(e):'',e.ketT?ketText(e):''].filter(Boolean).join(' · '))+'</td></tr>';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba)+'':'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',].filter(Boolean).join(' · '))+'</td></tr>';
   });
   h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
@@ -2281,8 +2278,8 @@ $('#rprint').addEventListener('click',function(){
 $('#csv').addEventListener('click',function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','جرعة تصحيح','سن قلم أبيدرا','سن قلم ترسيبا','مكان الحقن','مكملات','وقت الترسيبا','كيتون']];
-  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',(e.corr&&e.apidra>0)?'نعم':'',NEEDLE[penNeedle(e,'a')]||'',NEEDLE[penNeedle(e,'t')]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + '),e.tresibaTime||'',e.ketT?ketText(e):''])});
+  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','جرعة تصحيح','وقت الترسيبا']];
+  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',(e.corr&&e.apidra>0)?'نعم':'',e.tresibaTime||''])});
   var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
