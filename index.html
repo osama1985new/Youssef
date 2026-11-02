@@ -812,8 +812,7 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
           <input id="t" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
           <button type="button" data-step="t" data-d="1" aria-label="أكتر">+</button>
         </div>
-        <label for="ttime" style="margin-top:10px">وقت حقن الترسيبا</label>
-        <input id="ttime" type="time">
+        <input id="ttime" type="time" hidden>
       </div>
     </div>
     <button type="button" class="link" id="showt" style="align-self:flex-start; margin:0">+ سجّل ترسيبا</button>
@@ -1558,6 +1557,7 @@ function readKet(){
 }
 function hm(t){var p=String(t).split(':'); return timeStr(new Date(2000,0,1,Number(p[0])||0,Number(p[1])||0))}
 function checksList(){return Array.isArray(settings.checks)?settings.checks:DEFAULT_CHECKS}
+function unitsTxt(n){n=Number(n); return n===1?'وحدة':n===2?'وحدتين':(Number.isInteger(n)&&n>=3&&n<=10)?n+' وحدات':fmt(n)+' وحدة'}
 function penNeedle(e,pen){
   if(pen==='a')return e.apidra>0?(e.needle||null):null;
   return e.tresiba>0?(e.needleT||(e.apidra>0?null:e.needle)||null):null;
@@ -1875,7 +1875,7 @@ function buildReport(){
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
     var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',extraText(e)?extraText(e):'',e.ketT?ketText(e):''].filter(Boolean).join(' · '))+'</td></tr>';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',extraText(e)?extraText(e):'',e.ketT?ketText(e):''].filter(Boolean).join(' · '))+'</td></tr>';
   });
   h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
@@ -2336,12 +2336,11 @@ $('#f').addEventListener('submit',async function(ev){
   if(t>0&&!$('#needleT').value){err.textContent='اختار سن قلم ترسيبا (جديد ولا نفس السن).'; $('#needleT').focus(); return}
   if((a>0||t>0)&&!$('#site').value){err.textContent='اختار مكان الحقن علشان التسجيل يتحفظ كامل.'; $('#site').focus(); return}
   if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا لازم يكون معاها أكل. اختار الأكل، أو علّم "جرعة تصحيح من غير أكل".'; ($('#corrbox').hidden?$('#a'):$('#corr')).focus(); $('#corrbox').hidden=false; return}
-  if(t>0&&!$('#ttime').value){err.textContent='اكتب وقت حقن الترسيبا.'; $('#ttime').focus(); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?$('#ttime').value:null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
+    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?(pad(d.getHours())+':'+pad(d.getMinutes())):null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
     var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; $('#corr').checked=false; $('#nodose').checked=false; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
