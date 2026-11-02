@@ -1875,7 +1875,7 @@ function buildReport(){
     if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
     var st=e.glucose!=null?status(e.glucose)[0]:'';
     var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc(e.note||'')+(extraText(e)?(e.note?' · ':'')+extraText(e):'')+(e.ketT?((e.note||extraText(e))?' · ':'')+esc(ketText(e)):'')+'</td></tr>';
+    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+(e.tresibaTime?' <small>'+hm(e.tresibaTime)+'</small>':''):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',extraText(e)?extraText(e):'',e.ketT?ketText(e):''].filter(Boolean).join(' · '))+'</td></tr>';
   });
   h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
@@ -2267,8 +2267,8 @@ $('#rprint').addEventListener('click',function(){
 $('#csv').addEventListener('click',function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','سن قلم الأنسولين','مكان الحقن','مكملات','وقت الترسيبا','كيتون']];
-  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',NEEDLE[e.needle]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + '),e.tresibaTime||'',e.ketT?ketText(e):''])});
+  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','جرعة تصحيح','سن قلم أبيدرا','سن قلم ترسيبا','مكان الحقن','مكملات','وقت الترسيبا','كيتون']];
+  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',(e.corr&&e.apidra>0)?'نعم':'',NEEDLE[penNeedle(e,'a')]||'',NEEDLE[penNeedle(e,'t')]||'',SITE_LABEL[e.site]||'',(e.supp||[]).map(function(k){return SUPP_LABEL[k]||k}).join(' + '),e.tresibaTime||'',e.ketT?ketText(e):''])});
   var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
