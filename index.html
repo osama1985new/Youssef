@@ -737,6 +737,15 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
 
 .wkh{margin:6px 2px 0; font-size:13px; font-weight:600; color:var(--muted); font-family:var(--f-body)}
 .dcnt.z{background:var(--line); color:var(--muted)}
+
+.ans .sec.chart{border-top:1px solid var(--line)}
+.ans .sec.chart svg{width:100%; height:auto; display:block; direction:ltr}
+.ans .chtt{font-size:13px; font-weight:600; margin:10px 0 4px; color:var(--muted)}
+.ans .tirbar{margin:6px 0}
+
+.ans .tirleg{list-style:none; padding:0; margin:6px 0 0; display:grid; grid-template-columns:repeat(2,1fr); gap:6px 12px; font-size:13.5px}
+.ans .tirleg li{display:flex; align-items:center; gap:6px}
+.ans .tirleg b{display:inline; background:none!important; color:var(--ink)!important; padding:0; margin:0; font-size:13.5px}
 </style>
 </head>
 <body>
@@ -875,7 +884,7 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
     </div>
     <p class="small" id="rangenote" role="status"></p>
     <div class="btnrow">
-      <button type="button" class="ghost" id="rshow">عرض التقرير</button>
+      <button type="button" class="ghost" id="rshow">تحديث التقرير</button>
       <button type="button" class="primary" id="rprint">حفظ PDF</button>
     </div>
     <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
@@ -1328,7 +1337,7 @@ function applyTab(){
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false);
 }
-function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report'&&!$('#report').hidden)buildReport(); if(t==='ask')renderChat()}
+function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport(); if(t==='ask')renderChat()}
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
 
 /* ---------- static UI ---------- */
@@ -2146,7 +2155,12 @@ function ansWeek(){
   obs.push('أبيدرا: '+fmt(r1(ap/Math.max(1,Object.keys(dk).length)))+' وحدة في اليوم (على الأيام المسجلة). ترسيبا اتسجلت '+tr+' مرة.');
   var kt=E.filter(function(e){return e.ketT}); if(kt.length)obs.push('تحاليل الكيتون: '+kt.length+(kt.some(function(e){return ketLevel(e.ketT,e.ketV)[0]!=='ok'})?' (فيها نتيجة فوق الطبيعي)':' (كلها طبيعية)')+'.');
   var P=patterns(E); P.list.slice(0,2).forEach(function(t){obs.push(t)});
-  return {obs:obs,med:MED_DEF};
+  var chart='', st7=midnight(new Date())-6*DAY, svg=chartSVG(E,st7,7,'قراءات السكر في آخر 7 أيام');
+  if(svg)chart+='<p class="chtt">قراءات آخر 7 أيام</p>'+svg;
+  if(S){chart+='<p class="chtt">توزيع القراءات</p><div class="tirbar">'+BAND.map(function(b){var p=S.c[b[0]]/S.n*100; return p>0?'<span style="flex:'+p+';background:'+b[2]+'"></span>':''}).join('')+'</div><ul class="tirleg">'+BAND.map(function(b){return '<li><i style="background:'+b[2]+'"></i>'+b[1]+': <b>'+Math.round(S.c[b[0]]/S.n*100)+'%</b></li>'}).join('')+'</ul>'}
+  var dv=[]; for(var di=6;di>=0;di--){var dd=new Date(st7+di*DAY+DAY/2), v=E.filter(function(e){return e.glucose!=null&&dayKey(e.d)===dayKey(dd)}).map(function(e){return e.glucose}); if(v.length)dv.push({l:WD[dd.getDay()],v:avgOf(v),n:v.length})}
+  if(dv.length>=2)chart+='<p class="chtt">متوسط السكر لكل يوم</p>'+hbarSVG(dv.reverse(),'متوسط السكر لكل يوم');
+  return {obs:obs,med:MED_DEF,chart:chart};
 }
 function ansMissing(){
   var obs=[], all=prep(), tk=dayKey(new Date()), E=sinceDays(7), now=Date.now();
@@ -2186,7 +2200,7 @@ function renderChat(){
   if(!askState){el.innerHTML='<div class="askempty"><b>اختار سؤال من القايمة</b><span>هتلاقي الإجابة هنا من تسجيلاتك.</span></div>'; return}
   var r=askState.r;
   el.innerHTML='<div class="ans"><h3 class="ans-q">'+esc(askState.q)+'</h3>'+
-    '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+
+    '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(r.chart?'<div class="sec chart"><b>الرسم</b>'+r.chart+'</div>':'')+
     (r.med?'<div class="sec med"><b>التحليل الطبي</b><p>'+esc(r.med)+'</p></div>':'')+'</div>';
 }
 var askState=null;
@@ -2246,7 +2260,7 @@ document.addEventListener('click',function(ev){
     }
     return;
   }
-  if(t.parentNode&&t.parentNode.id==='presets'){setPreset(Number(t.dataset.days)); if(!$('#report').hidden)buildReport(); return}
+  if(t.parentNode&&t.parentNode.id==='presets'){setPreset(Number(t.dataset.days)); buildReport(); return}
 });
 ['rfrom','rto'].forEach(function(id){$('#'+id).addEventListener('change',function(){
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed','false')});
@@ -2254,7 +2268,7 @@ document.addEventListener('click',function(ev){
   if(t>today)t=$('#rto').value=today; if(f>today)f=$('#rfrom').value=today;
   if(f&&t&&f>t){if(id==='rfrom')$('#rto').value=f; else $('#rfrom').value=t}
   rangeNote();
-  if(!$('#report').hidden)buildReport();
+  buildReport();
 })});
 function rangeNote(){var r=rangeInputs(), el=$('#rangenote'); if(el)el.textContent=r?'الفترة المختارة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)':''}
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
