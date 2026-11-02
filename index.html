@@ -774,6 +774,37 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 22%,var(--bg)
 h1,.logo{background:linear-gradient(90deg,var(--pt),color-mix(in srgb,var(--pt) 60%,#fff))}
 h1{-webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
 .logo{background:linear-gradient(145deg,var(--pt),color-mix(in srgb,var(--pt) 65%,#000))}
+
+/* v14: stronger, clearly different page colors */
+:root{--c-add:#0A9A6B; --c-log:#1F6FE0; --c-rep:#7B3FD1; --c-ask:#E0306A; --c-set:#E8780C}
+@media (prefers-color-scheme: dark){:root{--c-add:#34D399; --c-log:#60A5FA; --c-rep:#A78BFA; --c-ask:#FB7185; --c-set:#FBA73B}}
+body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 38%,var(--bg)) 0,color-mix(in srgb,var(--pt) 20%,var(--bg)) 500px,color-mix(in srgb,var(--pt) 12%,var(--bg)) 1100px) fixed,var(--bg)!important}
+.card{background:color-mix(in srgb,var(--pt) 9%,var(--surface))!important; border:2px solid color-mix(in srgb,var(--pt) 45%,var(--line))!important}
+.card>h2,#logsec>h2{background:var(--pt); color:#fff!important; margin:-18px -16px 14px; padding:12px 16px; border-radius:12px 12px 0 0}
+.card>h2::before,#logsec>h2::before{background:#fff!important}
+@media (prefers-color-scheme: dark){.card>h2,#logsec>h2{color:#111!important} .card>h2::before,#logsec>h2::before{background:#111!important}}
+.acc>summary{background:color-mix(in srgb,var(--pt) 22%,var(--surface))!important}
+.panel{background:color-mix(in srgb,var(--pt) 14%,var(--surface))!important}
+.tiles>div{background:color-mix(in srgb,var(--pt) 15%,var(--surface))!important}
+.day>summary,.day>header{background:color-mix(in srgb,var(--pt) 24%,var(--surface))!important}
+.tabs{background:color-mix(in srgb,var(--pt) 20%,var(--surface))!important}
+.top{border-bottom:4px solid var(--pt)}
+#logsec>h2{margin:18px 0 10px!important; border-radius:12px!important}
+
+/* v15: calmer but still different per page */
+:root{--c-add:#2F8F7A; --c-log:#4A7FBF; --c-rep:#7E6BB5; --c-ask:#C0607F; --c-set:#B98343}
+@media (prefers-color-scheme: dark){:root{--c-add:#6CCBB5; --c-log:#8DB5E8; --c-rep:#B9A9E6; --c-ask:#E9A0B8; --c-set:#E5B97C}}
+body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)) 0,color-mix(in srgb,var(--pt) 8%,var(--bg)) 500px,color-mix(in srgb,var(--pt) 4%,var(--bg)) 1100px) fixed,var(--bg)!important}
+.card{background:color-mix(in srgb,var(--pt) 4%,var(--surface))!important; border:1px solid color-mix(in srgb,var(--pt) 28%,var(--line))!important}
+.card>h2,#logsec>h2{background:color-mix(in srgb,var(--pt) 14%,var(--surface)); color:var(--pt)!important}
+.card>h2::before,#logsec>h2::before{background:var(--pt)!important}
+@media (prefers-color-scheme: dark){.card>h2,#logsec>h2{color:var(--pt)!important} .card>h2::before,#logsec>h2::before{background:var(--pt)!important}}
+.acc>summary{background:color-mix(in srgb,var(--pt) 10%,var(--surface))!important}
+.panel{background:color-mix(in srgb,var(--pt) 7%,var(--surface))!important}
+.tiles>div{background:color-mix(in srgb,var(--pt) 8%,var(--surface))!important}
+.day>summary,.day>header{background:color-mix(in srgb,var(--pt) 12%,var(--surface))!important}
+.tabs{background:color-mix(in srgb,var(--pt) 9%,var(--surface))!important}
+.top{border-bottom:2px solid color-mix(in srgb,var(--pt) 60%,transparent)}
 </style>
 </head>
 <body>
