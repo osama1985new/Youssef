@@ -874,6 +874,7 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
       <div class="field"><label for="rfrom">من</label><input id="rfrom" type="date"></div>
       <div class="field"><label for="rto">إلى</label><input id="rto" type="date"></div>
     </div>
+    <p class="small" id="rangenote" role="status"></p>
     <div class="btnrow">
       <button type="button" class="ghost" id="rshow">عرض التقرير</button>
       <button type="button" class="primary" id="rprint">حفظ PDF</button>
@@ -1820,14 +1821,14 @@ function rangeInputs(){
   return {from:a.getTime(), to:b.getTime()+DAY, days:Math.round((b-a)/DAY)+1, a:a, b:b};
 }
 function setPreset(n){
-  var t=midnight(new Date());
+  var t=midnight(new Date()); setTimeout(rangeNote,0);
   $('#rto').value=dayKey(new Date(t)); $('#rfrom').value=dayKey(new Date(t-(n-1)*DAY));
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed',String(Number(b.dataset.days)===n))});
 }
 function periodEntries(r){return prep().filter(function(e){var t=e.d.getTime(); return t>=r.from&&t<r.to})}
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
-  if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); return false}
+  if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
   var E=periodEntries(r), G=E.filter(function(e){return e.glucose!=null});
   var vals=G.map(function(e){return e.glucose});
   var avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
@@ -2249,8 +2250,13 @@ document.addEventListener('click',function(ev){
 });
 ['rfrom','rto'].forEach(function(id){$('#'+id).addEventListener('change',function(){
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed','false')});
+  var f=$('#rfrom').value, t=$('#rto').value, today=dayKey(new Date());
+  if(t>today)t=$('#rto').value=today; if(f>today)f=$('#rfrom').value=today;
+  if(f&&t&&f>t){if(id==='rfrom')$('#rto').value=f; else $('#rfrom').value=t}
+  rangeNote();
   if(!$('#report').hidden)buildReport();
 })});
+function rangeNote(){var r=rangeInputs(), el=$('#rangenote'); if(el)el.textContent=r?'الفترة المختارة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)':''}
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
 $('#rprint').addEventListener('click',function(){
   if(!buildReport())return;
