@@ -1597,7 +1597,7 @@ function renderLog(E){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (من غير أكل)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة'+(e.tresibaTime?' · '+hm(e.tresibaTime):'')+'</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (من غير أكل)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
