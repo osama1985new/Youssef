@@ -746,6 +746,12 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
 .ans .tirleg{list-style:none; padding:0; margin:6px 0 0; display:grid; grid-template-columns:repeat(2,1fr); gap:6px 12px; font-size:13.5px}
 .ans .tirleg li{display:flex; align-items:center; gap:6px}
 .ans .tirleg b{display:inline; background:none!important; color:var(--ink)!important; padding:0; margin:0; font-size:13.5px}
+
+.report .daybox{break-inside:avoid; page-break-inside:avoid; margin:0 0 12px; border:1px solid var(--r-line); border-radius:8px; overflow:hidden}
+.report .dayh{background:#E8EEF2; font-weight:700; padding:7px 10px; color:#111; font-size:14.5px}
+.report .daybox .tw{margin:0}
+.report h3{break-after:avoid; page-break-after:avoid}
+@media print{.report .daybox,.report .dcard,.report .rsum>div{break-inside:avoid; page-break-inside:avoid} .report table{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -888,7 +894,7 @@ button.primary,.primary{background:linear-gradient(180deg,color-mix(in srgb,var(
       <button type="button" class="primary" id="rprint">حفظ PDF</button>
     </div>
     <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
-    <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel (CSV)</button>
+    <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel</button>
   </section>
   <section class="card stack" id="medcard" data-tab="report">
     <h2>بيانات للتقرير</h2>
@@ -1874,16 +1880,19 @@ function buildReport(){
     h+='<tr><td>'+s[1]+'</td><td>'+v.length+'</td><td>'+Math.round(v.reduce(function(a,b){return a+b},0)/v.length)+'</td><td>'+Math.min.apply(null,v)+'</td><td>'+Math.max.apply(null,v)+'</td></tr>';
   });
   h+='</tbody></table></div>';
-  h+='<h3>التفاصيل</h3><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
-  var cur='';
-  E.slice().sort(dayOrder).forEach(function(e){
-    var k=dayKey(e.d);
-    if(k!==cur){cur=k; h+='<tr class="dayrow"><td colspan="7">'+dayLong(e.d)+'</td></tr>'}
-    var st=e.glucose!=null?status(e.glucose)[0]:'';
-    var mark=st==='low'?' ↓':st==='high'?' ↑':'';
-    h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba)+'':'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||'',].filter(Boolean).join(' · '))+'</td></tr>';
+  h+='<h3>التفاصيل يوم بيوم</h3>';
+  var byDay={}, dOrd=[];
+  E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
+  dOrd.forEach(function(k){
+    var G2=byDay[k];
+    h+='<div class="daybox"><div class="dayh">'+dayLong(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
+    G2.forEach(function(e){
+      var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
+      h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · '))+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
   });
-  h+='</tbody></table></div><p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
+  h+='<p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
 }
 
@@ -2275,15 +2284,81 @@ $('#rprint').addEventListener('click',function(){
   document.title='تقرير-سكر-'+$('#rfrom').value+'-إلى-'+$('#rto').value;
   setTimeout(function(){window.print(); setTimeout(function(){document.title=old},500)},150);
 });
+/* ---------- Excel export (real .xlsx, built in the browser) ---------- */
+var CRC_T=(function(){var t=[],c,n,k; for(n=0;n<256;n++){c=n; for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0} return t})();
+function crc32(b){var c=0xFFFFFFFF; for(var i=0;i<b.length;i++)c=CRC_T[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0}
+function zipStore(files){
+  var enc=new TextEncoder(), parts=[], cen=[], off=0;
+  function u16(n){return [n&255,(n>>8)&255]} function u32(n){return [n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255]}
+  files.forEach(function(f){
+    var name=enc.encode(f[0]), data=enc.encode(f[1]), crc=crc32(data);
+    var lh=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0x21),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0));
+    parts.push(new Uint8Array(lh),name,data);
+    cen.push([].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0x21),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off)),name);
+    off+=lh.length+name.length+data.length;
+  });
+  var cs=0, cparts=[]; cen.forEach(function(c){var a=c instanceof Uint8Array?c:new Uint8Array(c); cparts.push(a); cs+=a.length});
+  var end=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cs),u32(off),u16(0)));
+  return new Blob(parts.concat(cparts,[end]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function xe(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'')}
+function buildXlsx(E,r){
+  var COLS=['التاريخ','الوقت','وقت القياس','السكر (mg/dL)','أبيدرا (وحدات)','ترسيبا (وحدات)','الأكل','كارب (جم)','جرعة تصحيح','ملاحظة'], NC=COLS.length;
+  var W=[14,11,16,14,14,14,38,11,13,30];
+  function col(i){return String.fromCharCode(65+i)}
+  var rowsX=[], merges=[], ri=0;
+  function cell(i,v,st){ if(v===''||v==null)return '<c r="'+col(i)+(ri+1)+'" s="'+st+'"/>'; return typeof v==='number'?'<c r="'+col(i)+(ri+1)+'" s="'+st+'"><v>'+v+'</v></c>':'<c r="'+col(i)+(ri+1)+'" s="'+st+'" t="inlineStr"><is><t xml:space="preserve">'+xe(v)+'</t></is></c>'}
+  function pushRow(cells,ht){ri++; rowsX.push('<row r="'+ri+'"'+(ht?' ht="'+ht+'" customHeight="1"':'')+'>'+cells.join('')+'</row>')}
+  ri=0; rowsX.push(''); rowsX.pop();
+  // title rows
+  ri=0; pushRow([cell(0,'سجل متابعة السكر — يوسف',7)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',7)})),26); merges.push('A1:'+col(NC-1)+'1');
+  pushRow([cell(0,'الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)',8)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',8)})),20); merges.push('A2:'+col(NC-1)+'2');
+  pushRow(COLS.map(function(c,i){return cell(i,c,1)}),30);
+  var headRow=ri;
+  var by={}, ord=[]; E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!by[k]){by[k]=[]; ord.push(k)} by[k].push(e)});
+  ord.forEach(function(k){
+    var G=by[k], gs=G.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose}), ap=G.reduce(function(a,e){return a+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(a,e){return a+(e.tresiba>0?e.tresiba:0)},0);
+    var sum=[dayLong(G[0].d)]; if(gs.length)sum.push('متوسط السكر '+Math.round(avgOf(gs))); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
+    pushRow([cell(0,sum.join('   |   '),2)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',2)})),22); merges.push('A'+ri+':'+col(NC-1)+ri);
+    G.forEach(function(e){
+      var st=e.glucose!=null?status(e.glucose)[0]:'', gst=st==='low'?5:st==='high'?6:4;
+      pushRow([cell(0,pad(e.d.getDate())+'/'+pad(e.d.getMonth()+1)+'/'+e.d.getFullYear(),3),cell(1,timeStr(e.d),3),cell(2,SLOT_LABEL[e.slot]||'',3),
+        cell(3,e.glucose==null?'':e.glucose,gst),cell(4,e.apidra>0?e.apidra:'',4),cell(5,e.tresiba>0?e.tresiba:'',4),
+        cell(6,(e.meal||[]).map(function(m){return m.n+(m.q!==1?' ×'+fmt(m.q):'')}).join(' + '),9),cell(7,e.carbs>0?e.carbs:'',4),
+        cell(8,e.corr&&e.apidra>0?'نعم':'',3),cell(9,e.note||'',9)]);
+    });
+  });
+  var sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView rightToLeft="1" workbookViewId="0"><pane ySplit="'+headRow+'" topLeftCell="A'+(headRow+1)+'" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>'+W.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'}).join('')+'</cols><sheetData>'+rowsX.join('')+'</sheetData><mergeCells count="'+merges.length+'">'+merges.map(function(m){return '<mergeCell ref="'+m+'"/>'}).join('')+'</mergeCells><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToHeight="0"/></worksheet>';
+  var B='<border><left style="thin"><color rgb="FFCFD8DD"/></left><right style="thin"><color rgb="FFCFD8DD"/></right><top style="thin"><color rgb="FFCFD8DD"/></top><bottom style="thin"><color rgb="FFCFD8DD"/></bottom></border>';
+  var styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="6"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FF17303B"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFB3261E"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFA85A00"/><name val="Arial"/></font><font><b/><sz val="15"/><color rgb="FF0D7480"/><name val="Arial"/></font></fonts>'+
+   '<fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0D7480"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3EEF3"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBE3E1"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFCEBD3"/></patternFill></fill></fills>'+
+   '<borders count="2"><border><left/><right/><top/><bottom/></border>'+B+'</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="10">'+
+   '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+   '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'+
+   '<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'+
+   '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="4" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'+
+   '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center" wrapText="1"/></xf>'+
+   '</cellXfs></styleSheet>';
+  return zipStore([
+    ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+    ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="سجل السكر" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml',styles],
+    ['xl/worksheets/sheet1.xml',sheet]
+  ]);
+}
 $('#csv').addEventListener('click',function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var rows=[['التاريخ','الوقت','وقت القياس','السكر mg/dL','أبيدرا وحدات','ترسيبا وحدات','الأكل','كارب جم','ملاحظة','جرعة تصحيح','وقت الترسيبا']];
-  E.forEach(function(e){rows.push([dayKey(e.d),pad(e.d.getHours())+':'+pad(e.d.getMinutes()),SLOT_LABEL[e.slot]||'',e.glucose==null?'':e.glucose,e.apidra||'',e.tresiba||'',(e.meal||[]).map(function(m){return m.n+(m.q!==1?' x'+m.q:'')}).join(' + '),e.carbs||'',e.note||'',(e.corr&&e.apidra>0)?'نعم':'',e.tresibaTime||''])});
-  var csv='﻿'+rows.map(function(r2){return r2.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
-  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.csv'; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  var a=document.createElement('a'); a.href=URL.createObjectURL(buildXlsx(E,r));
+  a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
 });
 $('#slot').addEventListener('change',function(){syncCorr(); renderHint(prep()); renderPresets(); updateCalc()});
 $('#g').addEventListener('input',function(){gmsg(); updateCalc()});
