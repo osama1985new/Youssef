@@ -1078,10 +1078,11 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <p class="small">كل قراءة سكر بتتحسب شريط. البرنامج بيعد الباقي وينبهك لما يفضل 5 شرايط.</p>
     <div class="two">
       <div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div>
-      <div class="field"><label for="sstripd">بداية استخدام العلبة</label><input id="sstripd" type="date"></div>
+      <div class="field"><label for="sstripd">بداية استخدام العلبة</label><input id="sstripd" type="datetime-local"></div>
     </div>
     <div id="stripbox" class="stripbox"></div>
-    <button type="button" class="ghost" id="stripnew">بدء علبة جديدة من النهاردة</button>
+    <button type="button" class="ghost" id="stripnew">بدء علبة جديدة</button>
+    <p class="small">العداد بيبدأ من آخر قراءة النهاردة (بيتحسب أول شريط)، ولو مفيش قراءة بيبدأ من دلوقتي. تقدر تعدّل الوقت بإيدك.</p>
 
     <h3>أسنان الأقلام</h3>
     <p class="small">كل مرة تسجل "سن جديد" بينقص سن من العلبة. وينبهك لما يفضل 10 أسنان.</p>
@@ -1089,9 +1090,9 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div>
       <div class="field"><label for="sneedu">اتستخدم قبل بداية العد</label><input id="sneedu" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
-    <div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="date"></div>
+    <div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="datetime-local"></div>
     <div id="needlebox" class="stripbox"></div>
-    <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة من النهاردة</button>
+    <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
 
     <h3>الكيتون</h3>
     <p class="small">الأرقام دي بتحددها خطة الدكتور. المكتوب تقريبي لو سبته فاضي: فوق 300 لمدة 3 ساعات.</p>
@@ -1554,14 +1555,16 @@ function renderBanner(E){
 /* ---------- last reading ---------- */
 function suppToday(T){var k={}; T.forEach(function(e){(e.supp||[]).forEach(function(x){k[x]=1})}); var n=SUPPS.filter(function(x){return k[x[0]]}).map(function(x){return x[1]}); return n.length?'<span>'+n.join(' + ')+' ✓</span>':''}
 function ago(ms){var h=Math.floor(ms/36e5); return h>=48?Math.floor(h/24)+' يوم':h>=24?'يوم':h+' ساعة'}
+function dtv(v){return !v?'':v.length===10?v+'T00:00':v}
+function startOf(v){return new Date(dtv(v))}
 function stripInfo(E){
   if(!settings.stripStart)return null;
-  var total=settings.stripN||50, st=new Date(settings.stripStart+'T00:00:00'), used=(E||prep()).filter(function(e){return e.glucose!=null&&e.d>=st}).length;
+  var total=settings.stripN||50, st=startOf(settings.stripStart), used=(E||prep()).filter(function(e){return e.glucose!=null&&e.d>=st}).length;
   return {total:total,used:used,left:total-used};
 }
 function needleInfo(E){
   if(!settings.needleStart)return null;
-  var total=settings.needleN||100, st=new Date(settings.needleStart+'T00:00:00'), used=settings.needleUsed||0;
+  var total=settings.needleN||100, st=startOf(settings.needleStart), used=settings.needleUsed||0;
   (E||prep()).forEach(function(e){if(e.d<st)return; if(e.apidra>0&&penNeedle(e,'a')==='new')used++; if(e.tresiba>0&&penNeedle(e,'t')==='new')used++});
   return {total:total,used:used,left:total-used};
 }
@@ -2097,7 +2100,7 @@ function readChecks(){
 }
 function syncSettingsInputs(){
   var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
-  if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=settings.stripStart||''; if($('#sneedd')!==a)$('#sneedd').value=settings.needleStart||'';
+  if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
   SET_FIELDS.forEach(function(f){var el=$('#'+f[0]); if(el!==a)el.value=settings[f[1]]==null?'':settings[f[1]]});
@@ -2140,12 +2143,12 @@ function onSetChange(){
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
-  var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; $('#sstripd').value=dayKey(new Date());
+  var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; var lr=prep().filter(function(e){return e.glucose!=null}).pop(); $('#sstripd').value=toLocalInput(lr&&dayKey(lr.d)===dayKey(new Date())?lr.d:new Date());
   onSetChange();
 });
 $('#needlenew').addEventListener('click',function(){
   if(settings.needleStart&&!confirm('تبدأ علبة أسنان جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
-  var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedu').value='0'; $('#sneedd').value=dayKey(new Date());
+  var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedu').value='0'; $('#sneedd').value=toLocalInput(new Date());
   onSetChange();
 });
 $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
