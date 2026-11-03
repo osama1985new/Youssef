@@ -839,10 +839,10 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <form class="card stack" id="f" novalidate data-tab="add">
     <h2>تسجيل جديد</h2>
     <div class="modebar" id="modebar" role="group" aria-label="نوع التسجيل">
-      <button type="button" data-mode="meal" aria-pressed="true">أكل + أبيدرا</button>
-      <button type="button" data-mode="nofood" aria-pressed="false">سناك بين الوجبات</button>
-      <button type="button" data-mode="corr" aria-pressed="false">وحدات تصحيحية</button>
-      <button type="button" data-mode="read" aria-pressed="false">قراءة بس</button>
+      <button type="button" data-mode="meal" aria-pressed="true">وجبة</button>
+      <button type="button" data-mode="nofood" aria-pressed="false">سناك</button>
+      <button type="button" data-mode="corr" aria-pressed="false">تصحيح</button>
+      <button type="button" data-mode="read" aria-pressed="false">قراءة</button>
     </div>
     <p class="small" id="modehint" hidden></p>
     <div class="panel p-read">
@@ -2516,7 +2516,7 @@ $('#f').addEventListener('submit',async function(ev){
   if(t>0&&!$('#needleT').value){err.textContent='اختار سن قلم ترسيبا (جديد ولا نفس السن).'; $('#needleT').focus(); return}
   if((a>0||t>0)&&!$('#site').value){err.textContent='اختار مكان الحقن علشان التسجيل يتحفظ كامل.'; $('#site').focus(); return}
   if($('#corr').checked&&!(a>0)){err.textContent='جرعة التصحيح لازم تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
-  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو وحدات تصحيحية من غير أكل اختار "وحدات تصحيحية" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
+  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو جرعة تصحيح من غير أكل اختار "تصحيح" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
