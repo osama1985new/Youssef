@@ -831,6 +831,9 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .tresrem .link{margin:0; font-weight:700}
 .stripline{display:flex; justify-content:space-between; align-items:baseline; font-size:15px} .stripline b{font-size:22px}
 .stripbar{height:10px; border-radius:999px; background:color-mix(in srgb,var(--pt) 14%,var(--surface)); overflow:hidden; margin:8px 0} .stripbar i{display:block; height:100%; background:var(--pt); border-radius:999px} .stripbar.low i{background:#C2412F}
+.readrem{display:flex; flex-direction:column; gap:8px} .readrem[hidden]{display:none}
+.readrem .rr{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-radius:14px; border:1px solid color-mix(in srgb,#C9892B 50%,var(--line)); background:color-mix(in srgb,#C9892B 12%,var(--surface)); font-size:14.5px; font-weight:600}
+.readrem .link{margin:0; font-weight:700; flex:none}
 </style>
 </head>
 <body>
@@ -856,6 +859,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
   <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
+  <div class="readrem" id="readrem" data-tab="add" hidden></div>
   <div class="tresrem" id="tresrem" data-tab="add" hidden></div>
 
   <form class="card stack" id="f" novalidate data-tab="add">
@@ -1477,6 +1481,20 @@ function nextSite(){
   var ls=L[L.length-1].site, i=SITES.map(function(x){return x[0]}).indexOf(ls);
   return {last:SITE_LABEL[ls]||'',next:i<0?'':SITES[(i+1)%SITES.length][0]};
 }
+function renderReadRem(E){
+  var el=$('#readrem'); if(!el)return; if(role==='view'){el.hidden=true; return}
+  var now=new Date(), h=now.getHours()+now.getMinutes()/60, tk=dayKey(now);
+  var T=(E||prep()).filter(function(e){return dayKey(e.d)===tk&&e.glucose!=null}), rows=[];
+  var has=function(sl){return T.some(function(e){return e.slot===sl})};
+  if(h>=6&&!has('fast'))rows.push(['قراءة الصايم لسه ما اتسجلتش النهاردة','fast']);
+  var lb=T.filter(function(e){return e.slot==='ln_before'}).pop();
+  if(!has('ln_after')){
+    if(lb){ if(now-lb.d>=2*36e5&&now-lb.d<7*36e5)rows.push(['عدّى ساعتين على قراءة قبل الغداء. قراءة بعد الغداء لسه ما اتسجلتش','ln_after']) }
+    else if(h>=16&&h<22)rows.push(['قراءة بعد الغداء لسه ما اتسجلتش النهاردة','ln_after']);
+  }
+  el.hidden=!rows.length;
+  el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
+}
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var h=new Date().getHours(), T=tresToday();
   if(h<20||role==='view'){el.hidden=true; return}
@@ -1519,7 +1537,8 @@ function setMode(m){
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
   syncInj(); renderHint(prep()); updateCalc();
 }
-document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
+document.addEventListener('click',function(e){var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode('read'); $('#slot').value=rb.dataset.remslot; syncCorr(); window.scrollTo(0,0); return}
+  if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(b)setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
 function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
@@ -2427,7 +2446,7 @@ accordion($('#set'),false); accordion($('#medcard'),false);
 /* ---------- render all ---------- */
 function render(){
   var E=prep();
-  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
 }
 
