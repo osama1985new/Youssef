@@ -822,6 +822,13 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
  .modebar button[data-mode=meal]{--bc:#5CCDB3} .modebar button[data-mode=nofood]{--bc:#F0BC66} .modebar button[data-mode=corr]{--bc:#F59A84} .modebar button[data-mode=read]{--bc:#8DB5E8}
  .modebar button[aria-pressed=true]{color:#111!important}
 }
+
+.modebar button[data-mode=tres]{--bc:#7E6BB5; grid-column:1/-1}
+#f[data-mode=tres]{--mc:#7E6BB5}
+@media (prefers-color-scheme: dark){#f[data-mode=tres]{--mc:#B9A9E6} .modebar button[data-mode=tres]{--bc:#B9A9E6}}
+.tresrem{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-radius:14px; border:1px solid color-mix(in srgb,#7E6BB5 45%,var(--line)); background:color-mix(in srgb,#7E6BB5 11%,var(--surface)); font-size:14.5px; font-weight:600}
+.tresrem.done{border-color:var(--line); background:var(--surface); font-weight:500; color:var(--muted)}
+.tresrem .link{margin:0; font-weight:700}
 </style>
 </head>
 <body>
@@ -847,6 +854,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
   <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
+  <div class="tresrem" id="tresrem" data-tab="add" hidden></div>
 
   <form class="card stack" id="f" novalidate data-tab="add">
     <h2>تسجيل جديد</h2>
@@ -855,6 +863,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <button type="button" data-mode="nofood" aria-pressed="false">سناك</button>
       <button type="button" data-mode="corr" aria-pressed="false">تصحيح</button>
       <button type="button" data-mode="read" aria-pressed="false">قراءة</button>
+      <button type="button" data-mode="tres" aria-pressed="false">ترسيبا</button>
     </div>
     <p class="small" id="modehint" hidden></p>
     <div class="panel p-read">
@@ -1438,7 +1447,20 @@ $('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class=
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
-function defMode(){return defaultSlot()==='bed'?'read':'meal'}
+function tresToday(){var tk=dayKey(new Date()); return prep().filter(function(e){return e.tresiba>0&&dayKey(e.d)===tk})}
+function defMode(){return defaultSlot()==='bed'?(tresToday().length?'read':'tres'):'meal'}
+var lastMode=null;
+function nextSite(){
+  var L=prep().filter(function(e){return e.tresiba>0&&e.site}); if(!L.length)return {last:'',next:''};
+  var ls=L[L.length-1].site, i=SITES.map(function(x){return x[0]}).indexOf(ls);
+  return {last:SITE_LABEL[ls]||'',next:i<0?'':SITES[(i+1)%SITES.length][0]};
+}
+function renderTresRem(){
+  var el=$('#tresrem'); if(!el)return; var h=new Date().getHours(), T=tresToday();
+  if(h<20||role==='view'){el.hidden=true; return}
+  el.hidden=false; el.classList.toggle('done',T.length>0);
+  el.innerHTML=T.length?'<span>ترسيبا النهاردة اتسجلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>ترسيبا لسه ما اتسجلتش النهاردة</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
+}
 function setSlotOptions(){
   var list=imode==='read'?SLOTS.filter(function(x){return PREMEAL.indexOf(x[0])<0||x[0]===keepSlot}):SLOTS, key=list.map(function(x){return x[0]}).join();
   if(key===slotKey)return; slotKey=key; var cur=$('#slot').value;
@@ -1449,23 +1471,33 @@ function syncCorr(){
   $('#corr').checked=imode==='corr'; $('#nodose').checked=imode==='nofood';
   [].forEach.call(document.querySelectorAll('#modebar button'),function(b){b.setAttribute('aria-pressed',b.dataset.mode===imode?'true':'false')});
   $('#f').dataset.mode=imode; setSlotOptions();
-  var bed=curSlot()==='bed', showT=imode==='read'&&bed;
+  var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
   document.querySelector('.p-ins').hidden=!showIns;
-  $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood');
+  $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
-  var mh=$('#modehint'); mh.hidden=imode!=='read'; mh.textContent='لتسجيل ترسيبا اختار "قبل النوم" في وقت القياس.';
+  if(imode==='tres'&&lastMode!=='tres'&&!editingId){
+    if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
+    var ns=nextSite(); if(!$('#needleT').value)$('#needleT').value='new'; if(!$('#site').value&&ns.next)$('#site').value=ns.next;
+  }
+  lastMode=imode;
+  var mh=$('#modehint'), ns2=imode==='tres'?nextSite():null;
+  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة ترسيبا كانت في: '+ns2.last+'. اتحط المكان اللي بعده للتدوير، غيّره لو عايز.';
   $('#calc').hidden=imode!=='meal'; var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
+var modeTouched=false;
 function setMode(m){
+  modeTouched=true;
+  if(lastMode==='tres'&&m!=='tres'){$('#site').value=''; $('#needleT').value=''; $('#t').value=''}
   imode=m;
-  keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other';
+  keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other'; if(m==='tres')$('#slot').value='bed';
   setSlotOptions(); if(m==='read'&&PREMEAL.indexOf(curSlot())>=0)$('#slot').value='other';
-  if(m==='corr'||m==='read'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
+  if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
   syncInj(); renderHint(prep()); updateCalc();
 }
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(b)setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
 function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
@@ -2335,7 +2367,7 @@ accordion($('#set'),false); accordion($('#medcard'),false);
 /* ---------- render all ---------- */
 function render(){
   var E=prep();
-  renderStore(); renderBanner(E); renderCare(E); renderHero(E); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
 }
 
@@ -2476,7 +2508,7 @@ function setEditing(id){
 function cancelEdit(){
   setEditing(null);
   ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-  $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); keepSlot=null; clearKet(); setSupp([]); syncInj();
+  $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); lastMode=null; keepSlot=null; clearKet(); setSupp([]); syncInj();
   mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot(); setNow(); $('#ferr').textContent=''; render();
 }
 function startEdit(id){
@@ -2488,7 +2520,7 @@ function startEdit(id){
   $('#t').value=e.tresiba>0?String(e.tresiba):'';
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
-  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
+  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
   clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
@@ -2501,7 +2533,7 @@ $('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
-  var slot=imode==='nofood'?'sn':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
+  var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
   var d=new Date($('#dt').value);
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='في خانة فيها رقم مش مفهوم. اكتب أرقام بس.'; return}
   if(g!=null&&(g<20||g>600)){err.textContent='قراءة السكر لازم تكون بين 20 و600. راجع الرقم.'; return}
@@ -2515,6 +2547,7 @@ $('#f').addEventListener('submit',async function(ev){
   });
   var supp=getSupp(), ket=readKet();
   if(!ket.ok){err.textContent='نتيجة الكيتون (دم) لازم تكون رقم بين 0 و15.'; $('#kv').focus(); return}
+  if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   if(imode==='nofood'&&!items.length){err.textContent='اختار السناك اللي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length&&!$('#corr').checked)miss.push('الأكل');
@@ -2533,7 +2566,7 @@ $('#f').addEventListener('submit',async function(ev){
   try{
     await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?(pad(d.getHours())+':'+pad(d.getMinutes())):null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
-    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); keepSlot=null; clearKet(); setSupp([]); syncInj();
+    var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); lastMode=null; keepSlot=null; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
     setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
