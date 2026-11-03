@@ -810,6 +810,18 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .modebar button{min-height:48px; border:1.5px solid color-mix(in srgb,var(--pt) 30%,var(--line)); background:var(--surface); color:var(--ink); border-radius:12px; font:inherit; font-size:14.5px; font-weight:600; padding:8px 6px}
 .modebar button[aria-pressed=true]{background:var(--pt); border-color:var(--pt); color:#fff}
 @media (prefers-color-scheme: dark){.modebar button[aria-pressed=true]{color:#111}}
+
+/* per-mode colors */
+#f{--mc:#2F8F7A; --pt:var(--mc); --accent:var(--mc)}
+#f[data-mode=nofood]{--mc:#C9892B} #f[data-mode=corr]{--mc:#D9644A} #f[data-mode=read]{--mc:#4A7FBF}
+.modebar button[data-mode=meal]{--bc:#2F8F7A} .modebar button[data-mode=nofood]{--bc:#C9892B} .modebar button[data-mode=corr]{--bc:#D9644A} .modebar button[data-mode=read]{--bc:#4A7FBF}
+.modebar button{border-color:color-mix(in srgb,var(--bc) 55%,var(--line))!important; color:var(--bc)!important; background:color-mix(in srgb,var(--bc) 8%,var(--surface))!important}
+.modebar button[aria-pressed=true]{background:var(--bc)!important; border-color:var(--bc)!important; color:#fff!important}
+@media (prefers-color-scheme: dark){
+ #f{--mc:#5CCDB3} #f[data-mode=nofood]{--mc:#F0BC66} #f[data-mode=corr]{--mc:#F59A84} #f[data-mode=read]{--mc:#8DB5E8}
+ .modebar button[data-mode=meal]{--bc:#5CCDB3} .modebar button[data-mode=nofood]{--bc:#F0BC66} .modebar button[data-mode=corr]{--bc:#F59A84} .modebar button[data-mode=read]{--bc:#8DB5E8}
+ .modebar button[aria-pressed=true]{color:#111!important}
+}
 </style>
 </head>
 <body>
@@ -903,7 +915,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select></div>
     </div>
-    <label class="chk" id="nodmbox" hidden><input type="checkbox" id="nodm"> ماخدتش أبيدرا في الوجبة دي</label>
     <input type="checkbox" id="nodose" hidden><input type="checkbox" id="corr" hidden>
     <p class="msg high" id="injhint" hidden></p>
     </div>
@@ -1437,7 +1448,7 @@ function setSlotOptions(){
 function syncCorr(){
   $('#corr').checked=imode==='corr'; $('#nodose').checked=imode==='nofood';
   [].forEach.call(document.querySelectorAll('#modebar button'),function(b){b.setAttribute('aria-pressed',b.dataset.mode===imode?'true':'false')});
-  setSlotOptions();
+  $('#f').dataset.mode=imode; setSlotOptions();
   var bed=curSlot()==='bed', showT=imode==='read'&&bed;
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
@@ -1445,7 +1456,6 @@ function syncCorr(){
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
-  var nd=imode==='meal'&&PREMEAL.indexOf(curSlot())>=0&&!(num($('#a').value)>0); $('#nodmbox').hidden=!nd; if(!nd)$('#nodm').checked=false;
   var mh=$('#modehint'); mh.hidden=imode!=='read'; mh.textContent='لتسجيل ترسيبا اختار "قبل النوم" في وقت القياس.';
   $('#calc').hidden=imode!=='meal'; var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
@@ -2478,7 +2488,7 @@ function startEdit(id){
   $('#t').value=e.tresiba>0?String(e.tresiba):'';
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
-  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); $('#nodm').checked=imode==='meal'&&!(e.apidra>0); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
+  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
   clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
@@ -2508,7 +2518,7 @@ $('#f').addEventListener('submit',async function(ev){
   if(imode==='nofood'&&!items.length){err.textContent='اختار السناك اللي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length&&!$('#corr').checked)miss.push('الأكل');
-    if(!(a>0)&&!$('#nodm').checked&&!$('#corr').checked)miss.push('جرعة أبيدرا (أو علّم "ماخدتش أبيدرا في الوجبة دي")');
+    if(!(a>0)&&!$('#corr').checked&&!editingId)miss.push('جرعة أبيدرا');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة لازم تسجّل: '+miss.join('، ')+'.'; return}
   }
