@@ -829,6 +829,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .tresrem{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-radius:14px; border:1px solid color-mix(in srgb,#7E6BB5 45%,var(--line)); background:color-mix(in srgb,#7E6BB5 11%,var(--surface)); font-size:14.5px; font-weight:600}
 .tresrem.done{border-color:var(--line); background:var(--surface); font-weight:500; color:var(--muted)}
 .tresrem .link{margin:0; font-weight:700}
+.stripline{display:flex; justify-content:space-between; align-items:baseline; font-size:15px} .stripline b{font-size:22px}
+.stripbar{height:10px; border-radius:999px; background:color-mix(in srgb,var(--pt) 14%,var(--surface)); overflow:hidden; margin:8px 0} .stripbar i{display:block; height:100%; background:var(--pt); border-radius:999px} .stripbar.low i{background:#C2412F}
 </style>
 </head>
 <body>
@@ -1072,6 +1074,25 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <h3>ترسيبا</h3>
     <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
   
+    <h3>شرايط قياس السكر</h3>
+    <p class="small">كل قراءة سكر بتتحسب شريط. البرنامج بيعد الباقي وينبهك لما يفضل 5 شرايط.</p>
+    <div class="two">
+      <div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div>
+      <div class="field"><label for="sstripd">بداية استخدام العلبة</label><input id="sstripd" type="date"></div>
+    </div>
+    <div id="stripbox" class="stripbox"></div>
+    <button type="button" class="ghost" id="stripnew">بدء علبة جديدة من النهاردة</button>
+
+    <h3>أسنان الأقلام</h3>
+    <p class="small">كل مرة تسجل "سن جديد" بينقص سن من العلبة. وينبهك لما يفضل 10 أسنان.</p>
+    <div class="two">
+      <div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div>
+      <div class="field"><label for="sneedu">اتستخدم قبل بداية العد</label><input id="sneedu" type="text" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="date"></div>
+    <div id="needlebox" class="stripbox"></div>
+    <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة من النهاردة</button>
+
     <h3>الكيتون</h3>
     <p class="small">الأرقام دي بتحددها خطة الدكتور. المكتوب تقريبي لو سبته فاضي: فوق 300 لمدة 3 ساعات.</p>
     <div class="two">
@@ -1283,7 +1304,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1533,8 +1554,33 @@ function renderBanner(E){
 /* ---------- last reading ---------- */
 function suppToday(T){var k={}; T.forEach(function(e){(e.supp||[]).forEach(function(x){k[x]=1})}); var n=SUPPS.filter(function(x){return k[x[0]]}).map(function(x){return x[1]}); return n.length?'<span>'+n.join(' + ')+' ✓</span>':''}
 function ago(ms){var h=Math.floor(ms/36e5); return h>=48?Math.floor(h/24)+' يوم':h>=24?'يوم':h+' ساعة'}
+function stripInfo(E){
+  if(!settings.stripStart)return null;
+  var total=settings.stripN||50, st=new Date(settings.stripStart+'T00:00:00'), used=(E||prep()).filter(function(e){return e.glucose!=null&&e.d>=st}).length;
+  return {total:total,used:used,left:total-used};
+}
+function needleInfo(E){
+  if(!settings.needleStart)return null;
+  var total=settings.needleN||100, st=new Date(settings.needleStart+'T00:00:00'), used=settings.needleUsed||0;
+  (E||prep()).forEach(function(e){if(e.d<st)return; if(e.apidra>0&&penNeedle(e,'a')==='new')used++; if(e.tresiba>0&&penNeedle(e,'t')==='new')used++});
+  return {total:total,used:used,left:total-used};
+}
+function renderNeedles(){
+  var el=$('#needlebox'); if(!el)return; var i=needleInfo();
+  if(!i){el.innerHTML='<p class="small">اكتب بداية العد، أو دوس "بدء علبة أسنان جديدة".</p>'; return}
+  var pct=Math.max(0,Math.min(100,Math.round(i.used/i.total*100)));
+  el.innerHTML='<div class="stripline"><b>باقي '+Math.max(0,i.left)+'</b><span>اتستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=10?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
+}
+function renderStrips(){ renderNeedles();
+  var el=$('#stripbox'); if(!el)return; var i=stripInfo();
+  if(!i){el.innerHTML='<p class="small">اكتب بداية استخدام العلبة، أو دوس "بدء علبة جديدة".</p>'; return}
+  var pct=Math.max(0,Math.min(100,Math.round(i.used/i.total*100)));
+  el.innerHTML='<div class="stripline"><b>باقي '+Math.max(0,i.left)+'</b><span>اتستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=5?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
+}
 function careNotes(E){
   var out=[], now=Date.now(), tk=dayKey(new Date()), yk=dayKey(new Date(now-DAY));
+  var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'أسنان الأقلام خلصت. جهّز علبة جديدة.':'باقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سن')+' بس في علبة أسنان الأقلام. جهّز علبة جديدة.');
+  var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'شرايط السكر خلصت. جهّز علبة جديدة.':'باقي '+si.left+(si.left===1?' شريط':' شرايط')+' بس في علبة الشرايط. جهّز علبة جديدة.');
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var lastInj=inj[inj.length-1];
   if(lastInj&&now-lastInj.d.getTime()<2*DAY){
@@ -2034,7 +2080,7 @@ function buildReport(){
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sneedu','needleUsed',0,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
 function renderChecks(){
   var w=$('#ckwrap'); if(!w)return;
   w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
@@ -2051,7 +2097,8 @@ function readChecks(){
 }
 function syncSettingsInputs(){
   var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
-  if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||'';
+  if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=settings.stripStart||''; if($('#sneedd')!==a)$('#sneedd').value=settings.needleStart||'';
+  renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
   SET_FIELDS.forEach(function(f){var el=$('#'+f[0]); if(el!==a)el.value=settings[f[1]]==null?'':settings[f[1]]});
   var sc=settings.scale||[];
@@ -2070,7 +2117,7 @@ function readSettings(){
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
   out.bodyDate=$('#bodyd').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
-  out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null;
+  out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
   for(var i=0;i<5;i++){
@@ -2091,6 +2138,16 @@ function onSetChange(){
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   settings=Object.assign({},DEFAULTS,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
 }
+$('#stripnew').addEventListener('click',function(){
+  if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
+  var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; $('#sstripd').value=dayKey(new Date());
+  onSetChange();
+});
+$('#needlenew').addEventListener('click',function(){
+  if(settings.needleStart&&!confirm('تبدأ علبة أسنان جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
+  var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedu').value='0'; $('#sneedd').value=dayKey(new Date());
+  onSetChange();
+});
 $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
@@ -2367,7 +2424,7 @@ accordion($('#set'),false); accordion($('#medcard'),false);
 /* ---------- render all ---------- */
 function render(){
   var E=prep();
-  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
 }
 
