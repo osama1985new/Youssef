@@ -834,6 +834,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .readrem{display:flex; flex-direction:column; gap:8px} .readrem[hidden]{display:none}
 .readrem .rr{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-radius:14px; border:1px solid color-mix(in srgb,#C9892B 50%,var(--line)); background:color-mix(in srgb,#C9892B 12%,var(--surface)); font-size:14.5px; font-weight:600}
 .readrem .link{margin:0; font-weight:700; flex:none}
+.modebar{display:flex!important; gap:8px} .modebar button{flex:1; min-width:0; padding:8px 4px} .modebar button[hidden]{display:none!important} .modebar button[data-mode=tres]{grid-column:auto}
 </style>
 </head>
 <body>
@@ -866,7 +867,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <h2>تسجيل جديد</h2>
     <div class="modebar" id="modebar" role="group" aria-label="نوع التسجيل">
       <button type="button" data-mode="meal" aria-pressed="true">وجبة</button>
-      <button type="button" data-mode="nofood" aria-pressed="false">سناك</button>
+      <button type="button" data-mode="nofood" aria-pressed="false" hidden>سناك</button>
       <button type="button" data-mode="corr" aria-pressed="false">تصحيح</button>
       <button type="button" data-mode="read" aria-pressed="false">قراءة</button>
       <button type="button" data-mode="tres" aria-pressed="false">ترسيبا</button>
@@ -1474,7 +1475,14 @@ function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[a
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=dayKey(new Date()); return prep().filter(function(e){return e.tresiba>0&&dayKey(e.d)===tk})}
-function defMode(){return defaultSlot()==='bed'?(tresToday().length?'read':'tres'):'meal'}
+function isNight(){var h=new Date().getHours(); return h>=22||h<4}
+function defMode(){return isNight()?(tresToday().length?'read':'tres'):(defaultSlot()==='bed'?'read':'meal')}
+function updateModeButtons(){
+  var tb=document.querySelector('#modebar [data-mode=tres]'), sb=document.querySelector('#modebar [data-mode=nofood]');
+  if(tb)tb.hidden=false;
+  if(sb)sb.hidden=imode!=='nofood';
+}
+setInterval(function(){updateModeButtons(); renderTresRem(); renderReadRem()},60000);
 var lastMode=null;
 function nextSite(){
   var L=prep().filter(function(e){return e.tresiba>0&&e.site}); if(!L.length)return {last:'',next:''};
@@ -1496,8 +1504,8 @@ function renderReadRem(E){
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
 }
 function renderTresRem(){
-  var el=$('#tresrem'); if(!el)return; var h=new Date().getHours(), T=tresToday();
-  if(h<20||role==='view'){el.hidden=true; return}
+  var el=$('#tresrem'); if(!el)return; var T=tresToday();
+  if(!isNight()||role==='view'){el.hidden=true; return}
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا النهاردة اتسجلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>ترسيبا لسه ما اتسجلتش النهاردة</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
@@ -1510,7 +1518,7 @@ function setSlotOptions(){
 function syncCorr(){
   $('#corr').checked=imode==='corr'; $('#nodose').checked=imode==='nofood';
   [].forEach.call(document.querySelectorAll('#modebar button'),function(b){b.setAttribute('aria-pressed',b.dataset.mode===imode?'true':'false')});
-  $('#f').dataset.mode=imode; setSlotOptions();
+  $('#f').dataset.mode=imode; updateModeButtons(); setSlotOptions();
   var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
@@ -1539,7 +1547,9 @@ function setMode(m){
 }
 document.addEventListener('click',function(e){var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode('read'); $('#slot').value=rb.dataset.remslot; syncCorr(); window.scrollTo(0,0); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
-$('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(b)setMode(b.dataset.mode)});
+$('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
+  if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='ترسيبا بتتسجل بعد الساعة 10 بالليل بس.'; mh.hidden=false; toast('ترسيبا بتتسجل بعد الساعة 10 بالليل'); return}
+  setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
 function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
