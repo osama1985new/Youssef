@@ -124,8 +124,8 @@ function cleanSettings(s) {
   out.visitNext = dtOk(s.visitNext) ? String(s.visitNext) : null;
   out.visitNote = s.visitNote ? String(s.visitNote).trim().slice(0, 300) || null : null;
   out.ketExp = dOk(s.ketExp) ? String(s.ketExp) : null;
-  out.stripStart = dOk(s.stripStart) ? String(s.stripStart) : null;
-  out.needleStart = dOk(s.needleStart) ? String(s.needleStart) : null;
+  out.stripStart = (dOk(s.stripStart) || dtOk(s.stripStart)) ? String(s.stripStart) : null;
+  out.needleStart = (dOk(s.needleStart) || dtOk(s.needleStart)) ? String(s.needleStart) : null;
   if (s.checks !== undefined && s.checks !== null) {
     if (!Array.isArray(s.checks) || s.checks.length > 12) return null;
     out.checks = [];
