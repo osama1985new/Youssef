@@ -810,12 +810,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .modebar button{min-height:48px; border:1.5px solid color-mix(in srgb,var(--pt) 30%,var(--line)); background:var(--surface); color:var(--ink); border-radius:12px; font:inherit; font-size:14.5px; font-weight:600; padding:8px 6px}
 .modebar button[aria-pressed=true]{background:var(--pt); border-color:var(--pt); color:#fff}
 @media (prefers-color-scheme: dark){.modebar button[aria-pressed=true]{color:#111}}
-.chat .chatlog{display:flex; flex-direction:column; gap:8px; max-height:340px; overflow:auto; padding:4px 0 10px}
-.bub{max-width:88%; padding:9px 12px; border-radius:14px; font-size:14.5px; line-height:1.7}
-.bub.me{align-self:flex-start; background:color-mix(in srgb,var(--pt) 16%,var(--surface)); border-bottom-right-radius:4px}
-.bub.ai{align-self:flex-end; background:var(--surface); border:1px solid var(--line); border-bottom-left-radius:4px}
-.chatrow{display:flex; gap:8px; align-items:flex-end} .chatrow textarea{flex:1; min-height:48px; resize:none; font:inherit} .chatrow .primary{width:auto; flex:none; padding:0 18px; min-height:48px}
-.bub{color:var(--ink)!important} .chatrow textarea{padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1013,9 +1007,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
         <optgroup label="الأسبوع والوجبات">
           <option>اعمل ملخص للأسبوع</option>
           <option>إيه أكتر وجبة ارتبطت بارتفاع القراءات؟</option>
-        </optgroup>
-        <optgroup label="أسئلة عامة">
-          <option value="__general">سؤال عام</option>
         </optgroup>
         <optgroup label="السجل">
           <option>إيه البيانات الناقصة في سجلي؟</option>
@@ -2289,43 +2280,13 @@ function answer(q){
 function renderChat(){
   var el=$('#askout'); if(!el)return;
   if(!askState){el.innerHTML='<div class="askempty"><b>اختار سؤال من القايمة</b><span>هتلاقي الإجابة هنا من تسجيلاتك.</span></div>'; return}
-  if(askState.gen){renderGen(); return}
   var r=askState.r;
   el.innerHTML='<div class="ans"><h3 class="ans-q">'+esc(askState.q)+'</h3>'+
     '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(r.chart?'<div class="sec chart"><b>الرسم</b>'+r.chart+'</div>':'')+
     (r.med?'<div class="sec med"><b>التحليل الطبي</b><p>'+esc(r.med)+'</p></div>':'')+'</div>';
 }
-var askState=null, chatMsgs=[], chatBusy=false, chatDraft='';
-function renderGen(){
-  var el=$('#askout'), h='<div class="ans chat"><h3 class="ans-q">سؤال عام</h3><div class="chatlog" id="chatlog">';
-  if(!chatMsgs.length)h+='<p class="small">اسأل أي سؤال عام عن السكر أو الأكل أو الكارب. الإجابات معلومات عامة، ومش بتحدد ولا بتغيّر جرعات، دي للدكتور.</p>';
-  chatMsgs.forEach(function(m){h+='<div class="bub '+(m.role==='user'?'me':'ai')+'">'+esc(m.content).replace(/\n/g,'<br>')+'</div>'});
-  if(chatBusy)h+='<div class="bub ai">بكتب الإجابة…</div>';
-  h+='</div><div class="chatrow"><textarea id="gq" rows="2" placeholder="اكتب سؤالك هنا…" maxlength="600">'+esc(chatDraft)+'</textarea><button type="button" class="primary" id="gsend"'+(chatBusy?' disabled':'')+'>إرسال</button></div></div>';
-  el.innerHTML=h; var lg=$('#chatlog'); if(lg)lg.scrollTop=lg.scrollHeight;
-}
-async function sendChat(){
-  var q=($('#gq').value||'').trim(); if(!q||chatBusy)return;
-  chatMsgs.push({role:'user',content:q}); chatDraft=''; chatBusy=true; renderGen();
-  var ctx=''; try{ctx=ansWeek().obs.join('\n')}catch(e){}
-  try{
-    var r=await fetch('/api/data',{method:'POST',headers:{'content-type':'application/json','x-pin':encodeURIComponent(pin||'')},body:JSON.stringify({action:'chat',messages:chatMsgs.slice(-8),ctx:ctx})});
-    var j=await r.json().catch(function(){return {}});
-    if(r.ok&&j.reply)chatMsgs.push({role:'assistant',content:j.reply});
-    else chatMsgs.push({role:'assistant',content:j.error==='no_ai_key'?'الدردشة لسه مش متفعلة. لازم تضيف مفتاح ANTHROPIC_API_KEY في Vercel (Settings ← Environment Variables) وتعمل Redeploy.':j.error==='chat_limit'?'وصلت للحد اليومي للأسئلة. جرب بكرة.':'معرفتش أجاوب دلوقتي. جرب تاني بعد شوية.'});
-  }catch(e){chatMsgs.push({role:'assistant',content:'مفيش اتصال بالسيرفر.'})}
-  chatBusy=false; renderGen();
-}
-$('#askpick').addEventListener('change',function(){var q=this.value; askState=!q?null:q==='__general'?{gen:true}:{q:q,r:answer(q)}; renderChat()});
-$('#askout').addEventListener('input',function(ev){if(ev.target.id==='gq')chatDraft=ev.target.value});
-$('#askout').addEventListener('click',function(ev){
-  if(ev.target.closest('#gsend')){sendChat(); return}
-  if(!ev.target.closest('#copysum'))return;
-  var r=ansWeek(), txt='ملخص تسجيلات يوسف (آخر 7 أيام):\n- '+r.obs.join('\n- ');
-  function done(){toast('اتنسخ الملخص، الصقه في الدردشة')}
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){prompt('انسخ الملخص:',txt)})}else{prompt('انسخ الملخص:',txt)}
-});
-
+var askState=null;
+$('#askpick').addEventListener('change',function(){var q=this.value; askState=q?{q:q,r:answer(q)}:null; renderChat()});
 $('#log').addEventListener('toggle',function(ev){var d=ev.target; if(d&&d.classList&&d.classList.contains('day'))openDays[d.dataset.k]=d.open},true);
 
 /* ---------- collapsible groups in settings and report data ---------- */
