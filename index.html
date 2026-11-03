@@ -849,8 +849,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 
     <div class="modebar" id="modebar" role="group" aria-label="نوع التسجيل">
       <button type="button" data-mode="meal" aria-pressed="true">أكل + أبيدرا</button>
-      <button type="button" data-mode="nofood" aria-pressed="false">أكل بدون أبيدرا</button>
-      <button type="button" data-mode="corr" aria-pressed="false">تصحيح بدون أكل</button>
+      <button type="button" data-mode="nofood" aria-pressed="false">سناك بين الوجبات</button>
+      <button type="button" data-mode="corr" aria-pressed="false">وحدات تصحيحية</button>
       <button type="button" data-mode="read" aria-pressed="false">قراءة بس</button>
     </div>
 
@@ -1007,6 +1007,9 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
         <optgroup label="الأسبوع والوجبات">
           <option>اعمل ملخص للأسبوع</option>
           <option>إيه أكتر وجبة ارتبطت بارتفاع القراءات؟</option>
+        </optgroup>
+        <optgroup label="أسئلة عامة">
+          <option value="__general">سؤال عام (دردشة)</option>
         </optgroup>
         <optgroup label="السجل">
           <option>إيه البيانات الناقصة في سجلي؟</option>
@@ -2280,13 +2283,23 @@ function answer(q){
 function renderChat(){
   var el=$('#askout'); if(!el)return;
   if(!askState){el.innerHTML='<div class="askempty"><b>اختار سؤال من القايمة</b><span>هتلاقي الإجابة هنا من تسجيلاتك.</span></div>'; return}
+  if(askState.gen){
+    el.innerHTML='<div class="ans"><h3 class="ans-q">سؤال عام</h3><div class="sec"><b>إزاي تسأل</b><p>الأسئلة العامة عن السكر والأكل والسكري بتسألها لـ Claude في الدردشة مباشرة، مش جوه البرنامج. كده البرنامج مش بيستهلك من باقتك.</p><p class="small">لو عايز الرد يعتمد على تسجيلاتك، انسخ الملخص ده والصقه في الدردشة قبل سؤالك.</p><button type="button" class="ghost" id="copysum">نسخ ملخص آخر 7 أيام</button></div></div>';
+    return;
+  }
   var r=askState.r;
   el.innerHTML='<div class="ans"><h3 class="ans-q">'+esc(askState.q)+'</h3>'+
     '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(r.chart?'<div class="sec chart"><b>الرسم</b>'+r.chart+'</div>':'')+
     (r.med?'<div class="sec med"><b>التحليل الطبي</b><p>'+esc(r.med)+'</p></div>':'')+'</div>';
 }
 var askState=null;
-$('#askpick').addEventListener('change',function(){var q=this.value; askState=q?{q:q,r:answer(q)}:null; renderChat()});
+$('#askpick').addEventListener('change',function(){var q=this.value; askState=!q?null:q==='__general'?{gen:true}:{q:q,r:answer(q)}; renderChat()});
+$('#askout').addEventListener('click',function(ev){
+  if(!ev.target.closest('#copysum'))return;
+  var r=ansWeek(), txt='ملخص تسجيلات يوسف (آخر 7 أيام):\n- '+r.obs.join('\n- ');
+  function done(){toast('اتنسخ الملخص، الصقه في الدردشة')}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){prompt('انسخ الملخص:',txt)})}else{prompt('انسخ الملخص:',txt)}
+});
 
 $('#log').addEventListener('toggle',function(ev){var d=ev.target; if(d&&d.classList&&d.classList.contains('day'))openDays[d.dataset.k]=d.open},true);
 
@@ -2487,10 +2500,10 @@ $('#f').addEventListener('submit',async function(ev){
   });
   var supp=getSupp(), ket=readKet();
   if(!ket.ok){err.textContent='نتيجة الكيتون (دم) لازم تكون رقم بين 0 و15.'; $('#kv').focus(); return}
-  if(imode==='nofood'&&!items.length){err.textContent='اختار الأكل اللي أكلته.'; return}
+  if(imode==='nofood'&&!items.length){err.textContent='اختار السناك اللي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length&&!$('#corr').checked)miss.push('الأكل');
-    if(!(a>0)&&!$('#nodose').checked&&!$('#corr').checked)miss.push('جرعة أبيدرا (أو اختار "أكل بدون أبيدرا")');
+    if(!(a>0)&&!$('#nodose').checked&&!$('#corr').checked)miss.push('جرعة أبيدرا (أو اختار "سناك بين الوجبات")');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة لازم تسجّل: '+miss.join('، ')+'.'; return}
   }
@@ -2498,7 +2511,7 @@ $('#f').addEventListener('submit',async function(ev){
   if(t>0&&!$('#needleT').value){err.textContent='اختار سن قلم ترسيبا (جديد ولا نفس السن).'; $('#needleT').focus(); return}
   if((a>0||t>0)&&!$('#site').value){err.textContent='اختار مكان الحقن علشان التسجيل يتحفظ كامل.'; $('#site').focus(); return}
   if($('#corr').checked&&!(a>0)){err.textContent='جرعة التصحيح لازم تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
-  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو جرعة تصحيح من غير أكل اختار "تصحيح بدون أكل" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
+  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو وحدات تصحيحية من غير أكل اختار "وحدات تصحيحية" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   var btn=$('#save'); btn.disabled=true;
