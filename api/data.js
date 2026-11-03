@@ -101,7 +101,7 @@ function cleanEntry(e) {
   return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
-const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150] };
+const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000] };
 function cleanSettings(s) {
   if (!s || typeof s !== 'object') return null;
   const out = {};
@@ -124,6 +124,8 @@ function cleanSettings(s) {
   out.visitNext = dtOk(s.visitNext) ? String(s.visitNext) : null;
   out.visitNote = s.visitNote ? String(s.visitNote).trim().slice(0, 300) || null : null;
   out.ketExp = dOk(s.ketExp) ? String(s.ketExp) : null;
+  out.stripStart = dOk(s.stripStart) ? String(s.stripStart) : null;
+  out.needleStart = dOk(s.needleStart) ? String(s.needleStart) : null;
   if (s.checks !== undefined && s.checks !== null) {
     if (!Array.isArray(s.checks) || s.checks.length > 12) return null;
     out.checks = [];
@@ -173,32 +175,6 @@ async function analyzeFood(b64) {
   return { items, note: String(o.note || '').slice(0, 200) };
 }
 
-const CHAT_SYS = 'انت مساعد بيجاوب بالعامية المصرية وباختصار (لحد 6 سطور) على أسئلة عامة عن السكر النوع الأول والأكل والكارب ونمط الحياة لعيلة ولد عنده 16 سنة. قواعد ثابتة: 1) ما تقترحش جرعات أنسولين ولا تغيّر جرعة ولا تحسب جرعة، وقول إن ده قرار الدكتور بس. 2) لو في هبوط شديد أو غيبوبة أو قيء مع سكر عالي وكيتونات أو أي طوارئ، وجّه لخطة الدكتور والإسعاف فورًا. 3) ما تشخصش ولا تفسر تحاليل كبديل للدكتور. 4) لو السؤال مش عن الصحة أو السكر، اعتذر بلطف وارجع للموضوع. 5) المعلومات عامة وتثقيفية بس.';
-async function chatReply(msgs, ctx) {
-  const key = process.env.ANTHROPIC_API_KEY || await redis(['GET', 'ysg:aikey']);
-  if (!key) { const e = new Error('no_ai_key'); e.code = 'no_ai_key'; throw e; }
-  const clean = [];
-  for (const m of (Array.isArray(msgs) ? msgs : []).slice(-8)) {
-    const role = m && m.role === 'assistant' ? 'assistant' : 'user';
-    const content = String((m && m.content) || '').slice(0, 1000).trim();
-    if (!content) continue;
-    if (clean.length && clean[clean.length - 1].role === role) clean[clean.length - 1].content += '\n' + content;
-    else clean.push({ role, content });
-  }
-  while (clean.length && clean[0].role !== 'user') clean.shift();
-  if (!clean.length || clean[clean.length - 1].role !== 'user') { const e = new Error('bad_chat'); e.code = 'bad_chat'; throw e; }
-  const system = CHAT_SYS + (ctx ? '\nملخص تسجيلات آخر 7 أيام (للسياق فقط، من غير أسماء):\n' + String(ctx).slice(0, 1500) : '');
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 600, system, messages: clean })
-  });
-  if (!r.ok) { const e = new Error('ai_failed'); e.code = 'ai_failed'; throw e; }
-  const j = await r.json();
-  return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('').trim().slice(0, 3000);
-}
-const CHAT_DAILY_LIMIT = 40;
-
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (!REDIS_URL || !REDIS_TOKEN) return res.status(500).json({ error: 'storage_not_configured' });
@@ -222,15 +198,6 @@ module.exports = async (req, res) => {
     }
     if (req.method === 'POST') {
       const b = req.body || {};
-      if (b.action === 'chat') {
-        try {
-          const day = 'ysg:chat:' + new Date().toISOString().slice(0, 10);
-          const n = Number(await redis(['INCR', day])) || 0;
-          if (n === 1) await redis(['EXPIRE', day, 172800]);
-          if (n > CHAT_DAILY_LIMIT) return res.status(429).json({ error: 'chat_limit' });
-          return res.status(200).json({ reply: await chatReply(b.messages, b.ctx) });
-        } catch (e) { return res.status(e.code === 'no_ai_key' || e.code === 'bad_chat' ? 400 : 502).json({ error: e.code || 'ai_failed' }); }
-      }
       if (role !== 'edit') return res.status(403).json({ error: 'read_only' });
       if (b.action === 'setauth') {
         const ep = normPin(b.editPin), vp = b.viewPin ? normPin(b.viewPin) : '';
