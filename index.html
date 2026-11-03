@@ -1102,8 +1102,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 <script>
 (function(){
 var $=function(s){return document.querySelector(s)};
-var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['sn','سناك'],['bed','قبل النوم'],['other','عشوائي']];
-var SLOT_LABEL={}, SLOT_ORD={}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
+var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
+var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
 function dayOrder(a,b){var ka=dayKey(a.d), kb=dayKey(b.d); return ka<kb?-1:ka>kb?1:((SLOT_ORD[a.slot]||0)-(SLOT_ORD[b.slot]||0))||(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','فخذ يمين'],['th_l','فخذ شمال'],['ar_r','دراع يمين'],['ar_l','دراع شمال']];
@@ -1226,6 +1226,11 @@ var PRESETS=[
  ['sn','زبادي',[['yog',1]]],
  ['sn','قريش وسلطة',[['qar',1],['sal',1]]]
 ];
+
+/* extra snack presets (packaged snacks from the food table) */
+['بسكويت سادة نايس','شيتوس بفس','دوريتوس بالجبنة ناتشوز','توينكيز بالشوكولاتة','كادبوري ديري ميلك شوكو أوريو','مولتو ميني بالشوكولاتة','هوهوز بالكريمة والكاكاو','تودو براوني (قطعة كيك شوكولاتة)','بسكويت بالزبدة جود داي','رقائق البطاطس SPUDS'].forEach(function(n,i){
+  var f=DB.filter(function(x){return x.n===n})[0]; if(f){BY['sn'+i]=f; PRESETS.push(['sn',n.replace(' (قطعة كيك شوكولاتة)',''),[['sn'+i,1]]])}
+});
 var GROUPS=[['bf','فطار'],['ln','غدا'],['dn','عشا'],['sn','سناك']];
 
 var nf=new Intl.NumberFormat('en',{maximumFractionDigits:1});
