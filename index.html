@@ -1287,7 +1287,7 @@ function fmt(n){return nf.format(n)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function pad(n){return String(n).padStart(2,'0')}
 function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
-var SHIFT=6*36e5; /* the sugar day starts at 6 AM */
+var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
 function lk(d){return dayKey(new Date(d.getTime()-SHIFT))}
 function dlog(d){return dayLong(new Date(d.getTime()-SHIFT))}
 function toLocalInput(d){return dayKey(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())}
