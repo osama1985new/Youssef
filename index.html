@@ -1153,7 +1153,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 var $=function(s){return document.querySelector(s)};
 var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
-function dayOrder(a,b){var ka=dayKey(a.d), kb=dayKey(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
+function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','فخذ يمين'],['th_l','فخذ شمال'],['ar_r','دراع يمين'],['ar_l','دراع شمال']];
 var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
@@ -1287,14 +1287,17 @@ function fmt(n){return nf.format(n)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function pad(n){return String(n).padStart(2,'0')}
 function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+var SHIFT=6*36e5; /* the sugar day starts at 6 AM */
+function lk(d){return dayKey(new Date(d.getTime()-SHIFT))}
+function dlog(d){return dayLong(new Date(d.getTime()-SHIFT))}
 function toLocalInput(d){return dayKey(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())}
 function timeStr(d){return d.toLocaleTimeString(LOC,{hour:'numeric',minute:'2-digit'})}
 function dayLong(d){return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'long'})}
 function dayFull(d){return d.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'})}
 function relDay(d){
-  var t=new Date(), y=new Date(t.getFullYear(),t.getMonth(),t.getDate()-1);
-  if(dayKey(d)===dayKey(t))return 'النهاردة';
-  if(dayKey(d)===dayKey(y))return 'امبارح';
+  var t=new Date(), y=new Date(t.getTime()-DAY);
+  if(lk(d)===lk(t))return 'النهاردة';
+  if(lk(d)===lk(y))return 'امبارح';
   return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'short'});
 }
 function midnight(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}
@@ -1396,7 +1399,7 @@ async function exportBackup(){
   try{
     var j=mode==='cloud'?await api():{entries:entries,settings:settings};
     var blob=new Blob([JSON.stringify({app:'sugar-tracker',v:1,exported:new Date().toISOString(),entries:j.entries||[],settings:j.settings||null},null,1)],{type:'application/json'});
-    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sugar-backup-'+dayKey(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sugar-backup-'+lk(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
     m.textContent='اتنزّلت نسخة فيها '+(j.entries||[]).length+' تسجيل.';
   }catch(e){m.textContent='مقدرتش أنزّل النسخة. جرب تاني.'}
@@ -1474,7 +1477,7 @@ $('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class=
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
-function tresToday(){var tk=dayKey(new Date()); return prep().filter(function(e){return e.tresiba>0&&dayKey(e.d)===tk})}
+function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
 function isNight(){var h=new Date().getHours(); return h>=22||h<4}
 function defMode(){return isNight()?(tresToday().length?'read':'tres'):(defaultSlot()==='bed'?'read':'meal')}
 function updateModeButtons(){
@@ -1491,8 +1494,8 @@ function nextSite(){
 }
 function renderReadRem(E){
   var el=$('#readrem'); if(!el)return; if(role==='view'){el.hidden=true; return}
-  var now=new Date(), h=now.getHours()+now.getMinutes()/60, tk=dayKey(now);
-  var T=(E||prep()).filter(function(e){return dayKey(e.d)===tk&&e.glucose!=null}), rows=[];
+  var now=new Date(), h=now.getHours()+now.getMinutes()/60, tk=lk(now);
+  var T=(E||prep()).filter(function(e){return lk(e.d)===tk&&e.glucose!=null}), rows=[];
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
   if(h>=6&&!has('fast'))rows.push(['قراءة الصايم لسه ما اتسجلتش النهاردة','fast']);
   var lb=T.filter(function(e){return e.slot==='ln_before'}).pop();
@@ -1509,11 +1512,16 @@ function renderTresRem(){
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا النهاردة اتسجلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>ترسيبا لسه ما اتسجلتش النهاردة</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
+var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed'];
 function setSlotOptions(){
-  var list=imode==='read'?SLOTS.filter(function(x){return PREMEAL.indexOf(x[0])<0||x[0]===keepSlot}):SLOTS, key=list.map(function(x){return x[0]}).join();
+  var allow=imode==='meal'?MEAL_SLOTS:imode==='read'?READ_SLOTS:null, order=imode==='read'?READ_SLOTS:null;
+  var list=allow?SLOTS.filter(function(x){return allow.indexOf(x[0])>=0||x[0]===keepSlot}):SLOTS;
+  if(order)list=list.slice().sort(function(a,b){var ia=order.indexOf(a[0]),ib=order.indexOf(b[0]); return (ia<0?9:ia)-(ib<0?9:ib)});
+  var key=list.map(function(x){return x[0]}).join();
   if(key===slotKey)return; slotKey=key; var cur=$('#slot').value;
   $('#slot').innerHTML=list.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
-  $('#slot').value=list.some(function(x){return x[0]===cur})?cur:(imode==='read'?'other':defaultSlot());
+  var has=function(v){return list.some(function(x){return x[0]===v})}, ds=defaultSlot();
+  $('#slot').value=has(cur)?cur:imode==='read'?'other':has(ds)?ds:(has('dn_after')?'dn_after':list[0][0]);
 }
 function syncCorr(){
   $('#corr').checked=imode==='corr'; $('#nodose').checked=imode==='nofood';
@@ -1545,7 +1553,7 @@ function setMode(m){
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
   syncInj(); renderHint(prep()); updateCalc();
 }
-document.addEventListener('click',function(e){var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode('read'); $('#slot').value=rb.dataset.remslot; syncCorr(); window.scrollTo(0,0); return}
+document.addEventListener('click',function(e){var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); window.scrollTo(0,0); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
   if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='ترسيبا بتتسجل بعد الساعة 10 بالليل بس.'; mh.hidden=false; toast('ترسيبا بتتسجل بعد الساعة 10 بالليل'); return}
@@ -1610,7 +1618,7 @@ function renderStrips(){ renderNeedles();
   el.innerHTML='<div class="stripline"><b>باقي '+Math.max(0,i.left)+'</b><span>اتستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=5?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
 }
 function careNotes(E){
-  var out=[], now=Date.now(), tk=dayKey(new Date()), yk=dayKey(new Date(now-DAY));
+  var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'أسنان الأقلام خلصت. جهّز علبة جديدة.':'باقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سن')+' بس في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'شرايط السكر خلصت. جهّز علبة جديدة.':'باقي '+si.left+(si.left===1?' شريط':' شرايط')+' بس في علبة الشرايط. جهّز علبة جديدة.');
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
@@ -1629,7 +1637,7 @@ function careNotes(E){
     }
   }
   if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&vh<=72)out.push('زيارة الدكتور '+(vh<24?'النهاردة':'بعد '+Math.ceil(vh/24)+' يوم')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
-  var hasOld=E.some(function(e){return dayKey(e.d)<tk});
+  var hasOld=E.some(function(e){return lk(e.d)<tk});
   var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
   if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
     var t0=lastR.d; for(var ri=R.length-2;ri>=0&&R[ri].glucose>kHi;ri--)t0=R[ri].d;
@@ -1653,7 +1661,7 @@ function careNotes(E){
   }else if(hasOld)out.push('سجّل تاريخ آخر تحليل تراكمي في الإعدادات علشان نفكرك بالميعاد الجاي.');
   if(hasOld){
     var vitDays={}, lastVit=null;
-    E.forEach(function(e){if((e.supp||[]).indexOf('vit')>=0){vitDays[dayKey(e.d)]=1; lastVit=e}});
+    E.forEach(function(e){if((e.supp||[]).indexOf('vit')>=0){vitDays[lk(e.d)]=1; lastVit=e}});
     if(!vitDays[tk]&&!vitDays[yk])out.push(lastVit?'الفيتامينات ماتسجلتش من '+relDay(lastVit.d)+'. لو ماخدتهاش خدها النهاردة.':'لسه مسجلتش الفيتامينات.');
   }
   return out;
@@ -1705,8 +1713,8 @@ function doctorNotes(E){
     if(lows>=2)notes.push('السكر نزل أقل من '+settings.low+' بعد '+m[1]+' في '+lows+' مرة من '+Q.length+'.');
   });
   var F=E.filter(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')});
-  var fd={}, hasFast={}; F.forEach(function(e){if(e.slot==='fast')hasFast[dayKey(e.d)]=1});
-  F.forEach(function(e){var k=dayKey(e.d); if(hasFast[k]&&e.slot!=='fast')return; if(!fd[k])fd[k]=[]; fd[k].push(e.glucose)});
+  var fd={}, hasFast={}; F.forEach(function(e){if(e.slot==='fast')hasFast[lk(e.d)]=1});
+  F.forEach(function(e){var k=lk(e.d); if(hasFast[k]&&e.slot!=='fast')return; if(!fd[k])fd[k]=[]; fd[k].push(e.glucose)});
   var days=Object.keys(fd), dv=days.map(function(k){return fd[k].reduce(function(a,b){return a+b},0)/fd[k].length});
   if(days.length>=3){
     var hi=dv.filter(function(v){return v>130}).length, av=Math.round(dv.reduce(function(a,b){return a+b},0)/dv.length);
@@ -1716,8 +1724,8 @@ function doctorNotes(E){
   return h;
 }
 function renderHero(E){
-  var tk=dayKey(new Date());
-  var T=E.filter(function(e){return dayKey(e.d)===tk});
+  var tk=lk(new Date());
+  var T=E.filter(function(e){return lk(e.d)===tk});
   var gs=E.filter(function(e){return e.glucose!=null});
   var last=gs[gs.length-1];
   var ap=T.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=T.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
@@ -1727,7 +1735,7 @@ function renderHero(E){
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
     '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج اللي تحت.')+'</p>'+
-    '<div class="tiles"><div class="a"><span>أبيدرا النهاردة</span><b>'+fmt(ap)+'</b><small>وحدة</small></div><div class="t"><span>ترسيبا النهاردة</span><b>'+fmt(tr)+'</b><small>وحدة</small></div><div class="r"><span>قراءات النهاردة</span><b>'+gs.filter(function(e){return dayKey(e.d)===tk}).length+'</b><small>قراءة</small></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
+    '<div class="tiles"><div class="a"><span>أبيدرا النهاردة</span><b>'+fmt(ap)+'</b><small>وحدة</small></div><div class="t"><span>ترسيبا النهاردة</span><b>'+fmt(tr)+'</b><small>وحدة</small></div><div class="r"><span>قراءات النهاردة</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b><small>قراءة</small></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
 }
 
 /* ---------- chart ---------- */
@@ -1812,10 +1820,10 @@ function renderLog(E){
   var el=$('#log');
   if(!E.length){el.innerHTML='<div class="card"><p class="empty">لسه مفيش تسجيلات. أول قراءة أو جرعة هتظهر هنا بعد ما تحفظها.</p></div>'; return}
   var groups={}, order=[];
-  E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
+  E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
   var html='';
-  var t0=new Date(), since=(t0.getDay()+1)%7, nDays=since+1+(weeksShown-1)*7, cutoff='';
+  var t0=new Date(Date.now()-SHIFT), since=(t0.getDay()+1)%7, nDays=since+1+(weeksShown-1)*7, cutoff='';
   for(var di=0;di<nDays;di++){
     var d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()-di,12), k=dayKey(d), G=groups[k]||[];
     cutoff=k;
@@ -1842,10 +1850,10 @@ function renderLog(E){
 
 /* ---------- Tresiba ---------- */
 function renderHint(E){
-  var el=$('#thint'), slot=curSlot(), tk=dayKey(new Date()), h='';
+  var el=$('#thint'), slot=curSlot(), tk=lk(new Date()), h='';
   var showT=true;
   if(showT){
-    var tr=E.filter(function(e){return e.tresiba>0&&dayKey(e.d)===tk});
+    var tr=E.filter(function(e){return e.tresiba>0&&lk(e.d)===tk});
     if(tr.length){
       var s=tr.reduce(function(a,e){return a+e.tresiba},0);
       h+='<p><b class="warn">اتسجلت النهاردة:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. اتأكد إنك مش بتكرر الجرعة.</p>';
@@ -2051,11 +2059,11 @@ function rangeInputs(){
   return {from:a.getTime(), to:b.getTime()+DAY, days:Math.round((b-a)/DAY)+1, a:a, b:b};
 }
 function setPreset(n){
-  var t=midnight(new Date()); setTimeout(rangeNote,0);
+  var t=midnight(new Date(Date.now()-SHIFT)); setTimeout(rangeNote,0);
   $('#rto').value=dayKey(new Date(t)); $('#rfrom').value=dayKey(new Date(t-(n-1)*DAY));
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed',String(Number(b.dataset.days)===n))});
 }
-function periodEntries(r){return prep().filter(function(e){var t=e.d.getTime(); return t>=r.from&&t<r.to})}
+function periodEntries(r){var ka=dayKey(r.a), kb=dayKey(r.b); return prep().filter(function(e){var k=lk(e.d); return k>=ka&&k<=kb})}
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
   if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
@@ -2065,7 +2073,7 @@ function buildReport(){
   var mn=vals.length?Math.min.apply(null,vals):null, mx=vals.length?Math.max.apply(null,vals):null;
   var lo=vals.filter(function(v){return v<settings.low}).length, hi=vals.filter(function(v){return v>settings.high}).length, okc=vals.length-lo-hi;
   var pc=function(n){return vals.length?Math.round(n/vals.length*100)+'%':'—'};
-  var dayKeys={}; E.forEach(function(e){dayKeys[dayKey(e.d)]=1}); var nd=Object.keys(dayKeys).length;
+  var dayKeys={}; E.forEach(function(e){dayKeys[lk(e.d)]=1}); var nd=Object.keys(dayKeys).length;
   var apTot=E.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0);
   var trE=E.filter(function(e){return e.tresiba>0});
   var trTimes=trE.filter(function(e){return e.tresibaTime}).map(function(e){var p=e.tresibaTime.split(':'); return (Number(p[0])*60+Number(p[1]))/1440*2*Math.PI});
@@ -2086,7 +2094,7 @@ function buildReport(){
     '<div><dt>ترسيبا</dt><dd>'+(trAvg!=null?fmt(trAvg)+' <small>وحدة، '+trE.length+' جرعة مسجلة'+(trAt?'، عادةً حوالي '+trAt:'')+'</small>':'—')+'</dd></div>'+
   '</dl>';
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
-  var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[dayKey(e.d)]=1});
+  var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
   h+=dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
@@ -2097,10 +2105,10 @@ function buildReport(){
   h+='</tbody></table></div>';
   h+='<h3>التفاصيل يوم بيوم</h3>';
   var byDay={}, dOrd=[];
-  E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
+  E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
   dOrd.forEach(function(k){
     var G2=byDay[k];
-    h+='<div class="daybox"><div class="dayh">'+dayLong(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
+    h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
     G2.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
       h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · '))+'</td></tr>';
@@ -2172,7 +2180,7 @@ function onSetChange(){
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
-  var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; var lr=prep().filter(function(e){return e.glucose!=null}).pop(); $('#sstripd').value=toLocalInput(lr&&dayKey(lr.d)===dayKey(new Date())?lr.d:new Date());
+  var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; var lr=prep().filter(function(e){return e.glucose!=null}).pop(); $('#sstripd').value=toLocalInput(lr&&lk(lr.d)===lk(new Date())?lr.d:new Date());
   onSetChange();
 });
 $('#needlenew').addEventListener('click',function(){
@@ -2295,7 +2303,7 @@ function patterns(E){
   });
   for(var d=0;d<7;d++){
     var W=G.filter(function(e){return e.d.getDay()===d}); if(W.length<3)continue;
-    var dk={}; W.forEach(function(e){dk[dayKey(e.d)]=1}); if(Object.keys(dk).length<2)continue;
+    var dk={}; W.forEach(function(e){dk[lk(e.d)]=1}); if(Object.keys(dk).length<2)continue;
     var m=avgOf(W.map(function(e){return e.glucose}));
     if(m-all>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أعلى من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
     else if(all-m>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أقل من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
@@ -2329,10 +2337,10 @@ function askIntent(q){
   return null;
 }
 var MED_DEF='ده عرض لأرقام متسجلة بس. تفسيرها طبيًا وأي قرار في الجرعات أو العلاج بيحدده الدكتور، وتقدر تعرض عليه التقرير.';
-function sinceDays(n){var m=new Date(); m.setHours(0,0,0,0); var a=m.getTime()-(n-1)*DAY; return prep().filter(function(e){return e.d.getTime()>=a&&e.d.getTime()<=Date.now()+36e5})}
+function sinceDays(n){var m=new Date(Date.now()-SHIFT); m.setHours(0,0,0,0); var a=m.getTime()+SHIFT-(n-1)*DAY; return prep().filter(function(e){return e.d.getTime()>=a&&e.d.getTime()<=Date.now()+36e5})}
 function slotName(e){return SLOT_LABEL[e.slot]||''}
 function ansHigh(){
-  var tk=dayKey(new Date()), all=prep().slice().sort(function(a,b){return a.d-b.d}), T=all.filter(function(e){return dayKey(e.d)===tk&&e.glucose!=null});
+  var tk=lk(new Date()), all=prep().slice().sort(function(a,b){return a.d-b.d}), T=all.filter(function(e){return lk(e.d)===tk&&e.glucose!=null});
   if(!T.length)return {obs:['لسه مفيش قراءات سكر اتسجلت النهاردة.'],med:MED_DEF};
   var hi=T.filter(function(e){return e.glucose>settings.high}), obs=[];
   var mx=T.slice().sort(function(a,b){return b.glucose-a.glucose})[0];
@@ -2375,13 +2383,13 @@ function ansMeal(){
 function ansWeek(){
   var E=sinceDays(7), S=glStats(E);
   if(!E.length)return {obs:['مفيش تسجيلات في آخر 7 أيام.'],med:MED_DEF};
-  var obs=[], dk={}; E.forEach(function(e){dk[dayKey(e.d)]=1});
+  var obs=[], dk={}; E.forEach(function(e){dk[lk(e.d)]=1});
   obs.push('اتسجل في '+Object.keys(dk).length+' من 7 أيام.');
   if(S){
     obs.push('قراءات السكر: '+S.n+'، المتوسط '+Math.round(S.mean)+'.');
     obs.push('في المعدل (70–180): '+Math.round(S.c.ok/S.n*100)+'%، أقل من 70: '+(S.c.lo+S.c.vl)+' قراءة، أعلى من 180: '+(S.c.hi+S.c.vh)+' قراءة.');
     var G=E.filter(function(e){return e.glucose!=null}).sort(function(a,b){return a.glucose-b.glucose}), lo=G[0], hi=G[G.length-1];
-    obs.push('أقل قراءة '+fmt(lo.glucose)+' ('+dayLong(lo.d)+'، '+slotName(lo)+')، وأعلى قراءة '+fmt(hi.glucose)+' ('+dayLong(hi.d)+'، '+slotName(hi)+').');
+    obs.push('أقل قراءة '+fmt(lo.glucose)+' ('+dlog(lo.d)+'، '+slotName(lo)+')، وأعلى قراءة '+fmt(hi.glucose)+' ('+dlog(hi.d)+'، '+slotName(hi)+').');
   }else obs.push('مفيش قراءات سكر في الأسبوع ده.');
   var ap=E.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=E.filter(function(e){return e.tresiba>0}).length;
   obs.push('أبيدرا: '+fmt(r1(ap/Math.max(1,Object.keys(dk).length)))+' وحدة في اليوم (على الأيام المسجلة). ترسيبا اتسجلت '+tr+' مرة.');
@@ -2390,23 +2398,23 @@ function ansWeek(){
   var chart='', st7=midnight(new Date())-6*DAY, svg=chartSVG(E,st7,7,'قراءات السكر في آخر 7 أيام');
   if(svg)chart+='<p class="chtt">قراءات آخر 7 أيام</p>'+svg;
   if(S){chart+='<p class="chtt">توزيع القراءات</p><div class="tirbar">'+BAND.map(function(b){var p=S.c[b[0]]/S.n*100; return p>0?'<span style="flex:'+p+';background:'+b[2]+'"></span>':''}).join('')+'</div><ul class="tirleg">'+BAND.map(function(b){return '<li><i style="background:'+b[2]+'"></i>'+b[1]+': <b>'+Math.round(S.c[b[0]]/S.n*100)+'%</b></li>'}).join('')+'</ul>'}
-  var dv=[]; for(var di=6;di>=0;di--){var dd=new Date(st7+di*DAY+DAY/2), v=E.filter(function(e){return e.glucose!=null&&dayKey(e.d)===dayKey(dd)}).map(function(e){return e.glucose}); if(v.length)dv.push({l:WD[dd.getDay()],v:avgOf(v),n:v.length})}
+  var dv=[]; for(var di=6;di>=0;di--){var dd=new Date(st7+di*DAY+DAY/2), v=E.filter(function(e){return e.glucose!=null&&lk(e.d)===dayKey(dd)}).map(function(e){return e.glucose}); if(v.length)dv.push({l:WD[dd.getDay()],v:avgOf(v),n:v.length})}
   if(dv.length>=2)chart+='<p class="chtt">متوسط السكر لكل يوم</p>'+hbarSVG(dv.reverse(),'متوسط السكر لكل يوم');
   return {obs:obs,med:MED_DEF,chart:chart};
 }
 function ansMissing(){
-  var obs=[], all=prep(), tk=dayKey(new Date()), E=sinceDays(7), now=Date.now();
+  var obs=[], all=prep(), tk=lk(new Date()), E=sinceDays(7), now=Date.now();
   var days=[]; for(var k=1;k<=7;k++){days.push(new Date(now-k*DAY))}
-  var dk={}; E.forEach(function(e){dk[dayKey(e.d)]=e});
+  var dk={}; E.forEach(function(e){dk[lk(e.d)]=e});
   var empty=days.filter(function(d){return !dk[dayKey(d)]});
   if(empty.length)obs.push('أيام من غير أي تسجيل: '+empty.map(function(d){return dayLong(d)}).join('، ')+'.');
-  var nf=days.filter(function(d){var x=E.filter(function(e){return dayKey(e.d)===dayKey(d)}); return x.length&&!x.some(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')})});
+  var nf=days.filter(function(d){var x=E.filter(function(e){return lk(e.d)===dayKey(d)}); return x.length&&!x.some(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')})});
   if(nf.length)obs.push('أيام من غير قراءة صايم أو قبل الفطار: '+nf.map(function(d){return dayLong(d)}).join('، ')+'.');
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), ns=inj.filter(function(e){return !e.site}).length;
   var na2=E.filter(function(e){return e.apidra>0&&!penNeedle(e,'a')}).length, nt2=E.filter(function(e){return e.tresiba>0&&!penNeedle(e,'t')}).length;
   if(na2)obs.push(na2+' حقنة أبيدرا من غير تسجيل سن القلم.'); if(nt2)obs.push(nt2+' حقنة ترسيبا من غير تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة من غير تسجيل مكان الحقن.');
   var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا من غير وقت الحقن.');
-  if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return dayKey(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
+  if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return lk(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
   var s=settings;
   if(s.visitNext&&new Date(s.visitNext)<now)obs.push('تاريخ الزيارة الجاية للدكتور فات. حدّث الموعد.');
   if(!s.a1cDate)obs.push('مفيش تاريخ لآخر تحليل تراكمي.'); else if(addMonthsISO(s.a1cDate,3)<now)obs.push('ميعاد التحليل التراكمي فات (آخر مرة '+dayFull(new Date(s.a1cDate+'T12:00:00'))+').');
@@ -2418,7 +2426,7 @@ function ansMissing(){
   return {obs:obs,med:'دي مجرد تسجيلات ناقصة في البرنامج. أي استفسار عن العلاج نفسه مع الدكتور.'};
 }
 function ansDose(){
-  var tk=dayKey(new Date()), T=prep().filter(function(e){return dayKey(e.d)===tk&&(e.apidra>0||e.tresiba>0)}), obs=[];
+  var tk=lk(new Date()), T=prep().filter(function(e){return lk(e.d)===tk&&(e.apidra>0||e.tresiba>0)}), obs=[];
   obs.push(T.length?'اللي اتسجل النهاردة: '+T.map(function(e){return timeStr(e.d)+' '+(e.apidra>0?'أبيدرا '+fmt(e.apidra):'')+(e.tresiba>0?' ترسيبا '+fmt(e.tresiba):'')}).join('، ')+'.':'مفيش جرعات متسجلة النهاردة.');
   return {obs:obs,med:'مقدرش أقترح جرعات ولا أغيّرها. الجرعات وأي تعديل فيها بيحددهم الدكتور بس، وفي الطوارئ (هبوط شديد أو الطفل مش واعي) اطلب الإسعاف.'};
 }
@@ -2495,7 +2503,7 @@ document.addEventListener('click',function(ev){
 });
 ['rfrom','rto'].forEach(function(id){$('#'+id).addEventListener('change',function(){
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed','false')});
-  var f=$('#rfrom').value, t=$('#rto').value, today=dayKey(new Date());
+  var f=$('#rfrom').value, t=$('#rto').value, today=lk(new Date());
   if(t>today)t=$('#rto').value=today; if(f>today)f=$('#rfrom').value=today;
   if(f&&t&&f>t){if(id==='rfrom')$('#rto').value=f; else $('#rfrom').value=t}
   rangeNote();
@@ -2540,14 +2548,14 @@ function buildXlsx(E,r){
   pushRow([cell(0,'الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)',8)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',8)})),20); merges.push('A2:'+col(NC-1)+'2');
   pushRow(COLS.map(function(c,i){return cell(i,c,1)}),30);
   var headRow=ri;
-  var by={}, ord=[]; E.slice().sort(dayOrder).forEach(function(e){var k=dayKey(e.d); if(!by[k]){by[k]=[]; ord.push(k)} by[k].push(e)});
+  var by={}, ord=[]; E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!by[k]){by[k]=[]; ord.push(k)} by[k].push(e)});
   ord.forEach(function(k){
     var G=by[k], gs=G.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose}), ap=G.reduce(function(a,e){return a+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(a,e){return a+(e.tresiba>0?e.tresiba:0)},0);
-    var sum=[dayLong(G[0].d)]; if(gs.length)sum.push('متوسط السكر '+Math.round(avgOf(gs))); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
+    var sum=[dlog(G[0].d)]; if(gs.length)sum.push('متوسط السكر '+Math.round(avgOf(gs))); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
     pushRow([cell(0,sum.join('   |   '),2)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',2)})),22); merges.push('A'+ri+':'+col(NC-1)+ri);
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose)[0]:'', gst=st==='low'?5:st==='high'?6:4;
-      pushRow([cell(0,pad(e.d.getDate())+'/'+pad(e.d.getMonth()+1)+'/'+e.d.getFullYear(),3),cell(1,timeStr(e.d),3),cell(2,SLOT_LABEL[e.slot]||'',3),
+      pushRow([cell(0,(function(x){return pad(x.getDate())+'/'+pad(x.getMonth()+1)+'/'+x.getFullYear()})(new Date(e.d.getTime()-SHIFT)),3),cell(1,timeStr(e.d),3),cell(2,SLOT_LABEL[e.slot]||'',3),
         cell(3,e.glucose==null?'':e.glucose,gst),cell(4,e.apidra>0?e.apidra:'',4),cell(5,e.tresiba>0?e.tresiba:'',4),
         cell(6,(e.meal||[]).map(function(m){return m.n+(m.q!==1?' ×'+fmt(m.q):'')}).join(' + '),9),cell(7,e.carbs>0?e.carbs:'',4),
         cell(8,e.corr&&e.apidra>0?'نعم':'',3),cell(9,e.note||'',9)]);
