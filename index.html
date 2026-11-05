@@ -835,6 +835,25 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .readrem .rr{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-radius:14px; border:1px solid color-mix(in srgb,#C9892B 50%,var(--line)); background:color-mix(in srgb,#C9892B 12%,var(--surface)); font-size:14.5px; font-weight:600}
 .readrem .link{margin:0; font-weight:700; flex:none}
 .modebar{display:flex!important; gap:8px} .modebar button{flex:1; min-width:0; padding:8px 4px} .modebar button[hidden]{display:none!important} .modebar button[data-mode=tres]{grid-column:auto}
+
+/* report page layout */
+.rsec{display:flex; flex-direction:column; gap:12px; padding:14px; border:1px solid color-mix(in srgb,var(--pt) 22%,var(--line)); border-radius:14px; background:var(--surface)}
+.rlbl{font-family:var(--f-display); font-size:13px; font-weight:600; color:var(--pt); letter-spacing:.2px}
+#rcard .presets{display:grid!important; grid-template-columns:repeat(4,1fr); gap:6px; margin:0}
+#rcard .presets button{min-height:44px; padding:6px 2px; font-size:14px; border-radius:10px}
+#rcard .presets button[aria-pressed=true]{background:var(--pt); border-color:var(--pt); color:#fff!important}
+@media (prefers-color-scheme: dark){#rcard .presets button[aria-pressed=true]{color:#111!important}}
+#rangenote{margin:0!important; text-align:center; color:var(--muted)}
+.rstats{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+.rstats div{display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 4px; border-radius:10px; background:color-mix(in srgb,var(--pt) 8%,var(--surface)); text-align:center}
+.rstats b{font-family:var(--f-display); font-size:16px; color:var(--pt); font-variant-numeric:tabular-nums} .rstats span{font-size:11px; color:var(--muted)}
+.acts{display:flex; flex-direction:column; gap:8px}
+.act{display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:10px 12px; border-radius:12px; border:1px solid color-mix(in srgb,var(--pt) 28%,var(--line)); background:var(--surface); color:var(--ink); text-align:start; font:inherit; cursor:pointer}
+.act .ai{flex:none; width:40px; height:40px; border-radius:10px; display:grid; place-items:center; background:color-mix(in srgb,var(--pt) 12%,var(--surface)); color:var(--pt)} .act .ai svg{width:22px; height:22px}
+.act .at{display:flex; flex-direction:column; gap:2px; min-width:0} .act .at b{font-size:15px; font-weight:600} .act .at small{font-size:12.5px; color:var(--muted); line-height:1.5}
+.act.main{background:var(--pt); border-color:var(--pt); color:#fff} .act.main .ai{background:rgba(255,255,255,.2); color:#fff} .act.main small{color:rgba(255,255,255,.85)}
+@media (prefers-color-scheme: dark){.act.main{color:#111} .act.main .ai{background:rgba(0,0,0,.14); color:#111} .act.main small{color:rgba(0,0,0,.7)}}
+.act:disabled{opacity:.7}
 </style>
 </head>
 <body>
@@ -971,23 +990,29 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <!-- ===== screen 3: report ===== -->
   <section class="card stack" id="rcard" aria-labelledby="rh" data-tab="report">
     <h2 id="rh">تقرير للدكتور</h2>
-    <div class="presets" id="presets" role="group" aria-label="الفترة">
-      <button type="button" class="ghost" data-days="7">آخر 7 أيام</button>
-      <button type="button" class="ghost" data-days="14" aria-pressed="true">آخر 14 يوم</button>
-      <button type="button" class="ghost" data-days="30">آخر 30 يوم</button>
-      <button type="button" class="ghost" data-days="90">آخر 3 شهور</button>
+    <div class="rsec">
+      <div class="rlbl">الفترة</div>
+      <div class="presets" id="presets" role="group" aria-label="الفترة">
+        <button type="button" class="ghost" data-days="7">7 أيام</button>
+        <button type="button" class="ghost" data-days="14" aria-pressed="true">14 يوم</button>
+        <button type="button" class="ghost" data-days="30">30 يوم</button>
+        <button type="button" class="ghost" data-days="90">3 شهور</button>
+      </div>
+      <div class="two">
+        <div class="field"><label for="rfrom">من</label><input id="rfrom" type="date"></div>
+        <div class="field"><label for="rto">إلى</label><input id="rto" type="date"></div>
+      </div>
+      <p class="small" id="rangenote" role="status"></p>
+      <div class="rstats" id="rstats"></div>
     </div>
-    <div class="two">
-      <div class="field"><label for="rfrom">من</label><input id="rfrom" type="date"></div>
-      <div class="field"><label for="rto">إلى</label><input id="rto" type="date"></div>
+    <div class="rsec">
+      <div class="rlbl">التقرير</div>
+      <div class="acts">
+        <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للدكتور</b><small>كل يوم بتاريخه وقراءاته والأنسولين، بيفتح على الموبايل</small></span></button>
+        <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يوم بيوم</small></span></button>
+        <button type="button" class="act" id="rshow"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></svg></span><span class="at"><b>التقرير الكامل على الشاشة</b><small>رسومات وأنماط وتفاصيل الفترة</small></span></button>
+      </div>
     </div>
-    <p class="small" id="rangenote" role="status"></p>
-    <div class="btnrow">
-      <button type="button" class="ghost" id="rshow">تحديث التقرير</button>
-    </div>
-    <button type="button" class="primary" id="pdfview">ملف PDF مختصر للدكتور (للموبايل)</button>
-    <p class="small">ملف نظيف صفحتين أو تلاتة: كل يوم بتاريخه وقراءات السكر والأنسولين (النوع والوحدات) بس. بيفتح على طول على الموبايل.</p>
-    <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel</button>
   </section>
   <section class="card stack" id="medcard" data-tab="report">
     <h2>بيانات للتقرير</h2>
@@ -2431,6 +2456,7 @@ function render(){
   var E=prep();
   renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
+  rangeNote();
 }
 
 /* ---------- events ---------- */
@@ -2474,7 +2500,15 @@ document.addEventListener('click',function(ev){
   rangeNote();
   buildReport();
 })});
-function rangeNote(){var r=rangeInputs(), el=$('#rangenote'); if(el)el.textContent=r?'الفترة المختارة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)':''}
+function rangeNote(){
+  var r=rangeInputs(), el=$('#rangenote'); if(el)el.textContent=r?'من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)':'';
+  var st=$('#rstats'); if(!st)return;
+  if(!r){st.innerHTML=''; return}
+  var E=periodEntries(r), G=E.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose}), days={}; E.forEach(function(e){days[lk(e.d)]=1});
+  var lo=G.filter(function(g){return g<settings.low}).length, inr=G.filter(function(g){return g>=settings.low&&g<=settings.high}).length;
+  var t=[['أيام مسجلة',Object.keys(days).length+' من '+r.days],['قراءات',G.length],['المتوسط',G.length?Math.round(avgOf(G)):'—'],['في المعدل',G.length?Math.round(inr/G.length*100)+'%':'—']];
+  st.innerHTML=t.map(function(x){return '<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join('');
+}
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
@@ -2564,7 +2598,7 @@ async function buildDoctorPdf(E,r){
 $('#pdfview').addEventListener('click',async function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
-  var btn=this, old=btn.textContent; btn.disabled=true; btn.textContent='بجهّز الملف…';
+  var btn=this, tl=btn.querySelector('b'), old=tl.textContent; btn.disabled=true; tl.textContent='بجهّز الملف…';
   var w=null; try{w=window.open('','_blank')}catch(e){}
   try{
     var blob=await buildDoctorPdf(E,r), url=URL.createObjectURL(blob);
@@ -2572,7 +2606,7 @@ $('#pdfview').addEventListener('click',async function(){
     else{var a=document.createElement('a'); a.href=url; a.target='_blank'; a.download='sugar-report-'+$('#rfrom').value+'_'+$('#rto').value+'.pdf'; document.body.appendChild(a); a.click(); a.remove()}
     setTimeout(function(){URL.revokeObjectURL(url)},60000);
   }catch(e){if(w)try{w.close()}catch(x){} toast('معرفتش أجهّز الملف. جرب تاني.')}
-  btn.disabled=false; btn.textContent=old;
+  btn.disabled=false; tl.textContent=old;
 });
 /* ---------- Excel export (real .xlsx, built in the browser) ---------- */
 var CRC_T=(function(){var t=[],c,n,k; for(n=0;n<256;n++){c=n; for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0} return t})();
