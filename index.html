@@ -872,6 +872,17 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .dtab td,.dtab th{white-space:nowrap;padding:6px 7px!important;font-size:16.5px!important}
 .dtab td small{opacity:.75;font-size:14px}
 .dtab tr.xr td{white-space:normal;font-size:14.5px!important;opacity:.85;padding-top:0!important}
+/* centered, aligned strips & needles */
+.cen{align-items:end}
+.cen .field{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.cen .field label{text-align:center;min-height:2.6em;display:flex;align-items:flex-end;justify-content:center;line-height:1.25}
+.cen input{width:100%;min-width:0;box-sizing:border-box;height:50px;text-align:center;-webkit-appearance:none;appearance:none}
+.cen input[type=datetime-local]{font-size:15px;padding:0 6px;display:block;text-align:center;direction:ltr}
+.cen input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;margin:0 auto}
+.cen.one{grid-template-columns:1fr}
+.stripbox{text-align:center}
+.stripbox .stripline{justify-content:center;gap:12px}
+#stripnew,#needlenew{display:block;margin-inline:auto}
 </style>
 </head>
 <body>
@@ -1101,21 +1112,19 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   
     <h3>شرايط قياس السكر</h3>
     <p class="small">كل قراءة سكر بتتحسب شريط. البرنامج بيعد الباقي وينبهك لما يفضل 5 شرايط.</p>
-    <div class="two">
-      <div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div>
-      <div class="field"><label for="sstripd">بداية استخدام العلبة</label><input id="sstripd" type="datetime-local"></div>
-    </div>
+    <div class="two cen one"><div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div></div>
+    <div class="two cen one"><div class="field"><label for="sstripd">بداية الاستخدام</label><input id="sstripd" type="datetime-local"></div></div>
     <div id="stripbox" class="stripbox"></div>
     <button type="button" class="ghost" id="stripnew">بدء علبة جديدة</button>
     <p class="small">العداد بيبدأ من آخر قراءة النهاردة (بيتحسب أول شريط)، ولو مفيش قراءة بيبدأ من دلوقتي. تقدر تعدّل الوقت بإيدك.</p>
 
     <h3>أسنان الأقلام</h3>
     <p class="small">كل مرة تسجل "سن جديد" بينقص سن من العلبة. وينبهك لما يفضل 10 أسنان.</p>
-    <div class="two">
+    <div class="two cen">
       <div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div>
-      <div class="field"><label for="sneedu">اتستخدم قبل بداية العد</label><input id="sneedu" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label for="sneedu">اتستخدم قبل كده</label><input id="sneedu" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
-    <div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="datetime-local"></div>
+    <div class="two cen one"><div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="datetime-local"></div></div>
     <div id="needlebox" class="stripbox"></div>
     <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
 
