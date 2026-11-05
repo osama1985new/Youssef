@@ -206,7 +206,6 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
 body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #set,body.ro #medcard{display:none!important}
-body.ro .tabs div{grid-template-columns:repeat(4,1fr)}
 .ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
 .care p{margin:0; line-height:1.5}
@@ -854,6 +853,12 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .act.main{background:var(--pt); border-color:var(--pt); color:#fff} .act.main .ai{background:rgba(255,255,255,.2); color:#fff} .act.main small{color:rgba(255,255,255,.85)}
 @media (prefers-color-scheme: dark){.act.main{color:#111} .act.main .ai{background:rgba(0,0,0,.14); color:#111} .act.main small{color:rgba(0,0,0,.7)}}
 .act:disabled{opacity:.7}
+
+/* bigger report text */
+.report h2{font-size:23px} .report .sub{font-size:15.5px} .report h3{font-size:18px}
+.report table{font-size:15.5px} .report th,.report td{padding:8px 9px}
+.rsum dt{font-size:14.5px} .rsum dd{font-size:23px} .rsum dd small{font-size:13.5px}
+.report p,.report li{font-size:15.5px}
 </style>
 </head>
 <body>
@@ -879,6 +884,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
   <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
+  <div class="readrem" id="visitrem" data-tab="all" hidden></div>
   <div class="readrem" id="readrem" data-tab="add" hidden></div>
   <div class="tresrem" id="tresrem" data-tab="add" hidden></div>
 
@@ -1288,6 +1294,11 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function pad(n){return String(n).padStart(2,'0')}
 function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
+function modeOf(a){var c={},b=null,bn=0; a.forEach(function(v){c[v]=(c[v]||0)+1; if(c[v]>bn||(c[v]===bn&&v>b)){bn=c[v]; b=v}}); return b}
+function fixedDoses(E){
+  var f=function(sl){return modeOf(E.filter(function(e){return e.slot===sl&&e.apidra>0&&!e.corr}).map(function(e){return e.apidra}))};
+  return {bf:f('bf_before'),ln:f('ln_before'),dn:f('dn_before'),tr:modeOf(E.filter(function(e){return e.tresiba>0}).map(function(e){return e.tresiba}))};
+}
 function lk(d){return dayKey(new Date(d.getTime()-SHIFT))}
 function dlog(d){return dayLong(new Date(d.getTime()-SHIFT))}
 function toLocalInput(d){return dayKey(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())}
@@ -1461,6 +1472,7 @@ function applyTab(){
     var show=(t==='all'||t===tab); if(role==='view'&&el.id==='hero')show=(tab==='log');
     el.classList.toggle('tabhide',!authed||!show);
   });
+  var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false);
 }
@@ -1505,6 +1517,14 @@ function renderReadRem(E){
   }
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
+}
+function renderVisitRem(){
+  var el=$('#visitrem'); if(!el)return; var vn=settings.visitNext, now=Date.now();
+  if(role==='view'||!vn||new Date(vn).getTime()>now||now-new Date(vn).getTime()>30*DAY){el.hidden=true; return}
+  var missed=false; try{missed=localStorage.getItem('ysg:vmiss')===vn}catch(e){}
+  el.hidden=false;
+  el.innerHTML=missed?'<div class="rr"><span>زيارة الدكتور فاتت ومحتاجة ميعاد جديد</span><button type="button" class="link" data-visit="new">حدد ميعاد جديد</button></div>'
+   :'<div class="rr"><span>زيارة الدكتور ('+dayLong(new Date(vn))+') عدّت. رحت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">رحت</button><button type="button" class="link" data-visit="skip">مروحتش</button></span></div>';
 }
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var T=tresToday();
@@ -1553,7 +1573,16 @@ function setMode(m){
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
   syncInj(); renderHint(prep()); updateCalc();
 }
-document.addEventListener('click',function(e){var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); window.scrollTo(0,0); return}
+document.addEventListener('click',function(e){
+  var vb=e.target.closest&&e.target.closest('[data-visit]');
+  if(vb){
+    var act=vb.dataset.visit;
+    if(act==='done'){settings=Object.assign({},settings,{visitLast:settings.visitNext,visitNext:null}); persistSettings(); syncSettingsInputs(); render(); toast('اتسجلت الزيارة. حدد ميعاد الزيارة الجاية.'); act='new'}
+    else if(act==='skip'){try{localStorage.setItem('ysg:vmiss',settings.visitNext)}catch(x){} render(); return}
+    if(act==='new'){go('report'); setTimeout(function(){var v=$('#vnext'); if(v){v.scrollIntoView({block:'center'}); v.focus()}},150)}
+    return;
+  }
+  var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); window.scrollTo(0,0); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
   if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='ترسيبا بتتسجل بعد الساعة 10 بالليل بس.'; mh.hidden=false; toast('ترسيبا بتتسجل بعد الساعة 10 بالليل'); return}
@@ -2079,19 +2108,19 @@ function buildReport(){
   var trTimes=trE.filter(function(e){return e.tresibaTime}).map(function(e){var p=e.tresibaTime.split(':'); return (Number(p[0])*60+Number(p[1]))/1440*2*Math.PI});
   var trAt=null; if(trTimes.length){var sx=0,sy=0; trTimes.forEach(function(a){sx+=Math.cos(a); sy+=Math.sin(a)}); var am=Math.atan2(sy,sx); if(am<0)am+=2*Math.PI; var mm=Math.round(am/(2*Math.PI)*1440)%1440; trAt=hm(pad(Math.floor(mm/60))+':'+pad(mm%60))}
   var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
-  var h='<h2>تقرير متابعة السكر — يوسف</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
+  var h='<h2>تقرير متابعة السكر</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
   h+=reportInfo();
   if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">مفيش تسجيلات في الفترة دي.</p>'; el.hidden=false; return true}
   h+=controlPanel(E);
+  var fd=fixedDoses(E), dz=function(v){return v!=null?fmt(v)+' <small>وحدة</small>':'—'};
   h+='<dl class="rsum">'+
+    '<div><dt>أبيدرا قبل الفطار</dt><dd>'+dz(fd.bf)+'</dd></div>'+'<div><dt>أبيدرا قبل الغداء</dt><dd>'+dz(fd.ln)+'</dd></div>'+'<div><dt>أبيدرا قبل العشاء</dt><dd>'+dz(fd.dn)+'</dd></div>'+'<div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div>'+
     '<div><dt>عدد قراءات السكر</dt><dd>'+vals.length+' <small>في '+nd+' يوم</small></dd></div>'+
     '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
     '<div><dt>أقل / أعلى قراءة</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
     '<div><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd></div>'+
     '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
-    '<div><dt>متوسط أبيدرا يوميًا</dt><dd>'+(nd?fmt(apTot/nd):'—')+' <small>وحدة</small></dd></div>'+
-    '<div><dt>ترسيبا</dt><dd>'+(trAvg!=null?fmt(trAvg)+' <small>وحدة، '+trE.length+' جرعة مسجلة'+(trAt?'، عادةً حوالي '+trAt:'')+'</small>':'—')+'</dd></div>'+
   '</dl>';
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
@@ -2454,7 +2483,7 @@ accordion($('#set'),false); accordion($('#medcard'),false);
 /* ---------- render all ---------- */
 function render(){
   var E=prep();
-  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
   rangeNote();
 }
@@ -2547,7 +2576,7 @@ async function buildDoctorPdf(E,r){
   newPage();
   /* header */
   rr(M,y,CW,64,10,'#0D7480');
-  T('تقرير متابعة السكر — يوسف',R-14,y+22,18,700,'#fff');
+  T('تقرير متابعة السكر',R-14,y+22,19,700,'#fff');
   T('الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+'  ('+r.days+' يوم)',R-14,y+46,10.5,400,'#DDF1F3');
   T('تاريخ الإنشاء: '+dayFull(new Date()),M+14,y+46,9,400,'#DDF1F3','left');
   y+=76;
@@ -2556,6 +2585,9 @@ async function buildDoctorPdf(E,r){
   var tw=(CW-2*8)/3;
   tiles.forEach(function(t,i){var x=R-(i+1)*tw-i*8; rr(x,y,tw,46,8,'#F1F6F8','#D5E0E5'); T(t[1],x+tw/2,y+17,15,700,'#0D7480','center'); T(t[0],x+tw/2,y+35,8.5,400,'#55656f','center')});
   y+=58;
+  var fd=fixedDoses(E), dt4=[['أبيدرا قبل الفطار',fd.bf,'#2F6FD0'],['أبيدرا قبل الغداء',fd.ln,'#2F6FD0'],['أبيدرا قبل العشاء',fd.dn,'#2F6FD0'],['ترسيبا',fd.tr,'#7B3FD1']], dw=(CW-3*6)/4;
+  dt4.forEach(function(t,i){var x=R-(i+1)*dw-i*6; rr(x,y,dw,46,8,'#F7F9FB','#D5E0E5'); T(t[1]!=null?fmt(t[1])+' وحدة':'—',x+dw/2,y+17,14.5,700,t[2],'center'); T(t[0],x+dw/2,y+35,8.5,400,'#55656f','center')});
+  y+=58;
   function header(){
     rr(M,y,CW,24,6,'#E3EEF3');
     T('اليوم والتاريخ',R-8,y+12,9.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+12,9.5,700,'#17303B');
@@ -2563,7 +2595,7 @@ async function buildDoctorPdf(E,r){
     y+=28;
   }
   header();
-  var CH_W=44, CH_H=30, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
+  var CH_W=44, CH_H=33, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
   ord.forEach(function(k){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
@@ -2573,21 +2605,21 @@ async function buildDoctorPdf(E,r){
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
     cx.strokeStyle='#E1E8EC'; cx.lineWidth=0.8; cx.beginPath(); cx.moveTo(M,y+h+2); cx.lineTo(R,y+h+2); cx.stroke();
-    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-8,11.5,700,'#17303B');
-    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+9,9,400,'#55656f');
+    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-9,13,700,'#17303B');
+    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+9,10,400,'#55656f');
     /* readings chips, right to left */
     reads.forEach(function(e,i){
       var col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), st=status(e.glucose)[0];
       var bg=st==='low'?'#FBE3E1':st==='high'?'#FCEBD3':'#E6F4EC', fg=st==='low'?'#B3261E':st==='high'?'#A85A00':'#1E7F47';
       rr(x,yy,CH_W,CH_H,6,bg);
-      T(String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''),x+CH_W/2,yy+11,12,700,fg,'center');
-      T(SLOT_LABEL[e.slot]||'',x+CH_W/2,yy+23.5,6.6,400,'#55656f','center');
+      T(String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''),x+CH_W/2,yy+12,14,700,fg,'center');
+      T(SLOT_LABEL[e.slot]||'',x+CH_W/2,yy+26,7.2,400,'#55656f','center');
     });
     if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
     /* insulin: Apidra doses, then Tresiba, each in its own column */
     var ax=M+CT+CA/2+CT-CT, tx=M+CT/2;
-    if(A.length)T(A.map(function(e){return fmt(e.apidra)}).join(' · '),M+CT+CA/2,y+h/2,12,700,'#2F6FD0','center'); else T('—',M+CT+CA/2,y+h/2,11,400,'#C0CBD1','center');
-    if(Tr.length)T(Tr.map(function(e){return fmt(e.tresiba)}).join(' · '),tx,y+h/2,12,700,'#7B3FD1','center'); else T('—',tx,y+h/2,11,400,'#C0CBD1','center');
+    if(A.length)T(A.map(function(e){return fmt(e.apidra)}).join(' · '),M+CT+CA/2,y+h/2,13.5,700,'#2F6FD0','center'); else T('—',M+CT+CA/2,y+h/2,11,400,'#C0CBD1','center');
+    if(Tr.length)T(Tr.map(function(e){return fmt(e.tresiba)}).join(' · '),tx,y+h/2,13.5,700,'#7B3FD1','center'); else T('—',tx,y+h/2,11,400,'#C0CBD1','center');
     y+=h+8;
   });
   /* footers */
@@ -2635,7 +2667,7 @@ function buildXlsx(E,r){
   function pushRow(cells,ht){ri++; rowsX.push('<row r="'+ri+'"'+(ht?' ht="'+ht+'" customHeight="1"':'')+'>'+cells.join('')+'</row>')}
   ri=0; rowsX.push(''); rowsX.pop();
   // title rows
-  ri=0; pushRow([cell(0,'سجل متابعة السكر — يوسف',7)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',7)})),26); merges.push('A1:'+col(NC-1)+'1');
+  ri=0; pushRow([cell(0,'سجل متابعة السكر',7)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',7)})),26); merges.push('A1:'+col(NC-1)+'1');
   pushRow([cell(0,'الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)',8)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',8)})),20); merges.push('A2:'+col(NC-1)+'2');
   pushRow(COLS.map(function(c,i){return cell(i,c,1)}),30);
   var headRow=ri;
