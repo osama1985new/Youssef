@@ -1523,11 +1523,9 @@ function renderReadRem(E){
   var T=(E||prep()).filter(function(e){return lk(e.d)===tk&&e.glucose!=null}), rows=[];
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
   if(h>=6&&!has('fast'))rows.push(['قراءة الصايم لسه ما اتسجلتش النهاردة','fast']);
-  var lb=T.filter(function(e){return e.slot==='ln_before'}).pop();
-  if(!has('ln_after')){
-    if(lb){ if(now-lb.d>=2*36e5&&now-lb.d<7*36e5)rows.push(['عدّى ساعتين على قراءة قبل الغداء. قراءة بعد الغداء لسه ما اتسجلتش','ln_after']) }
-    else if(h>=16&&h<22)rows.push(['قراءة بعد الغداء لسه ما اتسجلتش النهاردة','ln_after']);
-  }
+  var bb=T.filter(function(e){return e.slot==='bf_before'}).pop();
+  if(bb&&!has('bf_after')&&now-bb.d>=2*36e5&&now-bb.d<7*36e5)rows.push(['عدّى ساعتين على الفطار. قراءة بعد الفطار لسه ما اتسجلتش','bf_after']);
+  if((h>=22||h<4)&&!has('bed'))rows.push(['قراءة قبل النوم لسه ما اتسجلتش','bed']);
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
 }
@@ -2644,8 +2642,14 @@ async function buildDoctorPdf(E,r){
     if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
     /* insulin: Apidra doses, then Tresiba, each in its own column */
     var ax=M+CT+CA/2+CT-CT, tx=M+CT/2;
-    if(A.length)T(A.map(function(e){return fmt(e.apidra)}).join(' · '),M+CT+CA/2,y+h/2,15.5,700,'#2F6FD0','center'); else T('—',M+CT+CA/2,y+h/2,11,400,'#C0CBD1','center');
-    if(Tr.length)T(Tr.map(function(e){return fmt(e.tresiba)}).join(' · '),tx,y+h/2,15.5,700,'#7B3FD1','center'); else T('—',tx,y+h/2,11,400,'#C0CBD1','center');
+    function doses(list,cx0,col){
+      if(!list.length){T('—',cx0,y+h/2,11,400,'#C0CBD1','center'); return}
+      var v=list.map(fmt), colW=(cx0===tx?CT:CA)-4, fs=15.5;
+      if(v.length<=3){cx.font='700 '+fs+'px '+FF; var txt=v.join(' · '); while(fs>9&&cx.measureText(txt).width>colW){fs-=.5; cx.font='700 '+fs+'px '+FF} T(txt,cx0,y+h/2,fs,700,col,'center'); return}
+      var lh=Math.min(16,(h-4)/v.length), f2=Math.min(15.5,lh*.95);
+      v.forEach(function(t,i){T(t,cx0,y+h/2-(v.length-1)*lh/2+i*lh,f2,700,col,'center')});
+    }
+    doses(A.map(function(e){return e.apidra}),M+CT+CA/2,'#2F6FD0'); doses(Tr.map(function(e){return e.tresiba}),tx,'#7B3FD1');
     y+=h+8;
   });
   /* footers */
