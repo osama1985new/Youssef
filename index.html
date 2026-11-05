@@ -859,6 +859,15 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .report table{font-size:15.5px} .report th,.report td{padding:8px 9px}
 .rsum dt{font-size:14.5px} .rsum dd{font-size:23px} .rsum dd small{font-size:13.5px}
 .report p,.report li{font-size:15.5px}
+
+.wk{border:1px solid var(--line,#d8dee3);border-radius:12px;margin:10px 0;background:var(--card,transparent)}
+.wk>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-direction:column;gap:3px;font-size:15.5px}
+.wk>summary::-webkit-details-marker{display:none}
+.wk>summary::after{content:"‹";position:absolute;display:none}
+.wk .wks{font-size:13.5px;opacity:.75}
+.wk[open]>summary{border-bottom:1px solid var(--line,#d8dee3)}
+.wk>.daybox{margin:8px}
+.wkbar{text-align:left;margin:4px 0;font-size:14px}
 </style>
 </head>
 <body>
@@ -2135,14 +2144,24 @@ function buildReport(){
   h+='<h3>التفاصيل يوم بيوم</h3>';
   var byDay={}, dOrd=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
-  dOrd.forEach(function(k){
-    var G2=byDay[k];
-    h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
-    G2.forEach(function(e){
-      var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
-      h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · '))+'</td></tr>';
+  var weeks=[]; for(var wi=0;wi<dOrd.length;wi+=7)weeks.push(dOrd.slice(wi,wi+7));
+  h+='<div class="wkbar"><button type="button" class="link" data-wk="open">فتح الكل</button> · <button type="button" class="link" data-wk="close">قفل الكل</button></div>';
+  weeks.forEach(function(ws,wn){
+    var all=[]; ws.forEach(function(k){all=all.concat(byDay[k])});
+    var gl=all.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose});
+    var lo=gl.filter(function(v){return status(v)[0]==='low'}).length, hi=gl.filter(function(v){return status(v)[0]==='high'}).length;
+    var rng=ws.length>1?dayLong(byDay[ws[0]][0].d)+' إلى '+dayLong(byDay[ws[ws.length-1]][0].d):dayLong(byDay[ws[0]][0].d);
+    h+='<details class="wk"'+(wn===weeks.length-1?' open':'')+'><summary><b>'+rng+'</b><span class="wks">متوسط '+(gl.length?Math.round(gl.reduce(function(x,y){return x+y},0)/gl.length):'—')+' · واطي '+lo+' · عالي '+hi+'</span></summary>';
+    ws.forEach(function(k){
+      var G2=byDay[k];
+      h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
+      G2.forEach(function(e){
+        var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
+        h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · '))+'</td></tr>';
+      });
+      h+='</tbody></table></div></div>';
     });
-    h+='</tbody></table></div></div>';
+    h+='</details>';
   });
   h+='<p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
@@ -2538,6 +2557,7 @@ function rangeNote(){
   var t=[['أيام مسجلة',Object.keys(days).length+' من '+r.days],['قراءات',G.length],['المتوسط',G.length?Math.round(avgOf(G)):'—'],['في المعدل',G.length?Math.round(inr/G.length*100)+'%':'—']];
   st.innerHTML=t.map(function(x){return '<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join('');
 }
+$('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
