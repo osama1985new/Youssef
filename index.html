@@ -987,6 +987,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <button type="button" class="primary" id="rprint">حفظ PDF</button>
     </div>
     <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
+    <button type="button" class="primary" id="pdfview">ملف PDF مختصر للدكتور (للموبايل)</button>
+    <p class="small">ملف نظيف صفحتين أو تلاتة: كل يوم بتاريخه وقراءات السكر والأنسولين (النوع والوحدات) بس. بيفتح على طول على الموبايل.</p>
     <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel</button>
   </section>
   <section class="card stack" id="medcard" data-tab="report">
@@ -2516,6 +2518,104 @@ $('#rprint').addEventListener('click',function(){
   var old=document.title;
   document.title='تقرير-سكر-'+$('#rfrom').value+'-إلى-'+$('#rto').value;
   setTimeout(function(){window.print(); setTimeout(function(){document.title=old},500)},150);
+});
+/* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
+function u8(str){return new TextEncoder().encode(str)}
+function makePdf(jpegs,W,H){
+  var parts=[], off=0, xref=[], n=0;
+  function add(x){var b=typeof x==='string'?u8(x):x; parts.push(b); off+=b.length}
+  function obj(body){n++; xref[n]=off; add(n+' 0 obj\n'); add(body); add('\nendobj\n'); return n}
+  add('%PDF-1.4\n');
+  var N=jpegs.length, pagesId=2+N*3+0; /* ids: 1 catalog, 2.. pages placed after; compute explicitly below */
+  /* ids: catalog=1, pages=2, then per page i: page=3+i*3, content=4+i*3, image=5+i*3 */
+  obj('<< /Type /Catalog /Pages 2 0 R >>');
+  var kids=[]; for(var i=0;i<N;i++)kids.push((3+i*3)+' 0 R');
+  obj('<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+N+' >>');
+  for(var j=0;j<N;j++){
+    obj('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 '+(5+j*3)+' 0 R >> >> /Contents '+(4+j*3)+' 0 R >>');
+    var cs='q 595 0 0 842 0 0 cm /Im0 Do Q'; obj('<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+    n++; xref[n]=off; add(n+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+W+' /Height '+H+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpegs[j].length+' >>\nstream\n'); add(jpegs[j]); add('\nendstream\nendobj\n');
+  }
+  var xo=off; add('xref\n0 '+(n+1)+'\n0000000000 65535 f \n'); for(var k=1;k<=n;k++)add(String(xref[k]).padStart(10,'0')+' 00000 n \n');
+  add('trailer\n<< /Size '+(n+1)+' /Root 1 0 R >>\nstartxref\n'+xo+'\n%%EOF');
+  return new Blob(parts,{type:'application/pdf'});
+}
+async function buildDoctorPdf(E,r){
+  var FF="'IBM Plex Sans Arabic','Readex Pro','Noto Naskh Arabic','Noto Sans Arabic',system-ui,sans-serif";
+  try{await Promise.all([document.fonts.load("700 20px 'IBM Plex Sans Arabic'"),document.fonts.load("400 20px 'IBM Plex Sans Arabic'"),document.fonts.load("700 20px 'Readex Pro'")])}catch(e){}
+  var SC=2, PW=595, PH=842, M=28, CW=PW-2*M, C1=86, CA=66, CT=46, C3=CA+CT, C2=CW-C1-C3, R=PW-M;
+  var pages=[], cv, cx, y;
+  function newPage(){
+    cv=document.createElement('canvas'); cv.width=PW*SC; cv.height=PH*SC; cx=cv.getContext('2d'); cx.scale(SC,SC); cx.direction='rtl'; cx.textBaseline='middle';
+    cx.fillStyle='#fff'; cx.fillRect(0,0,PW,PH); pages.push(cv); y=M;
+  }
+  function T(t,x,yy,size,w,col,al){cx.font=(w||400)+' '+size+'px '+FF; cx.fillStyle=col||'#17303B'; cx.textAlign=al||'right'; cx.fillText(t,x,yy)}
+  function rr(x,yy,w,h,rad,fill,stroke){cx.beginPath(); cx.roundRect?cx.roundRect(x,yy,w,h,rad):cx.rect(x,yy,w,h); if(fill){cx.fillStyle=fill; cx.fill()} if(stroke){cx.strokeStyle=stroke; cx.lineWidth=0.8; cx.stroke()}}
+  var by={}, ord=[]; E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!by[k]){by[k]=[]; ord.push(k)} by[k].push(e)});
+  var G=E.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose});
+  newPage();
+  /* header */
+  rr(M,y,CW,64,10,'#0D7480');
+  T('تقرير متابعة السكر — يوسف',R-14,y+22,18,700,'#fff');
+  T('الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+'  ('+r.days+' يوم)',R-14,y+46,10.5,400,'#DDF1F3');
+  T('تاريخ الإنشاء: '+dayFull(new Date()),M+14,y+46,9,400,'#DDF1F3','left');
+  y+=76;
+  /* summary tiles */
+  var tiles=[['أيام فيها تسجيل',String(ord.length)],['عدد القراءات',String(G.length)],['متوسط السكر',G.length?String(Math.round(avgOf(G))):'—']];
+  var tw=(CW-2*8)/3;
+  tiles.forEach(function(t,i){var x=R-(i+1)*tw-i*8; rr(x,y,tw,46,8,'#F1F6F8','#D5E0E5'); T(t[1],x+tw/2,y+17,15,700,'#0D7480','center'); T(t[0],x+tw/2,y+35,8.5,400,'#55656f','center')});
+  y+=58;
+  function header(){
+    rr(M,y,CW,24,6,'#E3EEF3');
+    T('اليوم والتاريخ',R-8,y+12,9.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+12,9.5,700,'#17303B');
+    T('أبيدرا',M+CT+CA/2,y+9,9.5,700,'#2F6FD0','center'); T('وحدات',M+CT+CA/2,y+19,6.5,400,'#55656f','center'); T('ترسيبا',M+CT/2,y+9,9.5,700,'#7B3FD1','center'); T('وحدات',M+CT/2,y+19,6.5,400,'#55656f','center');
+    y+=28;
+  }
+  header();
+  var CH_W=44, CH_H=30, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
+  ord.forEach(function(k){
+    var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
+    var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
+    var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
+    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, h=Math.max(46,hR);
+    if(y+h>PH-M-18){newPage(); header()}
+    var ld=new Date(D[0].d.getTime()-SHIFT);
+    /* row bg + separators */
+    cx.strokeStyle='#E1E8EC'; cx.lineWidth=0.8; cx.beginPath(); cx.moveTo(M,y+h+2); cx.lineTo(R,y+h+2); cx.stroke();
+    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-8,11.5,700,'#17303B');
+    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+9,9,400,'#55656f');
+    /* readings chips, right to left */
+    reads.forEach(function(e,i){
+      var col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), st=status(e.glucose)[0];
+      var bg=st==='low'?'#FBE3E1':st==='high'?'#FCEBD3':'#E6F4EC', fg=st==='low'?'#B3261E':st==='high'?'#A85A00':'#1E7F47';
+      rr(x,yy,CH_W,CH_H,6,bg);
+      T(String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''),x+CH_W/2,yy+11,12,700,fg,'center');
+      T(SLOT_LABEL[e.slot]||'',x+CH_W/2,yy+23.5,6.6,400,'#55656f','center');
+    });
+    if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
+    /* insulin: Apidra doses, then Tresiba, each in its own column */
+    var ax=M+CT+CA/2+CT-CT, tx=M+CT/2;
+    if(A.length)T(A.map(function(e){return fmt(e.apidra)}).join(' · '),M+CT+CA/2,y+h/2,12,700,'#2F6FD0','center'); else T('—',M+CT+CA/2,y+h/2,11,400,'#C0CBD1','center');
+    if(Tr.length)T(Tr.map(function(e){return fmt(e.tresiba)}).join(' · '),tx,y+h/2,12,700,'#7B3FD1','center'); else T('—',tx,y+h/2,11,400,'#C0CBD1','center');
+    y+=h+8;
+  });
+  /* footers */
+  pages.forEach(function(c,i){var g=c.getContext('2d'); g.direction='rtl'; g.textBaseline='middle'; g.font='400 8px '+FF; g.fillStyle='#8A99A2'; g.textAlign='center'; g.fillText('صفحة '+(i+1)+' من '+pages.length+'  ·  ملخص من تسجيلات الأهل للمتابعة، والقرارات العلاجية للدكتور',PW/2,PH-14)});
+  var jpegs=await Promise.all(pages.map(function(c){return new Promise(function(res){c.toBlob(function(b){b.arrayBuffer().then(function(ab){res(new Uint8Array(ab))})},'image/jpeg',0.92)})}));
+  return makePdf(jpegs,PW*SC,PH*SC);
+}
+$('#pdfview').addEventListener('click',async function(){
+  var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
+  var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+  var btn=this, old=btn.textContent; btn.disabled=true; btn.textContent='بجهّز الملف…';
+  var w=null; try{w=window.open('','_blank')}catch(e){}
+  try{
+    var blob=await buildDoctorPdf(E,r), url=URL.createObjectURL(blob);
+    if(w&&!w.closed){w.location.href=url}
+    else{var a=document.createElement('a'); a.href=url; a.target='_blank'; a.download='sugar-report-'+$('#rfrom').value+'_'+$('#rto').value+'.pdf'; document.body.appendChild(a); a.click(); a.remove()}
+    setTimeout(function(){URL.revokeObjectURL(url)},60000);
+  }catch(e){if(w)try{w.close()}catch(x){} toast('معرفتش أجهّز الملف. جرب تاني.')}
+  btn.disabled=false; btn.textContent=old;
 });
 /* ---------- Excel export (real .xlsx, built in the browser) ---------- */
 var CRC_T=(function(){var t=[],c,n,k; for(n=0;n<256;n++){c=n; for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0} return t})();
