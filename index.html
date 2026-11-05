@@ -868,6 +868,10 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .wk[open]>summary{border-bottom:1px solid var(--line,#d8dee3)}
 .wk>.daybox{margin:8px}
 .wkbar{text-align:left;margin:4px 0;font-size:14px}
+.wk>.wkin{padding:0 10px 10px}
+.dtab td,.dtab th{white-space:nowrap;padding:5px 7px!important;font-size:14px!important}
+.dtab td small{opacity:.7;font-size:12px}
+.dtab tr.xr td{white-space:normal;font-size:12.5px!important;opacity:.8;padding-top:0!important}
 </style>
 </head>
 <body>
@@ -2133,7 +2137,7 @@ function buildReport(){
   '</dl>';
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
-  h+=dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
+  h+='<details class="wk"><summary><b>الرسومات والتحليل</b><span class="wks">رسم القراءات · الأنماط · الملاحظات · متوسط كل وقت</span></summary><div class="wkin">'+dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
     var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
@@ -2141,6 +2145,7 @@ function buildReport(){
     h+='<tr><td>'+s[1]+'</td><td>'+v.length+'</td><td>'+Math.round(v.reduce(function(a,b){return a+b},0)/v.length)+'</td><td>'+Math.min.apply(null,v)+'</td><td>'+Math.max.apply(null,v)+'</td></tr>';
   });
   h+='</tbody></table></div>';
+  h+='</div></details>';
   h+='<h3>التفاصيل يوم بيوم</h3>';
   var byDay={}, dOrd=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
@@ -2154,10 +2159,11 @@ function buildReport(){
     h+='<details class="wk"'+(wn===weeks.length-1?' open':'')+'><summary><b>'+rng+'</b><span class="wks">متوسط '+(gl.length?Math.round(gl.reduce(function(x,y){return x+y},0)/gl.length):'—')+' · واطي '+lo+' · عالي '+hi+'</span></summary>';
     ws.forEach(function(k){
       var G2=byDay[k];
-      h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table><thead><tr><th>الوقت</th><th>القياس</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th><th>الأكل</th><th>ملاحظة</th></tr></thead><tbody>';
+      h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table class="dtab"><thead><tr><th>الوقت</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th></tr></thead><tbody>';
       G2.forEach(function(e){
         var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
-        h+='<tr><td>'+timeStr(e.d)+'</td><td>'+esc(SLOT_LABEL[e.slot]||'')+'</td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?unitsTxt(e.apidra):'')+'</td><td>'+(e.tresiba>0?unitsTxt(e.tresiba):'')+'</td><td>'+mealText(e)+'</td><td>'+esc([e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · '))+'</td></tr>';
+        var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · ');
+        h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(SLOT_LABEL[e.slot]||'')+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
       });
       h+='</tbody></table></div></div>';
     });
