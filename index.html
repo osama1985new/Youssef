@@ -227,7 +227,7 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
 /* tab bar */
 .tabs{position:fixed; inset-inline:0; bottom:0; z-index:30; background:var(--surface); border-top:1px solid var(--line);
   padding:6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px))}
-.tabs div{max-width:560px; margin-inline:auto; display:grid; grid-template-columns:repeat(5,1fr); gap:4px}
+.tabs div{max-width:560px; margin-inline:auto; display:grid; grid-template-columns:repeat(4,1fr); gap:4px}
 .tabs button{border:0; background:transparent; min-height:56px; min-width:0; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--muted); font-size:12.5px; cursor:pointer}
 .tabs button svg{width:24px; height:24px}
 .tabs button[aria-current=page]{color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface)); font-weight:600}
@@ -984,9 +984,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <p class="small" id="rangenote" role="status"></p>
     <div class="btnrow">
       <button type="button" class="ghost" id="rshow">تحديث التقرير</button>
-      <button type="button" class="primary" id="rprint">حفظ PDF</button>
     </div>
-    <p class="small">"حفظ PDF" بيفتح شاشة الطباعة، اختار منها "حفظ كـ PDF" وابعت الملف للدكتور.</p>
     <button type="button" class="primary" id="pdfview">ملف PDF مختصر للدكتور (للموبايل)</button>
     <p class="small">ملف نظيف صفحتين أو تلاتة: كل يوم بتاريخه وقراءات السكر والأنسولين (النوع والوحدات) بس. بيفتح على طول على الموبايل.</p>
     <button type="button" class="ghost" id="csv">تنزيل الفترة كملف Excel</button>
@@ -1022,30 +1020,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 
   </section>
   <section class="report" id="report" data-tab="report" hidden></section>
-
-  <!-- ===== assistant ===== -->
-  <section class="card stack" id="askcard" data-tab="ask" aria-labelledby="ah">
-    <h2 id="ah">المساعد</h2>
-    <p class="small">بيجاوب من التسجيلات اللي في البرنامج بس. بيفرّق بين اللي اتسجل وبين التحليل الطبي، ومش بيقترح جرعات ولا بيغيّر علاج.</p>
-    <div class="field">
-      <label for="askpick">اختار السؤال</label>
-      <select id="askpick">
-        <option value="">اختار سؤال…</option>
-        <optgroup label="النهاردة">
-          <option>السكر ارتفع ليه النهاردة؟</option>
-          <option>إيه الجرعات المتسجلة النهاردة؟</option>
-        </optgroup>
-        <optgroup label="الأسبوع والوجبات">
-          <option>اعمل ملخص للأسبوع</option>
-          <option>إيه أكتر وجبة ارتبطت بارتفاع القراءات؟</option>
-        </optgroup>
-        <optgroup label="السجل">
-          <option>إيه البيانات الناقصة في سجلي؟</option>
-        </optgroup>
-      </select>
-    </div>
-    <div id="askout" class="askout" role="region" aria-live="polite"></div>
-  </section>
 
   <!-- ===== screen 4: settings ===== -->
   <section class="card stack" id="set" data-tab="set">
@@ -1143,7 +1117,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
     <button type="button" data-go="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>السجل</button>
     <button type="button" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/></svg>التقرير</button>
-    <button type="button" data-go="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>المساعد</button>
     <button type="button" data-go="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>الإعدادات</button>
   </div>
 </nav>
@@ -1466,7 +1439,7 @@ function applyTab(){
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false);
 }
-function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport(); if(t==='ask')renderChat()}
+function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport()}
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
 
 /* ---------- static UI ---------- */
@@ -2437,16 +2410,6 @@ function answer(q){
   return k==='high'?ansHigh():k==='meal'?ansMeal():k==='week'?ansWeek():k==='missing'?ansMissing():k==='dose'?ansDose():
     {obs:['مفهمتش السؤال. جرّب واحد من الأسئلة اللي فوق.'],med:null};
 }
-function renderChat(){
-  var el=$('#askout'); if(!el)return;
-  if(!askState){el.innerHTML='<div class="askempty"><b>اختار سؤال من القايمة</b><span>هتلاقي الإجابة هنا من تسجيلاتك.</span></div>'; return}
-  var r=askState.r;
-  el.innerHTML='<div class="ans"><h3 class="ans-q">'+esc(askState.q)+'</h3>'+
-    '<div class="sec"><b>من التسجيلات</b><ul>'+r.obs.map(function(o){return '<li>'+esc(o)+'</li>'}).join('')+'</ul></div>'+(r.chart?'<div class="sec chart"><b>الرسم</b>'+r.chart+'</div>':'')+
-    (r.med?'<div class="sec med"><b>التحليل الطبي</b><p>'+esc(r.med)+'</p></div>':'')+'</div>';
-}
-var askState=null;
-$('#askpick').addEventListener('change',function(){var q=this.value; askState=q?{q:q,r:answer(q)}:null; renderChat()});
 $('#log').addEventListener('toggle',function(ev){var d=ev.target; if(d&&d.classList&&d.classList.contains('day'))openDays[d.dataset.k]=d.open},true);
 
 /* ---------- collapsible groups in settings and report data ---------- */
@@ -2513,12 +2476,6 @@ document.addEventListener('click',function(ev){
 })});
 function rangeNote(){var r=rangeInputs(), el=$('#rangenote'); if(el)el.textContent=r?'الفترة المختارة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم)':''}
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
-$('#rprint').addEventListener('click',function(){
-  if(!buildReport())return;
-  var old=document.title;
-  document.title='تقرير-سكر-'+$('#rfrom').value+'-إلى-'+$('#rto').value;
-  setTimeout(function(){window.print(); setTimeout(function(){document.title=old},500)},150);
-});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
 function makePdf(jpegs,W,H){
