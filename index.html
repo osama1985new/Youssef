@@ -1120,10 +1120,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 
     <h3>أسنان الأقلام</h3>
     <p class="small">كل مرة تسجل "سن جديد" بينقص سن من العلبة. وينبهك لما يفضل 10 أسنان.</p>
-    <div class="two cen">
-      <div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div>
-      <div class="field"><label for="sneedu">اتستخدم قبل كده</label><input id="sneedu" type="text" inputmode="numeric" placeholder="0"></div>
-    </div>
+    <div class="two cen one"><div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div></div>
     <div class="two cen one"><div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="datetime-local"></div></div>
     <div id="needlebox" class="stripbox"></div>
     <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
@@ -2181,7 +2178,7 @@ function buildReport(){
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sneedu','needleUsed',0,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
 function renderChecks(){
   var w=$('#ckwrap'); if(!w)return;
   w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
@@ -2246,7 +2243,7 @@ $('#stripnew').addEventListener('click',function(){
 });
 $('#needlenew').addEventListener('click',function(){
   if(settings.needleStart&&!confirm('تبدأ علبة أسنان جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
-  var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedu').value='0'; $('#sneedd').value=toLocalInput(new Date());
+  var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedd').value=toLocalInput(new Date());
   onSetChange();
 });
 $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
