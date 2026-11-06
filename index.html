@@ -2175,6 +2175,8 @@ function buildReport(){
   });
   h+='</tbody></table></div>';
   h+='</div></details>';
+  var SHOW_DAYS=false;
+  if(SHOW_DAYS){
   h+='<h3>التفاصيل يوم بيوم</h3>';
   var byDay={}, dOrd=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
@@ -2198,6 +2200,7 @@ function buildReport(){
     });
     h+='</details>';
   });
+  }
   h+='<p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
 }
