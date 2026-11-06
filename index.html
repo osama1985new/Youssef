@@ -891,6 +891,14 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .cgmrow{display:flex;align-items:center;gap:10px;font-size:15.5px;padding:10px 2px}.cgmrow input{width:22px;height:22px;flex:none}
 .toast.undo{display:flex;align-items:center;justify-content:center;gap:14px}.toast.undo .link{color:inherit;text-decoration:underline;font-weight:700;padding:6px 4px}
 .toast.undo.show{pointer-events:auto}
+.swrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 2px}
+.swtxt{display:flex;flex-direction:column;gap:3px;min-width:0}.swtxt b{font-size:16px}
+.sw{position:relative;flex:none;width:54px;height:32px;display:inline-block}
+.sw input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;border-radius:32px;background:#c4ccd2;transition:background .2s}
+.sw i::after{content:"";position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.sw input:checked+i{background:#1f8f9a}.sw input:checked+i::after{transform:translateX(-22px)}
+.sw input:disabled{cursor:default}.sw input:disabled+i{opacity:.5}
 </style>
 </head>
 <body>
@@ -1161,13 +1169,11 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <div class="field"><label for="sketexp">صلاحية شرايط الكيتون</label><input id="sketexp" type="date"></div>
 
     <h3>إشعارات الموبايل</h3>
-    <p class="small" id="pushhelp">بتوصلك تذكيرات القراءات والترسيبا وزيارة الدكتور على الموبايل حتى والتطبيق مقفول. فعّلها على كل موبايل لوحده.</p>
-    <p class="small" id="pushst" style="font-weight:700"></p>
-    <div class="two">
-      <button type="button" class="ghost" id="pushon">تفعيل الإشعارات</button>
-      <button type="button" class="ghost" id="pushtest" hidden>جرّب إشعار</button>
+    <div class="swrow">
+      <div class="swtxt"><b>تذكيرات على الموبايل ده</b><span id="pushst" class="small"></span></div>
+      <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الموبايل"><i></i></label>
     </div>
-    <button type="button" class="link" id="pushoff" hidden>إيقاف الإشعارات على الموبايل ده</button>
+    <button type="button" class="link" id="pushtest" hidden>جرّب إشعار</button>
 
     <h3>نسخة احتياطية</h3>
     <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
@@ -2924,35 +2930,37 @@ if('serviceWorker' in navigator){window.addEventListener('load',function(){navig
 function b64uToU8(b){var p=(b+'===').slice(0,b.length+(4-b.length%4)%4).replace(/-/g,'+').replace(/_/g,'/'), r=atob(p), u=new Uint8Array(r.length); for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i); return u}
 function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
 async function pushState(){
-  var st=$('#pushst'), on=$('#pushon'), te=$('#pushtest'), off=$('#pushoff'); if(!st)return;
-  if(!pushSupported()){st.textContent='الإشعارات مش متاحة هنا. افتح التطبيق من الأيقونة اللي على الشاشة الرئيسية.'; on.hidden=true; te.hidden=true; off.hidden=true; return}
+  var st=$('#pushst'), sw=$('#pushsw'), te=$('#pushtest'); if(!st)return;
+  if(!pushSupported()){st.textContent='مش متاحة هنا. افتح التطبيق من الأيقونة على الشاشة الرئيسية.'; sw.checked=false; sw.disabled=true; te.hidden=true; return}
   var sub=null; try{var reg=await navigator.serviceWorker.getRegistration(); sub=reg&&await reg.pushManager.getSubscription()}catch(_){}
   var perm=Notification.permission;
-  st.textContent=perm==='denied'?'الإشعارات مقفولة من إعدادات الآيفون. افتح الإعدادات > متابعة السكر > الإشعارات وفعّلها.':sub?'الإشعارات شغالة على الموبايل ده.':'مش مفعّلة على الموبايل ده.';
-  on.hidden=!!sub||perm==='denied'; te.hidden=!sub; off.hidden=!sub;
+  sw.checked=!!sub&&perm==='granted'; sw.disabled=perm==='denied';
+  st.textContent=perm==='denied'?'مقفولة من إعدادات الآيفون (الإعدادات ← متابعة السكر ← الإشعارات).':sw.checked?'شغّالة':'مقفولة';
+  te.hidden=!sw.checked;
 }
 async function pushEnable(){
-  var st=$('#pushst'); var perm; try{perm=await Notification.requestPermission()}catch(_){perm='denied'}
-  if(perm!=='granted'){pushState(); return}
+  var sw=$('#pushsw'); sw.disabled=true; var perm; try{perm=await Notification.requestPermission()}catch(_){perm='denied'}
+  if(perm!=='granted'){sw.disabled=false; pushState(); return}
   try{
     var reg=await navigator.serviceWorker.ready, k=(await api({action:'vapid'})).key;
     var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(k)});
     await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint); toast('الإشعارات اتفعّلت');
-  }catch(e){st.textContent='مقدرتش أفعّل الإشعارات. اتأكد من النت وجرب تاني.'; return}
-  pushState();
+  }catch(e){toast('مقدرتش أفعّل الإشعارات. اتأكد من النت وجرب تاني.')}
+  sw.disabled=false; pushState();
 }
 async function pushTest(){
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); var r=await api({action:'testpush',endpoint:sub.endpoint}); toast(r.ok?'بعتنالك إشعار تجريبي':'السيرفر ما قدرش يبعت. جرب تفعّلها من الأول.')}catch(e){toast('مقدرتش أجرّب الإشعار')}
 }
 async function pushOff(){
+  $('#pushsw').disabled=true;
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){try{await api({action:'unsubscribe',endpoint:sub.endpoint})}catch(_){} await sub.unsubscribe(); lsSet('ysg-pushep','')}}catch(_){}
-  pushState();
+  $('#pushsw').disabled=false; pushState();
 }
 async function pushSync(){
   if(!pushSupported()||Notification.permission!=='granted'||role!=='edit'||mode!=='cloud')return;
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint)}}catch(_){}
 }
-$('#pushon').addEventListener('click',pushEnable); $('#pushtest').addEventListener('click',pushTest); $('#pushoff').addEventListener('click',pushOff);
+$('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); else pushOff()}); $('#pushtest').addEventListener('click',pushTest);
 
 /* ---------- start ---------- */
 setPreset(14); renderMeal(); applyTab();
