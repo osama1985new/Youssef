@@ -177,10 +177,120 @@ async function analyzeFood(b64) {
   return { items, note: String(o.note || '').slice(0, 200) };
 }
 
+
+/* ---------- Web Push (no dependencies): VAPID + payload-less push; the service worker then reads the text from /api/data?inbox= ---------- */
+const TZ = 'Africa/Cairo';
+const b64u = b => Buffer.from(b).toString('base64url');
+const subId = ep => crypto.createHash('sha256').update(String(ep)).digest('hex').slice(0, 32);
+const PUSH_HOST_OK = /^https:\/\/([a-z0-9-]+\.)*(push\.apple\.com|googleapis\.com|push\.services\.mozilla\.com|mozilla\.com|notify\.windows\.com)\//i;
+async function getVapid() {
+  const raw = await redis(['GET', 'ysg:vapid']);
+  if (raw) { try { const v = JSON.parse(raw); if (v && v.pub && v.d) return v; } catch (e) {} }
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+  const pj = publicKey.export({ format: 'jwk' }), sj = privateKey.export({ format: 'jwk' });
+  const v = { pub: b64u(Buffer.concat([Buffer.from([4]), Buffer.from(pj.x, 'base64url'), Buffer.from(pj.y, 'base64url')])), x: pj.x, y: pj.y, d: sj.d };
+  await redis(['SET', 'ysg:vapid', JSON.stringify(v), 'NX']);
+  const again = await redis(['GET', 'ysg:vapid']);
+  try { return JSON.parse(again); } catch (e) { return v; }
+}
+function vapidAuth(v, endpoint, host) {
+  const header = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
+  const body = b64u(JSON.stringify({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'https://' + host }));
+  const key = crypto.createPrivateKey({ key: { kty: 'EC', crv: 'P-256', x: v.x, y: v.y, d: v.d }, format: 'jwk' });
+  const sig = crypto.sign('sha256', Buffer.from(header + '.' + body), { key, dsaEncoding: 'ieee-p1363' });
+  return 'vapid t=' + header + '.' + body + '.' + b64u(sig) + ', k=' + v.pub;
+}
+async function pushTo(sub, msg, v, host) {
+  const id = subId(sub.endpoint);
+  await redis(['RPUSH', 'ysg:inbox:' + id, JSON.stringify(msg)]);
+  await redis(['EXPIRE', 'ysg:inbox:' + id, '86400']);
+  let status = 0;
+  try {
+    const r = await fetch(sub.endpoint, { method: 'POST', headers: { Authorization: vapidAuth(v, sub.endpoint, host), TTL: '7200', Urgency: 'high', 'Content-Length': '0' } });
+    status = r.status;
+  } catch (e) { status = 0; }
+  if (status === 404 || status === 410) { await redis(['HDEL', 'ysg:subs', id]); await redis(['DEL', 'ysg:inbox:' + id]); }
+  return status;
+}
+function cairo(ms) {
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(ms));
+  const o = {}; p.forEach(x => { o[x.type] = x.value; });
+  return { key: o.year + '-' + o.month + '-' + o.day, h: +o.hour, m: +o.minute, stamp: o.year + '-' + o.month + '-' + o.day + 'T' + o.hour + ':' + o.minute };
+}
+const sday = ms => cairo(ms - 4 * 3600e3).key;
+function t12(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number); const ap = h >= 12 ? 'م' : 'ص'; const hh = h % 12 === 0 ? 12 : h % 12;
+  return hh + ':' + String(m).padStart(2, '0') + ' ' + ap;
+}
+async function recentEntries(now) {
+  let flat = await redis(['HGETALL', 'ysg:recent']);
+  if (!flat || !flat.length) {
+    const seeded = await redis(['SET', 'ysg:recent:seeded', '1', 'NX']);
+    if (seeded === 'OK') {
+      const all = await redis(['HGETALL', 'ysg:entries']); const args = ['HSET', 'ysg:recent'];
+      for (let i = 1; i < (all || []).length; i += 2) { try { const e = JSON.parse(all[i]); if (now - Date.parse(e.ts) < 72 * 3600e3) args.push(all[i - 1], all[i]); } catch (x) {} }
+      if (args.length > 2) await redis(args);
+      flat = await redis(['HGETALL', 'ysg:recent']);
+    }
+  }
+  const list = [], stale = [];
+  for (let i = 1; i < (flat || []).length; i += 2) {
+    try { const e = JSON.parse(flat[i]); if (now - Date.parse(e.ts) > 72 * 3600e3) stale.push(flat[i - 1]); else list.push(e); } catch (x) {}
+  }
+  if (stale.length) await redis(['HDEL', 'ysg:recent'].concat(stale));
+  return list;
+}
+async function runCron(host, force) {
+  const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
+  for (let i = 1; i < (subsFlat || []).length; i += 2) { try { const sb = JSON.parse(subsFlat[i]); if (sb && sb.role === 'edit') subs.push(sb); } catch (e) {} }
+  if (!subs.length) return { sent: [], note: 'no_subscribers' };
+  const now = force && force.now ? force.now : Date.now(), c = cairo(now);
+  let settings = {}; try { settings = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (e) {}
+  const night = c.h >= 22 || c.h < 4, morning = c.h >= 6 && c.h < 11, vn = typeof settings.visitNext === 'string' ? settings.visitNext : '';
+  const visitSoon = vn && vn.slice(0, 10) >= c.key && vn.slice(0, 10) <= cairo(now + 24 * 3600e3).key;
+  if (!night && !(c.h >= 6 && c.h < 14) && !visitSoon) return { sent: [], note: 'idle' };
+  const today = sday(now), E = (await recentEntries(now)).filter(e => sday(Date.parse(e.ts)) === today);
+  const hasRead = sl => E.some(e => e.slot === sl && e.glucose != null);
+  const due = [];
+  if (!settings.cgm) {
+    if (morning && !hasRead('fast')) due.push(['fast', 'قراءة الصايم', 'لسه ما اتسجلتش النهاردة']);
+    const bb = E.filter(e => e.slot === 'bf_before').sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts)).pop();
+    if (bb) { const dt = now - Date.parse(bb.ts); if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !hasRead('bf_after')) due.push(['bfa', 'بعد الفطار', 'عدّى ساعتين. سجّل قراءة بعد الفطار']); }
+    if (night && !hasRead('bed')) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
+  }
+  if (night && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لسه ما اتسجلتش النهاردة']);
+  if (vn && vn > c.stamp) {
+    const vd = vn.slice(0, 10), vt = t12(vn.slice(11, 16));
+    if (vd === c.key && c.h >= 8 && c.h < 11) due.push(['visit:' + vd, 'زيارة الدكتور', 'النهاردة الساعة ' + vt]);
+    else if (vd === cairo(now + 24 * 3600e3).key && c.h >= 20 && c.h < 22) due.push(['visitp:' + vd, 'زيارة الدكتور', 'بكرة الساعة ' + vt]);
+  }
+  const sent = [];
+  if (!due.length) return { sent };
+  const v = await getVapid();
+  for (const [type, title, body] of due) {
+    const mark = await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
+    if (mark !== 'OK') continue;
+    for (const sb of subs) await pushTo(sb, { t: title, b: body, tag: type.split(':')[0] }, v, host);
+    sent.push(type.split(':')[0]);
+  }
+  return { sent };
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (!REDIS_URL || !REDIS_TOKEN) return res.status(500).json({ error: 'storage_not_configured' });
   try {
+    if (req.method === 'GET' && req.query && req.query.inbox !== undefined) {
+      const id = String(req.query.inbox);
+      if (!/^[a-f0-9]{32}$/.test(id)) return res.status(400).json({ error: 'bad_id' });
+      const raw = await redis(['LRANGE', 'ysg:inbox:' + id, '0', '-1']);
+      if (raw && raw.length) await redis(['DEL', 'ysg:inbox:' + id]);
+      const msgs = []; for (const r of raw || []) { try { msgs.push(JSON.parse(r)); } catch (e) {} }
+      return res.status(200).json({ msgs });
+    }
+    if (req.method === 'GET' && req.query && req.query.cron !== undefined) {
+      return res.status(200).json(await runCron(req.headers.host || 'localhost'));
+    }
     const auth = await loadAuth();
     const role = roleFor(req.headers['x-pin'], auth);
     if (!role) {
@@ -201,6 +311,23 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
       const b = req.body || {};
       if (role !== 'edit') return res.status(403).json({ error: 'read_only' });
+      if (b.action === 'vapid') { const v = await getVapid(); return res.status(200).json({ key: v.pub }); }
+      if (b.action === 'subscribe') {
+        const ep = b.sub && String(b.sub.endpoint || '');
+        if (!ep || ep.length > 700 || !PUSH_HOST_OK.test(ep)) return res.status(400).json({ error: 'bad_sub' });
+        await redis(['HSET', 'ysg:subs', subId(ep), JSON.stringify({ endpoint: ep, role: 'edit', t: Date.now() })]);
+        return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'unsubscribe') {
+        const ep = String(b.endpoint || ''); if (!ep) return res.status(400).json({ error: 'bad_sub' });
+        await redis(['HDEL', 'ysg:subs', subId(ep)]); await redis(['DEL', 'ysg:inbox:' + subId(ep)]);
+        return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'testpush') {
+        const ep = String(b.endpoint || ''); if (!PUSH_HOST_OK.test(ep)) return res.status(400).json({ error: 'bad_sub' });
+        const st = await pushTo({ endpoint: ep }, { t: 'متابعة السكر', b: 'الإشعارات شغالة على الموبايل ده', tag: 'test' }, await getVapid(), req.headers.host || 'localhost');
+        return res.status(200).json({ ok: st >= 200 && st < 300, status: st });
+      }
       if (b.action === 'setauth') {
         const ep = normPin(b.editPin), vp = b.viewPin ? normPin(b.viewPin) : '';
         if (ep.length < 4 || ep.length > 32) return res.status(400).json({ error: 'bad_pin_format' });
@@ -239,11 +366,13 @@ module.exports = async (req, res) => {
         const e = cleanEntry(b.entry);
         if (!e) return res.status(400).json({ error: 'bad_entry' });
         await redis(['HSET', 'ysg:entries', e.id, JSON.stringify(e)]);
+        try { await redis(['HSET', 'ysg:recent', e.id, JSON.stringify(e)]); } catch (x) {}
         return res.status(200).json({ ok: true });
       }
       if (b.action === 'delete') {
         if (!/^[A-Za-z0-9_-]{4,64}$/.test(String(b.id || ''))) return res.status(400).json({ error: 'bad_id' });
         await redis(['HDEL', 'ysg:entries', String(b.id)]);
+        try { await redis(['HDEL', 'ysg:recent', String(b.id)]); } catch (x) {}
         return res.status(200).json({ ok: true });
       }
       if (b.action === 'settings') {
@@ -261,3 +390,4 @@ module.exports = async (req, res) => {
 };
 
 module.exports.config = { maxDuration: 30 };
+module.exports.runCron = runCron;
