@@ -900,6 +900,9 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .sw input:checked+i{background:#1f8f9a}.sw input:checked+i::after{transform:translateX(-22px)}
 .sw input:disabled{cursor:default}.sw input:disabled+i{opacity:.5}
 .acc[hidden]{display:none!important}
+.tiles>div{display:flex!important;flex-direction:column;align-items:center!important;justify-content:center;text-align:center!important;gap:4px}
+.tiles>div b{display:block;text-align:center!important;width:100%}
+.tiles>div span{text-align:center!important;width:100%}
 </style>
 </head>
 <body>
@@ -1659,6 +1662,7 @@ function renderVisitRem(){
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var T=tresToday();
   if(!isNight()||role==='view'){el.hidden=true; return}
+  if(T.length){el.hidden=true; el.innerHTML=''; return}
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا النهاردة اتسجلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>ترسيبا لسه ما اتسجلتش النهاردة</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
@@ -1801,7 +1805,7 @@ function careNotes(E){
       if(a.site===b.site&&now-a.d.getTime()<2*DAY)out.push('آخر حقنتين في نفس المكان ('+SITE_LABEL[a.site]+'). غيّر مكان الحقن.');
     }
   }
-  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&vh<=72)out.push('زيارة الدكتور '+(vh<24?'النهاردة':'بعد '+Math.ceil(vh/24)+' يوم')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
+  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&dayKey(new Date(vt))<=dayKey(new Date(now+DAY)))out.push('زيارة الدكتور '+(dayKey(new Date(vt))===dayKey(new Date(now))?'النهاردة':'بكرة')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
   var hasOld=E.some(function(e){return lk(e.d)<tk});
   var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
   if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
@@ -1900,7 +1904,7 @@ function renderHero(E){
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
     '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج اللي تحت.')+'</p>'+
-    '<div class="tiles"><div class="a"><span>أبيدرا النهاردة</span><b>'+fmt(ap)+'</b><small>وحدة</small></div><div class="t"><span>ترسيبا النهاردة</span><b>'+fmt(tr)+'</b><small>وحدة</small></div><div class="r"><span>قراءات النهاردة</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b><small>قراءة</small></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
+    '<div class="tiles"><div class="a"><span>وحدات أبيدرا النهاردة</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا النهاردة</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات النهاردة</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
 }
 
 /* ---------- chart ---------- */
