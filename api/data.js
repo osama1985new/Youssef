@@ -125,6 +125,8 @@ function cleanSettings(s) {
   out.penAStart = dOk(s.penAStart) ? String(s.penAStart) : null;
   out.penTStart = dOk(s.penTStart) ? String(s.penTStart) : null;
   const dtOk = v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
+  out.stockAtA = dtOk(s.stockAtA) ? String(s.stockAtA) : null;
+  out.stockAtT = dtOk(s.stockAtT) ? String(s.stockAtT) : null;
   out.visitLast = dtOk(s.visitLast) ? String(s.visitLast) : null;
   out.visitNext = dtOk(s.visitNext) ? String(s.visitNext) : null;
   out.visitNote = s.visitNote ? String(s.visitNote).trim().slice(0, 300) || null : null;
@@ -337,17 +339,18 @@ async function runCron(host, force) {
         if (!settings[k]) return; const l = 28 - (todayN - dayNo(settings[k]));
         if ((l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0))) due.push([ty, nm, l < 0 ? 'عدّى 28 يوم على فتحه. غيّره' : l === 0 ? 'آخر يوم لاستخدامه (28 يوم من فتحه)' : 'باقي ' + l + ' يوم على انتهاء صلاحيته بعد الفتح']);
       });
-      [['A', 'apidra', 'أبيدرا', 'penAStart'], ['T', 'tresiba', 'ترسيبا', 'penTStart']].forEach(([k, f, nm, sk]) => {
-        if (!settings[sk]) return;
-        const prime = settings['primeU'] || 0, spare = settings['stock' + k] || 0, from = settings[sk] + 'T00:00';
+      [['A', 'apidra', 'أبيدرا'], ['T', 'tresiba', 'ترسيبا']].forEach(([k, f, nm]) => {
+        const cnt = settings['stock' + k], at = settings['stockAt' + k];
+        if (!(cnt > 0) || !at) return;
         let used = 0, sum14 = 0, firstMs = now;
-        all.forEach(e => { if (!(e[f] > 0)) return; const t = Date.parse(e.ts); if (t < firstMs) firstMs = t; if (stamp(e) >= from) used += e[f] + prime; if (now - t < 14 * 86400e3) sum14 += e[f] + prime; });
-        const span = Math.max(3, Math.min(14, (now - firstMs) / 86400e3)), avg = sum14 / span;
-        if (!(avg > 0)) return;
-        const total = Math.max(0, 300 - used) + spare * 300, days = Math.floor(total / avg), thr = settings.stockDays || 14;
+        all.forEach(e => { if (!(e[f] > 0)) return; const t = Date.parse(e.ts); if (t < firstMs) firstMs = t; if (stamp(e) >= at) used += e[f]; if (now - t < 14 * 86400e3) sum14 += e[f]; });
+        let daily = k === 'A' ? (settings.fixBf || 0) + (settings.fixLn || 0) + (settings.fixDn || 0) : (settings.plan || 0);
+        if (!(daily > 0)) daily = sum14 / Math.max(3, Math.min(14, (now - firstMs) / 86400e3));
+        if (!(daily > 0)) return;
+        const left = Math.max(0, cnt * 300 - used), days = Math.floor(left / daily), thr = settings.stockDays || 14;
         const lvl = [thr, 7, 3, 1, 0].filter(x => x <= thr).sort((a, b) => a - b).find(x => days <= x);
         if (lvl === undefined) return;
-        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك الخلاص. جهّز أقلام جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(total) + ' وحدة). جهّز أقلام جديدة']);
+        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك الخلاص. جهّز أقلام جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(left) + ' وحدة). جهّز أقلام جديدة']);
       });
       if (settings.ketExp) { const l = dueIn(settings.ketExp, 0); if (gentle(l)) due.push(['ketexp', 'شرايط الكيتون', l < 0 ? 'انتهت صلاحيتها. جدّد الشرايط' : l === 0 ? 'بتنتهي النهاردة' : 'بتنتهي بعد ' + l + ' يوم']); }
       if (settings.a1cDate) { const l = dueIn(settings.a1cDate, 3); if (l <= 14 && gentle(l)) due.push(['a1c', 'التحليل التراكمي', l < 0 ? 'ميعاده عدّى. اعمله وسجّل التاريخ' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); }
