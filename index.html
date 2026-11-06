@@ -2622,7 +2622,7 @@ function makePdf(jpegs,W,H){
 async function buildDoctorPdf(E,r){
   var FF="'IBM Plex Sans Arabic','Readex Pro','Noto Naskh Arabic','Noto Sans Arabic',system-ui,sans-serif";
   try{await Promise.all([document.fonts.load("700 20px 'IBM Plex Sans Arabic'"),document.fonts.load("400 20px 'IBM Plex Sans Arabic'"),document.fonts.load("700 20px 'Readex Pro'")])}catch(e){}
-  var SC=2, PW=595, PH=842, M=28, CW=PW-2*M, C1=92, CA=60, CT=40, C3=CA+CT, C2=CW-C1-C3, R=PW-M;
+  var SC=2, PW=595, PH=842, M=28, CW=PW-2*M, C1=100, CA=68, CT=0, C3=CA+CT, C2=CW-C1-C3, R=PW-M;
   var pages=[], cv, cx, y;
   function newPage(){
     cv=document.createElement('canvas'); cv.width=PW*SC; cv.height=PH*SC; cx=cv.getContext('2d'); cx.scale(SC,SC); cx.direction='rtl'; cx.textBaseline='middle';
@@ -2650,41 +2650,39 @@ async function buildDoctorPdf(E,r){
   function header(){
     rr(M,y,CW,28,6,'#E3EEF3');
     T('اليوم والتاريخ',R-8,y+14,11.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+14,11.5,700,'#17303B');
-    T('أبيدرا',M+CT+CA/2,y+10,11.5,700,'#2F6FD0','center'); T('وحدات',M+CT+CA/2,y+22,7.5,400,'#55656f','center'); T('ترسيبا',M+CT/2,y+10,11.5,700,'#7B3FD1','center'); T('وحدات',M+CT/2,y+22,7.5,400,'#55656f','center');
+    T('تصحيح',M+CA/2,y+10,11.5,700,'#C2410C','center'); T('وحدات',M+CA/2,y+22,8,400,'#55656f','center');
     y+=33;
   }
   header();
-  var CH_W=44, CH_H=38, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
+  var CH_W=48, CH_H=44, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
   ord.forEach(function(k){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
     var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
-    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, h=Math.max(52,hR);
+    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, h=Math.max(58,hR);
     if(y+h>PH-M-18){newPage(); header()}
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
     cx.strokeStyle='#E1E8EC'; cx.lineWidth=0.8; cx.beginPath(); cx.moveTo(M,y+h+2); cx.lineTo(R,y+h+2); cx.stroke();
-    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-10,15,700,'#17303B');
-    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+10,11.5,400,'#3F505A');
+    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-11,16.5,700,'#17303B');
+    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+11,12.5,400,'#3F505A');
     /* readings chips, right to left */
     reads.forEach(function(e,i){
       var col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), st=status(e.glucose)[0];
       var bg=st==='low'?'#FBE3E1':st==='high'?'#FCEBD3':'#E6F4EC', fg=st==='low'?'#B3261E':st==='high'?'#A85A00':'#1E7F47';
       rr(x,yy,CH_W,CH_H,6,bg);
-      T(String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''),x+CH_W/2,yy+14,16.5,700,fg,'center');
-      var sl=SLOT_LABEL[e.slot]||'', fs=8.6; cx.font='500 '+fs+'px '+FF; while(fs>6.5&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+30,fs,500,'#3F505A','center');
+      var vt=String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''), vf=19; cx.font='700 '+vf+'px '+FF; while(vf>12&&cx.measureText(vt).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(vt,x+CH_W/2,yy+16,vf,700,fg,'center');
+      var sl=SLOT_LABEL[e.slot]||'', fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+34,fs,500,'#3F505A','center');
     });
     if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
-    /* insulin: Apidra doses, then Tresiba, each in its own column */
-    var ax=M+CT+CA/2+CT-CT, tx=M+CT/2;
-    function doses(list,cx0,col){
-      if(!list.length){T('—',cx0,y+h/2,11,400,'#C0CBD1','center'); return}
-      var v=list.map(fmt), colW=(cx0===tx?CT:CA)-4, fs=15.5;
-      if(v.length<=3){cx.font='700 '+fs+'px '+FF; var txt=v.join(' · '); while(fs>9&&cx.measureText(txt).width>colW){fs-=.5; cx.font='700 '+fs+'px '+FF} T(txt,cx0,y+h/2,fs,700,col,'center'); return}
-      var lh=Math.min(16,(h-4)/v.length), f2=Math.min(15.5,lh*.95);
-      v.forEach(function(t,i){T(t,cx0,y+h/2-(v.length-1)*lh/2+i*lh,f2,700,col,'center')});
+    /* only correction doses (the fixed doses are in the top tiles) */
+    var CR=D.filter(function(e){return e.corr&&e.apidra>0});
+    if(CR.length){
+      var lh=Math.min(28,(h-4)/CR.length), two=lh>=24;
+      CR.forEach(function(e,i){var cy=y+h/2-(CR.length-1)*lh/2+i*lh;
+        T(fmt(e.apidra),M+CA/2,cy-(two?5:0),Math.min(17,lh*.8),700,'#C2410C','center');
+        if(two)T(timeStr(e.d),M+CA/2,cy+9,8.5,400,'#55656f','center')});
     }
-    doses(A.map(function(e){return e.apidra}),M+CT+CA/2,'#2F6FD0'); doses(Tr.map(function(e){return e.tresiba}),tx,'#7B3FD1');
     y+=h+8;
   });
   /* footers */
