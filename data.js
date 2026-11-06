@@ -101,7 +101,7 @@ function cleanEntry(e) {
   return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
-const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000], fixBf: [0.5, 100], fixLn: [0.5, 100], fixDn: [0.5, 100] };
+const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000], stockA: [0, 50], stockT: [0, 50], primeU: [0, 10], stockDays: [1, 60], fixBf: [0.5, 100], fixLn: [0.5, 100], fixDn: [0.5, 100] };
 function cleanSettings(s) {
   if (!s || typeof s !== 'object') return null;
   const out = {};
@@ -121,6 +121,7 @@ function cleanSettings(s) {
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
   out.cgm = s.cgm === true;
   out.birth = dOk(s.birth) ? String(s.birth) : null;
+  out.medGot = /^\d{4}-(0[1-9]|1[0-2])$/.test(String(s.medGot || '')) ? String(s.medGot) : null;
   out.penAStart = dOk(s.penAStart) ? String(s.penAStart) : null;
   out.penTStart = dOk(s.penTStart) ? String(s.penTStart) : null;
   const dtOk = v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
@@ -304,6 +305,8 @@ async function runCron(host, force) {
     const yk = sday(now - 24 * 3600e3), Y = recentAll.filter(e => sday(Date.parse(e.ts)) === yk);
     if (Y.length && !Y.some(e => e.tresiba > 0)) due.push(['trY', 'ترسيبا', 'جرعة ترسيبا إمبارح ما اتسجلتش']);
   }
+  /* monthly medication: every day from the 1st until confirmed */
+  if (c.h === 10 && settings.medGot !== c.key.slice(0, 7)) due.push(['med', 'العلاج الشهري', 'لسه ما جبتهوش. اضغط "جبته" في التطبيق لما تجيبه']);
   /* low reading: remind to re-check 2 hours later if nothing newer was logged */
   if (lastR && !settings.cgm) {
     const dt = now - Date.parse(lastR.ts);
@@ -334,6 +337,18 @@ async function runCron(host, force) {
         if (!settings[k]) return; const l = 28 - (todayN - dayNo(settings[k]));
         if ((l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0))) due.push([ty, nm, l < 0 ? 'عدّى 28 يوم على فتحه. غيّره' : l === 0 ? 'آخر يوم لاستخدامه (28 يوم من فتحه)' : 'باقي ' + l + ' يوم على انتهاء صلاحيته بعد الفتح']);
       });
+      [['A', 'apidra', 'أبيدرا', 'penAStart'], ['T', 'tresiba', 'ترسيبا', 'penTStart']].forEach(([k, f, nm, sk]) => {
+        if (!settings[sk]) return;
+        const prime = settings['primeU'] || 0, spare = settings['stock' + k] || 0, from = settings[sk] + 'T00:00';
+        let used = 0, sum14 = 0, firstMs = now;
+        all.forEach(e => { if (!(e[f] > 0)) return; const t = Date.parse(e.ts); if (t < firstMs) firstMs = t; if (stamp(e) >= from) used += e[f] + prime; if (now - t < 14 * 86400e3) sum14 += e[f] + prime; });
+        const span = Math.max(3, Math.min(14, (now - firstMs) / 86400e3)), avg = sum14 / span;
+        if (!(avg > 0)) return;
+        const total = Math.max(0, 300 - used) + spare * 300, days = Math.floor(total / avg), thr = settings.stockDays || 14;
+        const lvl = [thr, 7, 3, 1, 0].filter(x => x <= thr).sort((a, b) => a - b).find(x => days <= x);
+        if (lvl === undefined) return;
+        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك الخلاص. جهّز أقلام جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(total) + ' وحدة). جهّز أقلام جديدة']);
+      });
       if (settings.ketExp) { const l = dueIn(settings.ketExp, 0); if (gentle(l)) due.push(['ketexp', 'شرايط الكيتون', l < 0 ? 'انتهت صلاحيتها. جدّد الشرايط' : l === 0 ? 'بتنتهي النهاردة' : 'بتنتهي بعد ' + l + ' يوم']); }
       if (settings.a1cDate) { const l = dueIn(settings.a1cDate, 3); if (l <= 14 && gentle(l)) due.push(['a1c', 'التحليل التراكمي', l < 0 ? 'ميعاده عدّى. اعمله وسجّل التاريخ' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); }
       (Array.isArray(settings.checks) ? settings.checks : []).forEach((ck, i) => { if (!ck || !ck.d) return; const l = dueIn(ck.d, ck.m || 6); if (l <= 14 && gentle(l)) due.push(['chk' + i, 'فحص ' + ck.n, l < 0 ? 'ميعاده عدّى' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); });
@@ -354,7 +369,7 @@ async function runCron(host, force) {
   if (!due.length) return { sent };
   const v = await getVapid();
   for (const [type, title, body] of due) {
-    const mark = await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
+    const mark = type.startsWith('stock') ? await redis(['SET', 'ysg:sent:' + type, '1', 'NX', 'EX', '864000']) : await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
     if (mark !== 'OK') continue;
     for (const sb of subs) await pushTo(sb, { t: title, b: body, tag: type.split(':')[0] }, v, host);
     sent.push(type.split(':')[0]);

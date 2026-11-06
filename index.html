@@ -924,6 +924,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
   <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
+  <div class="readrem" id="medrem" data-tab="all" hidden></div>
   <div class="readrem" id="visitrem" data-tab="all" hidden></div>
   <div class="readrem" id="readrem" data-tab="add" hidden></div>
   <div class="tresrem" id="tresrem" data-tab="add" hidden></div>
@@ -1135,6 +1136,17 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field"><label for="spent">فتح قلم ترسيبا</label><input id="spent" type="date"></div>
     </div>
     <p class="small" id="penleft"></p>
+    <h3>مخزون الأقلام</h3>
+    <p class="hint">اكتب عدد الأقلام الاحتياطية (المقفولة). القلم 300 وحدة. التطبيق بيحسب الباقي من الجرعات المسجلة، وبينبّهك قبل ما يخلص.</p>
+    <div class="two cen">
+      <div class="field"><label for="sstocka">أقلام أبيدرا احتياطي</label><input id="sstocka" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label for="sstockt">أقلام ترسيبا احتياطي</label><input id="sstockt" type="text" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <div class="two cen">
+      <div class="field"><label for="sprime">وحدات التجهيز لكل حقنة</label><input id="sprime" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label for="sstockd">نبّهني قبل (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div>
+    </div>
+    <p class="small" id="stocktxt"></p>
     <h3>أبيدرا — الجرعات الثابتة</h3>
     <p class="hint">جرعة الدكتور الثابتة لكل وجبة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور.</p>
     <div class="three cen">
@@ -1358,6 +1370,18 @@ function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getD
 var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
 function modeOf(a){var c={},b=null,bn=0; a.forEach(function(v){c[v]=(c[v]||0)+1; if(c[v]>bn||(c[v]===bn&&v>b)){bn=c[v]; b=v}}); return b}
 function penLeft(d){if(!d)return null; var o=new Date(d+'T12:00:00'); return 28-Math.floor((Date.now()-o.getTime())/DAY)}
+function penStock(kind,E){
+  var od=settings['pen'+kind+'Start']; if(!od)return null; E=E||prep();
+  var f=kind==='A'?'apidra':'tresiba', pr=settings.primeU||0, st=new Date(od+'T00:00:00').getTime(), now=Date.now(), used=0, sum=0, first=now;
+  E.forEach(function(e){if(!(e[f]>0))return; var t=e.d.getTime(); if(t<first)first=t; if(t>=st)used+=e[f]+pr; if(now-t<14*DAY)sum+=e[f]+pr});
+  var span=Math.max(3,Math.min(14,(now-first)/DAY)), avg=sum/span, cur=Math.max(0,300-used), spare=settings['stock'+kind]||0, total=cur+spare*300;
+  return {cur:cur,spare:spare,total:total,days:avg>0?Math.floor(total/avg):null};
+}
+function stockTxt(){
+  var el=$('#stocktxt'); if(!el)return; var p=[];
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': في القلم الحالي حوالي '+Math.round(i.cur)+' وحدة، وكله '+Math.round(i.total)+' وحدة'+(i.days!==null?'، يكفي حوالي '+i.days+' يوم':''))});
+  el.textContent=p.length?p.join('\n'):'اكتب تاريخ فتح القلم الحالي فوق علشان الحساب يشتغل.'; el.style.whiteSpace='pre-line';
+}
 function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'عدّى ميعاده':'باقي '+a+' يوم')); if(t!==null)p.push('ترسيبا: '+(t<0?'عدّى ميعاده':'باقي '+t+' يوم')); el.textContent=p.join(' · ')}
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
 function fixedDoses(E){
@@ -1389,7 +1413,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1620,6 +1644,12 @@ function renderReadRem(E){
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
 }
+function monthKey(){var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)}
+function renderMedRem(){
+  var el=$('#medrem'); if(!el)return;
+  var show=authed&&role!=='view'&&settings.medGot!==monthKey();
+  el.hidden=!show; el.innerHTML=show?'<div class="rr"><span>العلاج الشهري: جبته؟</span><button type="button" class="link" data-med="done">جبته</button></div>':'';
+}
 function renderVisitRem(){
   var el=$('#visitrem'); if(!el)return; var vn=settings.visitNext, now=Date.now();
   if(role==='view'||!vn||new Date(vn).getTime()>now||now-new Date(vn).getTime()>30*DAY){el.hidden=true; return}
@@ -1676,6 +1706,8 @@ function setMode(m){
   syncInj(); renderHint(prep()); updateCalc();
 }
 document.addEventListener('click',function(e){
+  var mb=e.target.closest&&e.target.closest('[data-med]');
+  if(mb){settings=Object.assign({},settings,{medGot:monthKey()}); persistSettings(); render(); toast('تمام. هنفكّرك الشهر الجاي'); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
     var act=vb.dataset.visit;
@@ -1755,6 +1787,7 @@ function careNotes(E){
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'أسنان الأقلام خلصت. جهّز علبة جديدة.':'باقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سن')+' بس في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'شرايط السكر خلصت. جهّز علبة جديدة.':'باقي '+si.left+(si.left===1?' شريط':' شرايط')+' بس في علبة الشرايط. جهّز علبة جديدة.');
   [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'قلم '+x[1]+' عدّى 28 يوم على فتحه. غيّره.':'قلم '+x[1]+' باقي له '+l+' يوم بعد الفتح.')});
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0],E); if(i&&i.days!==null&&i.days<=(settings.stockDays||14))out.push(i.days<=0?'مخزون '+x[1]+' على وشك الخلاص. جهّز أقلام جديدة.':'مخزون '+x[1]+' يكفي حوالي '+i.days+' يوم. جهّز أقلام جديدة.')});
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var lastInj=inj[inj.length-1];
   if(lastInj&&now-lastInj.d.getTime()<2*DAY){
@@ -2269,7 +2302,7 @@ function buildReport(){
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sfixbf','fixBf',0.5,100],['sfixln','fixLn',0.5,100],['sfixdn','fixDn',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sfixbf','fixBf',0.5,100],['sstocka','stockA',0,50],['sstockt','stockT',0,50],['sprime','primeU',0,10],['sstockd','stockDays',1,60],['sfixln','fixLn',0.5,100],['sfixdn','fixDn',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
 function renderChecks(){
   var w=$('#ckwrap'); if(!w)return;
   w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
@@ -2285,7 +2318,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2325,7 +2358,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  settings=Object.assign({},DEFAULTS,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
+  settings=Object.assign({},DEFAULTS,{medGot:settings.medGot||null},s); persistSettings(); render(); toast('اتحفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
@@ -2602,9 +2635,9 @@ function accordion(root,openFirst){
 accordion($('#set'),false); accordion($('#medcard'),false);
 
 /* ---------- render all ---------- */
-function render(){try{updateAplan(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
+function render(){try{updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
-  renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
   rangeNote();
 }
