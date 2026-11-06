@@ -887,6 +887,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .flash{animation:flashk 1.2s ease-out}
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .agebox{height:50px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line,#d8dee3);border-radius:12px;font-weight:700;font-size:16px}
+.cgmrow{display:flex;align-items:center;gap:10px;font-size:15.5px;padding:10px 2px}.cgmrow input{width:22px;height:22px;flex:none}
 </style>
 </head>
 <body>
@@ -1113,6 +1114,9 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field"><label for="smax">أقصى جرعة</label><input id="smax" type="text" inputmode="decimal"></div>
     </div>
 
+    <h3>جهاز قياس مستمر</h3>
+    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر (فري ستايل)</span></label>
+    <p class="hint">لما تفعّلها، تنبيهات القراءات (الصايم وبعد الفطار وقبل النوم) بتتقفل. تنبيهات الأنسولين بتفضل.</p>
     <h3>أبيدرا — الجرعات الثابتة</h3>
     <p class="hint">جرعة الدكتور الثابتة لكل وجبة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور.</p>
     <div class="three cen">
@@ -1357,7 +1361,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1545,8 +1549,10 @@ function renderReadRem(E){
   var now=new Date(), h=now.getHours()+now.getMinutes()/60, tk=lk(now);
   var T=(E||prep()).filter(function(e){return lk(e.d)===tk&&e.glucose!=null}), rows=[];
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
+  if(settings.cgm){el.hidden=true; el.innerHTML=''; return}
+  var TA=(E||prep()).filter(function(e){return lk(e.d)===tk});
   if(h>=6&&!has('fast'))rows.push(['قراءة الصايم لسه ما اتسجلتش النهاردة','fast']);
-  var bb=T.filter(function(e){return e.slot==='bf_before'}).pop();
+  var bb=TA.filter(function(e){return e.slot==='bf_before'}).pop();
   if(bb&&!has('bf_after')&&now-bb.d>=2*36e5&&now-bb.d<7*36e5)rows.push(['عدّى ساعتين على الفطار. قراءة بعد الفطار لسه ما اتسجلتش','bf_after']);
   if((h>=22||h<4)&&!has('bed'))rows.push(['قراءة قبل النوم لسه ما اتسجلتش','bed']);
   el.hidden=!rows.length;
@@ -2213,7 +2219,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2233,7 +2239,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.cgm=!!$('#scgm').checked; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
