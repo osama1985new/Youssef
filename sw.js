@@ -54,7 +54,7 @@ self.addEventListener('push', e => {
         if (r.ok) msgs = (await r.json()).msgs || [];
       }
     } catch (err) {}
-    if (!msgs.length) msgs = [{ t: 'متابعة السكر', b: 'افتح التطبيق علشان تشوف التذكير', tag: 'generic' }];
+    if (!msgs.length) msgs = [{ t: 'تذكير', b: 'افتح التطبيق علشان تشوف التذكير', tag: 'generic' }];
     for (const m of msgs) {
       await self.registration.showNotification(m.t, { body: m.b, tag: m.tag || 'ysg', icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
     }
