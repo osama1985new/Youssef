@@ -1,0 +1,12 @@
+{
+  "name": "متابعة السكر",
+  "short_name": "متابعة السكر",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#F3F6F8",
+  "theme_color": "#F3F6F8",
+  "icons": [{ "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }]
+}
