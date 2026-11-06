@@ -248,8 +248,7 @@ async function runCron(host, force) {
   let settings = {}; try { settings = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (e) {}
   const night = c.h >= 22 || c.h < 4, morning = c.h >= 6 && c.h < 11, vn = typeof settings.visitNext === 'string' ? settings.visitNext : '';
   const visitSoon = vn && vn.slice(0, 10) >= c.key && vn.slice(0, 10) <= cairo(now + 24 * 3600e3).key;
-  if (!night && !(c.h >= 6 && c.h < 14) && !visitSoon) return { sent: [], note: 'idle' };
-  const today = sday(now), E = (await recentEntries(now)).filter(e => sday(Date.parse(e.ts)) === today);
+  const today = sday(now), recentAll = await recentEntries(now), E = recentAll.filter(e => sday(Date.parse(e.ts)) === today);
   const hasRead = sl => E.some(e => e.slot === sl && e.glucose != null);
   const due = [];
   if (!settings.cgm) {
@@ -263,6 +262,46 @@ async function runCron(host, force) {
     const vd = vn.slice(0, 10), vt = t12(vn.slice(11, 16));
     if (vd === c.key && c.h >= 8 && c.h < 11) due.push(['visit:' + vd, 'زيارة الدكتور', 'النهاردة الساعة ' + vt]);
     else if (vd === cairo(now + 24 * 3600e3).key && c.h >= 20 && c.h < 22) due.push(['visitp:' + vd, 'زيارة الدكتور', 'بكرة الساعة ' + vt]);
+  }
+  /* settings alerts: ketone after high sugar (realtime) */
+  const RR = recentAll.filter(e => e.glucose != null).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+  const lastR = RR[RR.length - 1], kHi = settings.ketHigh || 300, kHr = settings.ketHours || 3;
+  if (lastR && lastR.glucose > kHi && now - Date.parse(lastR.ts) < 6 * 3600e3) {
+    let t0 = Date.parse(lastR.ts);
+    for (let i = RR.length - 2; i >= 0 && RR[i].glucose > kHi; i--) t0 = Date.parse(RR[i].ts);
+    if (Date.parse(lastR.ts) - t0 >= (kHr - 0.25) * 3600e3 && !recentAll.some(e => e.ketT && Date.parse(e.ts) >= t0))
+      due.push(['ket:' + t0, 'كيتون', 'السكر فوق ' + kHi + ' من فترة. اعمل تحليل كيتون حسب خطة الدكتور']);
+  }
+  /* low reading: remind to re-check 2 hours later if nothing newer was logged */
+  if (lastR && !settings.cgm) {
+    const dt = now - Date.parse(lastR.ts);
+    if (lastR.glucose < (settings.low || 90) && dt >= 2 * 3600e3 && dt < 6 * 3600e3)
+      due.push(['low2h:' + Date.parse(lastR.ts), 'قراءة تاني', 'آخر قراءة كانت ' + lastR.glucose + ' من ساعتين. قيس تاني']);
+  }
+  /* settings alerts: once a day around 9am (strips, needles, ketone strips, lab checks) */
+  if (c.h === 9) {
+    const flag = await redis(['SET', 'ysg:sent:daily:' + c.key, '1', 'NX', 'EX', '172800']);
+    if (flag === 'OK') {
+      const dayNo = k => Math.floor(Date.parse(k + 'T00:00:00Z') / 86400e3), todayN = dayNo(c.key);
+      const dueIn = (dateStr, months) => { const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCMonth(d.getUTCMonth() + (months || 0)); return Math.floor(d.getTime() / 86400e3) - todayN; };
+      const gentle = l => l === 30 || l === 14 || l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0);
+      const all = []; const flat = await redis(['HGETALL', 'ysg:entries']);
+      for (let i = 1; i < (flat || []).length; i += 2) { try { all.push(JSON.parse(flat[i])); } catch (x) {} }
+      const stamp = e => cairo(Date.parse(e.ts)).stamp;
+      if (settings.stripStart) {
+        const total = settings.stripN || 50, used = all.filter(e => e.glucose != null && stamp(e) >= settings.stripStart).length, left = total - used;
+        if (left <= 5) due.push(['strips', 'شرايط السكر', left <= 0 ? 'الشرايط خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left === 1 ? ' شريط' : ' شرايط') + ' بس. جهّز علبة جديدة']);
+      }
+      if (settings.needleStart) {
+        const total = settings.needleN || 100; let used = settings.needleUsed || 0;
+        all.forEach(e => { if (stamp(e) < settings.needleStart) return; if (e.apidra > 0 && e.needle === 'new') used++; if (e.tresiba > 0 && (e.needleT || (e.apidra > 0 ? null : e.needle)) === 'new') used++; });
+        const left = total - used;
+        if (left <= 10) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'الأسنان خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left > 2 ? ' أسنان' : ' سن') + ' بس. جهّز علبة جديدة']);
+      }
+      if (settings.ketExp) { const l = dueIn(settings.ketExp, 0); if (gentle(l)) due.push(['ketexp', 'شرايط الكيتون', l < 0 ? 'انتهت صلاحيتها. جدّد الشرايط' : l === 0 ? 'بتنتهي النهاردة' : 'بتنتهي بعد ' + l + ' يوم']); }
+      if (settings.a1cDate) { const l = dueIn(settings.a1cDate, 3); if (l <= 14 && gentle(l)) due.push(['a1c', 'التحليل التراكمي', l < 0 ? 'ميعاده عدّى. اعمله وسجّل التاريخ' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); }
+      (Array.isArray(settings.checks) ? settings.checks : []).forEach((ck, i) => { if (!ck || !ck.d) return; const l = dueIn(ck.d, ck.m || 6); if (l <= 14 && gentle(l)) due.push(['chk' + i, 'فحص ' + ck.n, l < 0 ? 'ميعاده عدّى' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); });
+    }
   }
   const sent = [];
   if (!due.length) return { sent };
