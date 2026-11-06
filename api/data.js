@@ -262,6 +262,7 @@ async function entryAlerts(e, existed, srcEp, host) {
   if (e.tresiba > 0) msgs.push({ t: 'ترسيبا', b: fm(e.tresiba) + ' وحدة اتسجلت الساعة ' + tm, tag: 'dose-t' });
   if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: 'سكر واطي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-low' });
   if (e.glucose != null && e.glucose > (st.high || 250)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
+  if (e.slot === 'bed' && e.glucose != null && !msgs.some(m => m.tag === 'g-low' || m.tag === 'g-high')) msgs.push({ t: 'قراءة قبل النوم', b: 'اتسجلت ' + e.glucose + ' الساعة ' + tm, tag: 'g-bed' });
   if (msgs.length) await notifyOthers(msgs, srcEp, host);
 }
 async function runCron(host, force) {
@@ -367,6 +368,30 @@ async function runCron(host, force) {
         due.push(['week', 'ملخص الأسبوع', 'المتوسط ' + avg + '، في المدى ' + inr + '%، واطي ' + G.filter(g => g < lo).length + ' مرة، عالي ' + G.filter(g => g > hi).length + ' مرة']);
       }
     }
+  }
+  /* alerts that the app also shows in-page: dangerous ketone result, repeated needle / injection site, missed vitamins */
+  const lastK = recentAll.filter(e => e.ketT).sort((x, y) => Date.parse(x.ts) - Date.parse(y.ts)).pop();
+  if (lastK && now - Date.parse(lastK.ts) < 12 * 3600e3) {
+    const kd = lastK.ketT === 'b' ? Number(lastK.ketV) >= 1.5 : !['neg', 'small'].includes(lastK.ketV);
+    if (kd) due.push(['ketd:' + lastK.ts, 'كيتون', 'آخر نتيجة كيتون خطر. كلّم الدكتور فورًا واتبع خطته']);
+  }
+  const INJ = recentAll.filter(e => e.apidra > 0 || e.tresiba > 0).sort((x, y) => Date.parse(x.ts) - Date.parse(y.ts));
+  if (INJ.length && now - Date.parse(INJ[INJ.length - 1].ts) < 2 * 86400e3) {
+    const pn = (e, pen) => pen === 'a' ? (e.apidra > 0 ? (e.needle || null) : null) : (e.tresiba > 0 ? (e.needleT || (e.apidra > 0 ? null : e.needle) || null) : null);
+    [['a', 'أبيدرا'], ['t', 'ترسيبا']].forEach(([k, nm]) => {
+      let lastNew = null, lastInfo = null, lastUse = null;
+      INJ.forEach(e => { const v = pn(e, k); if (!v) return; lastUse = e; if (v === 'new') lastNew = e; lastInfo = e; });
+      if (lastInfo && pn(lastInfo, k) === 'reuse' && (!lastNew || now - Date.parse(lastNew.ts) >= 86400e3) && now - Date.parse(lastUse.ts) < 2 * 86400e3)
+        due.push(['nreuse' + k + ':' + lastInfo.ts, 'سن قلم ' + nm, 'بيتعاد استخدامه. غيّره قبل حقنة ' + nm + ' الجاية']);
+    });
+    const ws = INJ.filter(e => e.site);
+    if (ws.length >= 2 && ws[ws.length - 1].site === ws[ws.length - 2].site)
+      due.push(['site:' + ws[ws.length - 1].ts, 'مكان الحقن', 'آخر حقنتين في نفس المكان. غيّر مكان الحقن']);
+  }
+  if (c.h === 20) {
+    const vit = recentAll.filter(e => (e.supp || []).includes('vit'));
+    if (vit.length && !vit.some(e => sday(Date.parse(e.ts)) === today || sday(Date.parse(e.ts)) === sday(now - 24 * 3600e3)))
+      due.push(['vit', 'الفيتامينات', 'ماتسجلتش من يومين. لو ماخدتهاش خدها النهاردة']);
   }
   const sent = [];
   if (!due.length) return { sent };
