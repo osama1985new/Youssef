@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="متابعة السكر">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="/apple-touch-icon.png">
 <title>متابعة السكر</title>
@@ -888,6 +889,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .agebox{height:50px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line,#d8dee3);border-radius:12px;font-weight:700;font-size:16px}
 .cgmrow{display:flex;align-items:center;gap:10px;font-size:15.5px;padding:10px 2px}.cgmrow input{width:22px;height:22px;flex:none}
+.toast.undo{display:flex;align-items:center;justify-content:center;gap:14px}.toast.undo .link{color:inherit;text-decoration:underline;font-weight:700;padding:6px 4px}
+.toast.undo.show{pointer-events:auto}
 </style>
 </head>
 <body>
@@ -1150,6 +1153,15 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     </div>
     <div class="field"><label for="sketexp">صلاحية شرايط الكيتون</label><input id="sketexp" type="date"></div>
 
+    <h3>إشعارات الموبايل</h3>
+    <p class="small" id="pushhelp">بتوصلك تذكيرات القراءات والترسيبا وزيارة الدكتور على الموبايل حتى والتطبيق مقفول. فعّلها على كل موبايل لوحده.</p>
+    <p class="small" id="pushst" style="font-weight:700"></p>
+    <div class="two">
+      <button type="button" class="ghost" id="pushon">تفعيل الإشعارات</button>
+      <button type="button" class="ghost" id="pushtest" hidden>جرّب إشعار</button>
+    </div>
+    <button type="button" class="link" id="pushoff" hidden>إيقاف الإشعارات على الموبايل ده</button>
+
     <h3>نسخة احتياطية</h3>
     <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
     <div class="two">
@@ -1189,6 +1201,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 </nav>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast undo" id="undo" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -1402,8 +1415,12 @@ async function api(body){
   if(!r.ok)throw new ApiError(j.error==='no_ai_key'?'noaikey':j.error==='ai_failed'?'aifail':j.error==='bad_key'?'badkey':j.error==='bad_image'?'badimage':j.error==='bad_pin_format'?'pinformat':j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
   return j;
 }
+var LS_Q='ysg-queue-v1', LS_SNAP='ysg-snap-v2';
+function qGet(){return lsGet(LS_Q,[])}
+function mergeQueue(){qGet().forEach(function(d){entries=entries.filter(function(e){return e.id!==d.id}).concat([d])})}
 function applyServer(j){
-  entries=j.entries||[]; role=j.role==='view'?'view':'edit'; prot=!!j.protected;
+  if(!j.__snap)lsSet(LS_SNAP,{entries:j.entries||[],settings:j.settings||null,role:j.role,protected:j.protected});
+  entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
   document.body.classList.toggle('ro',role==='view'); if(role==='view'&&tab==='add')tab='log'; renderSecurity();
   if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
 }
@@ -1416,6 +1433,8 @@ async function start(first){
     var j=await api(); mode='cloud'; applyServer(j); ready();
   }catch(e){
     if(e.code==='auth'){showGate(first?'':'الرقم السري غلط، جرب تاني.'); return}
+    var snap=lsGet(LS_SNAP,null);
+    if(e.code==='net'&&snap&&snap.entries){mode='cloud'; netErr=true; snap.__snap=true; applyServer(snap); ready(); return}
     syncErr=e.code||'net'; mode='local'; entries=lsGet(LS_E,[]); var s=lsGet(LS_S,null); if(s)settings=Object.assign({},DEFAULTS,s); ready();
   }
 }
@@ -1472,8 +1491,9 @@ async function importBackup(file){
 $('#bkexp').addEventListener('click',exportBackup);
 $('#bkimp').addEventListener('click',function(){$('#bkfile').click()});
 $('#bkfile').addEventListener('change',function(){var f=this.files&&this.files[0]; this.value=''; if(f)importBackup(f)});
-$('#logout').addEventListener('click',function(){lsSet(LS_P,''); pin=''; location.reload()});
+$('#logout').addEventListener('click',function(){lsSet(LS_P,''); try{localStorage.removeItem(LS_SNAP); localStorage.removeItem(LS_Q)}catch(_){} pin=''; location.reload()});
 function ready(){
+  setTimeout(function(){flushQ(); pushState(); pushSync()},1500);
   authed=true; $('#gate').hidden=true; $('#tabs').hidden=false; loaded=true; renderSecurity(); syncSettingsInputs(); render(); applyTab();
   if(!started){
     started=true;
@@ -1489,14 +1509,41 @@ $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDe
 
 async function addEntry(doc){
   doc.id=doc.id||newId();
-  if(mode==='cloud'){await api({action:'add',entry:doc}); entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc])}
+  if(mode==='cloud'){
+    lastQueued=false;
+    try{await api({action:'add',entry:doc})}
+    catch(e){if(e.code==='net'){var q=qGet().filter(function(d){return d.id!==doc.id}); q.push(doc); lsSet(LS_Q,q); lastQueued=true; netErr=true; renderStore()} else throw e}
+    entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc])
+  }
   else{entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc]); lsSet(LS_E,entries)}
 }
+var lastQueued=false, flushing=false;
+async function flushQ(){
+  var q=qGet(); if(!q.length||mode!=='cloud'||flushing||!authed)return; flushing=true; var sentN=0;
+  try{
+    while(q.length){
+      try{await api({action:'add',entry:q[0]}); q.shift(); lsSet(LS_Q,q); sentN++}
+      catch(e){ if(e.code==='net'||e.code==='auth'||e.code==='readonly')break; q.shift(); lsSet(LS_Q,q) }
+    }
+  }finally{flushing=false}
+  if(sentN){netErr=false; toast('اتبعتت '+sentN+' تسجيل كانوا مستنيين النت'); refresh()}
+}
+window.addEventListener('online',function(){setTimeout(flushQ,800)});
+setInterval(flushQ,30000);
 async function removeEntry(id){
+  var qq=qGet();
+  if(qq.some(function(d){return d.id===id})){lsSet(LS_Q,qq.filter(function(d){return d.id!==id})); entries=entries.filter(function(e){return e.id!==id}); return}
   if(mode==='cloud'){await api({action:'delete',id:id})}
   entries=entries.filter(function(e){return e.id!==id});
   if(mode!=='cloud')lsSet(LS_E,entries);
 }
+var forceDup=false, undoT;
+function showUndo(id,q){var el=$('#undo'); el.innerHTML=(q?'اتحفظ على الموبايل وهيتبعت لما النت يرجع':'اتحفظ')+' <button type="button" class="link" data-undo="'+id+'">تراجع</button>'; el.classList.add('show'); clearTimeout(undoT); undoT=setTimeout(function(){el.classList.remove('show')},7000)}
+document.addEventListener('click',async function(e){
+  var u=e.target.closest&&e.target.closest('[data-undo]');
+  if(u){var id=u.dataset.undo; $('#undo').classList.remove('show'); try{await removeEntry(id); toast('اتلغى التسجيل'); render()}catch(_){toast('مقدرتش أتراجع. جرب من السجل.')} return}
+  if(e.target.id==='dupok'){forceDup=true; $('#ferr').textContent=''; $('#f').requestSubmit()}
+});
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='slot')updateAplan()});
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#modebar'))setTimeout(updateAplan,30)});
 function showForm(){setTimeout(function(){var f=$('#f'); if(!f)return; var c=(f.closest('.card')||f); c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(function(){c.classList.remove('flash')},1400); var g=$('#g'); if(g&&!g.closest('[hidden]')&&imode!=='tres'){try{g.focus({preventScroll:true})}catch(_){}}},60)}
@@ -2845,18 +2892,57 @@ $('#f').addEventListener('submit',async function(ev){
   if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو جرعة تصحيح من غير أكل اختار "تصحيح" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
+  if(!editingId&&!forceDup){
+    var dup=entries.filter(function(e){var x=new Date(e.ts); return Math.abs(x-d)<=20*60000&&e.slot===slot&&((g!=null&&e.glucose===g)||(a>0&&e.apidra===a)||(t>0&&e.tresiba===t))})[0];
+    if(dup){err.innerHTML='في تسجيل شبه ده اتسجّل الساعة '+timeStr(new Date(dup.ts))+'. ممكن حد تاني سجّله. <button type="button" class="link" id="dupok">سجّل برضه</button>'; return}
+  }
   var btn=$('#save'); btn.disabled=true;
   try{
-    await addEntry({id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?(pad(d.getHours())+':'+pad(d.getMinutes())):null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v});
+    var docNew={id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?(pad(d.getHours())+':'+pad(d.getMinutes())):null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v}; await addEntry(docNew); forceDup=false; var undoId=editingId?null:docNew.id;
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
     var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); lastMode=null; keepSlot=null; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
-    setNow(); toast(wasEdit?'اتعدّل':'اتحفظ'); render(); if(wasEdit)go('log');
+    setNow(); if(undoId)showUndo(undoId,lastQueued); else toast(lastQueued?'اتحفظ على الموبايل وهيتبعت لما النت يرجع':'اتعدّل'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
   }catch(e){
     err.textContent=e&&e.code==='auth'?'الرقم السري اتغيّر. اقفل الصفحة وافتحها تاني.':'مقدرتش أحفظ. اتأكد من النت وجرب تاني.';
   }finally{btn.disabled=false}
 });
+
+/* ---------- push + offline shell ---------- */
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}
+function b64uToU8(b){var p=(b+'===').slice(0,b.length+(4-b.length%4)%4).replace(/-/g,'+').replace(/_/g,'/'), r=atob(p), u=new Uint8Array(r.length); for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i); return u}
+function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
+async function pushState(){
+  var st=$('#pushst'), on=$('#pushon'), te=$('#pushtest'), off=$('#pushoff'); if(!st)return;
+  if(!pushSupported()){st.textContent='الإشعارات مش متاحة هنا. افتح التطبيق من الأيقونة اللي على الشاشة الرئيسية.'; on.hidden=true; te.hidden=true; off.hidden=true; return}
+  var sub=null; try{var reg=await navigator.serviceWorker.getRegistration(); sub=reg&&await reg.pushManager.getSubscription()}catch(_){}
+  var perm=Notification.permission;
+  st.textContent=perm==='denied'?'الإشعارات مقفولة من إعدادات الآيفون. افتح الإعدادات > متابعة السكر > الإشعارات وفعّلها.':sub?'الإشعارات شغالة على الموبايل ده.':'مش مفعّلة على الموبايل ده.';
+  on.hidden=!!sub||perm==='denied'; te.hidden=!sub; off.hidden=!sub;
+}
+async function pushEnable(){
+  var st=$('#pushst'); var perm; try{perm=await Notification.requestPermission()}catch(_){perm='denied'}
+  if(perm!=='granted'){pushState(); return}
+  try{
+    var reg=await navigator.serviceWorker.ready, k=(await api({action:'vapid'})).key;
+    var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(k)});
+    await api({action:'subscribe',sub:sub.toJSON()}); toast('الإشعارات اتفعّلت');
+  }catch(e){st.textContent='مقدرتش أفعّل الإشعارات. اتأكد من النت وجرب تاني.'; return}
+  pushState();
+}
+async function pushTest(){
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); var r=await api({action:'testpush',endpoint:sub.endpoint}); toast(r.ok?'بعتنالك إشعار تجريبي':'السيرفر ما قدرش يبعت. جرب تفعّلها من الأول.')}catch(e){toast('مقدرتش أجرّب الإشعار')}
+}
+async function pushOff(){
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){try{await api({action:'unsubscribe',endpoint:sub.endpoint})}catch(_){} await sub.unsubscribe()}}catch(_){}
+  pushState();
+}
+async function pushSync(){
+  if(!pushSupported()||Notification.permission!=='granted'||role!=='edit'||mode!=='cloud')return;
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub)await api({action:'subscribe',sub:sub.toJSON()})}catch(_){}
+}
+$('#pushon').addEventListener('click',pushEnable); $('#pushtest').addEventListener('click',pushTest); $('#pushoff').addEventListener('click',pushOff);
 
 /* ---------- start ---------- */
 setPreset(14); renderMeal(); applyTab();
