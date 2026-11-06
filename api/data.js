@@ -101,7 +101,7 @@ function cleanEntry(e) {
   return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
-const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000], fixBf: [0.5, 100], fixLn: [0.5, 100], fixDn: [0.5, 100] };
+const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000], stockA: [0, 50], stockT: [0, 50], primeU: [0, 10], stockDays: [1, 60], fixBf: [0.5, 100], fixLn: [0.5, 100], fixDn: [0.5, 100] };
 function cleanSettings(s) {
   if (!s || typeof s !== 'object') return null;
   const out = {};
@@ -121,6 +121,9 @@ function cleanSettings(s) {
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
   out.cgm = s.cgm === true;
   out.birth = dOk(s.birth) ? String(s.birth) : null;
+  out.medGot = /^\d{4}-(0[1-9]|1[0-2])$/.test(String(s.medGot || '')) ? String(s.medGot) : null;
+  out.penAStart = dOk(s.penAStart) ? String(s.penAStart) : null;
+  out.penTStart = dOk(s.penTStart) ? String(s.penTStart) : null;
   const dtOk = v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
   out.visitLast = dtOk(s.visitLast) ? String(s.visitLast) : null;
   out.visitNext = dtOk(s.visitNext) ? String(s.visitNext) : null;
@@ -240,6 +243,25 @@ async function recentEntries(now) {
   if (stale.length) await redis(['HDEL', 'ysg:recent'].concat(stale));
   return list;
 }
+async function notifyOthers(msgs, srcEp, host) {
+  const flat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
+  const skip = srcEp ? subId(srcEp) : null;
+  for (let i = 0; i < (flat || []).length; i += 2) { try { const sb = JSON.parse(flat[i + 1]); if (sb && sb.role === 'edit' && flat[i] !== skip) subs.push(sb); } catch (e) {} }
+  if (!subs.length) return;
+  const v = await getVapid();
+  for (const m of msgs) await Promise.allSettled(subs.map(sb => pushTo(sb, m, v, host)));
+}
+async function entryAlerts(e, existed, srcEp, host) {
+  if (existed || Date.now() - Date.parse(e.ts) > 3 * 3600e3 || Date.parse(e.ts) - Date.now() > 3600e3) return;
+  let st = {}; try { st = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (x) {}
+  const c = cairo(Date.parse(e.ts)), tm = t12(String(c.h).padStart(2, '0') + ':' + String(c.m).padStart(2, '0')), msgs = [];
+  const fm = n => (Number.isInteger(n) ? String(n) : String(n).replace(/\.0+$/, ''));
+  if (e.apidra > 0) msgs.push({ t: 'أبيدرا', b: fm(e.apidra) + ' وحدة اتسجلت الساعة ' + tm, tag: 'dose-a' });
+  if (e.tresiba > 0) msgs.push({ t: 'ترسيبا', b: fm(e.tresiba) + ' وحدة اتسجلت الساعة ' + tm, tag: 'dose-t' });
+  if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: 'سكر واطي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-low' });
+  if (e.glucose != null && e.glucose > (st.high || 250)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
+  if (msgs.length) await notifyOthers(msgs, srcEp, host);
+}
 async function runCron(host, force) {
   const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
   for (let i = 1; i < (subsFlat || []).length; i += 2) { try { const sb = JSON.parse(subsFlat[i]); if (sb && sb.role === 'edit') subs.push(sb); } catch (e) {} }
@@ -248,8 +270,7 @@ async function runCron(host, force) {
   let settings = {}; try { settings = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (e) {}
   const night = c.h >= 22 || c.h < 4, morning = c.h >= 6 && c.h < 11, vn = typeof settings.visitNext === 'string' ? settings.visitNext : '';
   const visitSoon = vn && vn.slice(0, 10) >= c.key && vn.slice(0, 10) <= cairo(now + 24 * 3600e3).key;
-  if (!night && !(c.h >= 6 && c.h < 14) && !visitSoon) return { sent: [], note: 'idle' };
-  const today = sday(now), E = (await recentEntries(now)).filter(e => sday(Date.parse(e.ts)) === today);
+  const today = sday(now), recentAll = await recentEntries(now), E = recentAll.filter(e => sday(Date.parse(e.ts)) === today);
   const hasRead = sl => E.some(e => e.slot === sl && e.glucose != null);
   const due = [];
   if (!settings.cgm) {
@@ -264,11 +285,91 @@ async function runCron(host, force) {
     if (vd === c.key && c.h >= 8 && c.h < 11) due.push(['visit:' + vd, 'زيارة الدكتور', 'النهاردة الساعة ' + vt]);
     else if (vd === cairo(now + 24 * 3600e3).key && c.h >= 20 && c.h < 22) due.push(['visitp:' + vd, 'زيارة الدكتور', 'بكرة الساعة ' + vt]);
   }
+  /* settings alerts: ketone after high sugar (realtime) */
+  const RR = recentAll.filter(e => e.glucose != null).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+  const lastR = RR[RR.length - 1], kHi = settings.ketHigh || 300, kHr = settings.ketHours || 3;
+  if (lastR && lastR.glucose > kHi && now - Date.parse(lastR.ts) < 6 * 3600e3) {
+    let t0 = Date.parse(lastR.ts);
+    for (let i = RR.length - 2; i >= 0 && RR[i].glucose > kHi; i--) t0 = Date.parse(RR[i].ts);
+    if (Date.parse(lastR.ts) - t0 >= (kHr - 0.25) * 3600e3 && !recentAll.some(e => e.ketT && Date.parse(e.ts) >= t0))
+      due.push(['ket:' + t0, 'كيتون', 'السكر فوق ' + kHi + ' من فترة. اعمل تحليل كيتون حسب خطة الدكتور']);
+  }
+  /* before-meal reading logged but no Apidra dose logged afterwards */
+  RR.filter(e => ['bf_before', 'ln_before', 'dn_before'].includes(e.slot) && !(e.apidra > 0)).forEach(e => {
+    const t = Date.parse(e.ts), dt = now - t;
+    if (dt >= 20 * 60e3 && dt < 90 * 60e3 && !recentAll.some(x => x.apidra > 0 && Date.parse(x.ts) >= t - 5 * 60e3 && Date.parse(x.ts) <= t + dt))
+      due.push(['nodose:' + t, 'جرعة أبيدرا', 'سجلت قراءة ' + ({ bf_before: 'قبل الفطار', ln_before: 'قبل الغدا', dn_before: 'قبل العشا' })[e.slot] + ' وما سجلتش الجرعة']);
+  });
+  /* yesterday's Tresiba missing */
+  if (c.h >= 8 && c.h < 11) {
+    const yk = sday(now - 24 * 3600e3), Y = recentAll.filter(e => sday(Date.parse(e.ts)) === yk);
+    if (Y.length && !Y.some(e => e.tresiba > 0)) due.push(['trY', 'ترسيبا', 'جرعة ترسيبا إمبارح ما اتسجلتش']);
+  }
+  /* monthly medication: every day from the 1st until confirmed */
+  if (c.h === 10 && settings.medGot !== c.key.slice(0, 7)) due.push(['med', 'العلاج الشهري', 'لسه ما جبتهوش. اضغط "جبته" في التطبيق لما تجيبه']);
+  /* low reading: remind to re-check 2 hours later if nothing newer was logged */
+  if (lastR && !settings.cgm) {
+    const dt = now - Date.parse(lastR.ts);
+    if (lastR.glucose < (settings.low || 90) && dt >= 2 * 3600e3 && dt < 6 * 3600e3)
+      due.push(['low2h:' + Date.parse(lastR.ts), 'قراءة تاني', 'آخر قراءة كانت ' + lastR.glucose + ' من ساعتين. قيس تاني']);
+  }
+  /* settings alerts: once a day around 9am (strips, needles, ketone strips, lab checks) */
+  if (c.h === 9) {
+    const flag = await redis(['SET', 'ysg:flag:daily:' + c.key, '1', 'NX', 'EX', '172800']);
+    if (flag === 'OK') {
+      const dayNo = k => Math.floor(Date.parse(k + 'T00:00:00Z') / 86400e3), todayN = dayNo(c.key);
+      const dueIn = (dateStr, months) => { const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCMonth(d.getUTCMonth() + (months || 0)); return Math.floor(d.getTime() / 86400e3) - todayN; };
+      const gentle = l => l === 30 || l === 14 || l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0);
+      const all = []; const flat = await redis(['HGETALL', 'ysg:entries']);
+      for (let i = 1; i < (flat || []).length; i += 2) { try { all.push(JSON.parse(flat[i])); } catch (x) {} }
+      const stamp = e => cairo(Date.parse(e.ts)).stamp;
+      if (settings.stripStart) {
+        const total = settings.stripN || 50, used = all.filter(e => e.glucose != null && stamp(e) >= settings.stripStart).length, left = total - used;
+        if (left <= 5) due.push(['strips', 'شرايط السكر', left <= 0 ? 'الشرايط خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left === 1 ? ' شريط' : ' شرايط') + ' بس. جهّز علبة جديدة']);
+      }
+      if (settings.needleStart) {
+        const total = settings.needleN || 100; let used = settings.needleUsed || 0;
+        all.forEach(e => { if (stamp(e) < settings.needleStart) return; if (e.apidra > 0 && e.needle === 'new') used++; if (e.tresiba > 0 && (e.needleT || (e.apidra > 0 ? null : e.needle)) === 'new') used++; });
+        const left = total - used;
+        if (left <= 10) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'الأسنان خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left > 2 ? ' أسنان' : ' سن') + ' بس. جهّز علبة جديدة']);
+      }
+      [['penAStart', 'قلم أبيدرا', 'penA'], ['penTStart', 'قلم ترسيبا', 'penT']].forEach(([k, nm, ty]) => {
+        if (!settings[k]) return; const l = 28 - (todayN - dayNo(settings[k]));
+        if ((l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0))) due.push([ty, nm, l < 0 ? 'عدّى 28 يوم على فتحه. غيّره' : l === 0 ? 'آخر يوم لاستخدامه (28 يوم من فتحه)' : 'باقي ' + l + ' يوم على انتهاء صلاحيته بعد الفتح']);
+      });
+      [['A', 'apidra', 'أبيدرا', 'penAStart'], ['T', 'tresiba', 'ترسيبا', 'penTStart']].forEach(([k, f, nm, sk]) => {
+        if (!settings[sk]) return;
+        const prime = settings['primeU'] || 0, spare = settings['stock' + k] || 0, from = settings[sk] + 'T00:00';
+        let used = 0, sum14 = 0, firstMs = now;
+        all.forEach(e => { if (!(e[f] > 0)) return; const t = Date.parse(e.ts); if (t < firstMs) firstMs = t; if (stamp(e) >= from) used += e[f] + prime; if (now - t < 14 * 86400e3) sum14 += e[f] + prime; });
+        const span = Math.max(3, Math.min(14, (now - firstMs) / 86400e3)), avg = sum14 / span;
+        if (!(avg > 0)) return;
+        const total = Math.max(0, 300 - used) + spare * 300, days = Math.floor(total / avg), thr = settings.stockDays || 14;
+        const lvl = [thr, 7, 3, 1, 0].filter(x => x <= thr).sort((a, b) => a - b).find(x => days <= x);
+        if (lvl === undefined) return;
+        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك الخلاص. جهّز أقلام جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(total) + ' وحدة). جهّز أقلام جديدة']);
+      });
+      if (settings.ketExp) { const l = dueIn(settings.ketExp, 0); if (gentle(l)) due.push(['ketexp', 'شرايط الكيتون', l < 0 ? 'انتهت صلاحيتها. جدّد الشرايط' : l === 0 ? 'بتنتهي النهاردة' : 'بتنتهي بعد ' + l + ' يوم']); }
+      if (settings.a1cDate) { const l = dueIn(settings.a1cDate, 3); if (l <= 14 && gentle(l)) due.push(['a1c', 'التحليل التراكمي', l < 0 ? 'ميعاده عدّى. اعمله وسجّل التاريخ' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); }
+      (Array.isArray(settings.checks) ? settings.checks : []).forEach((ck, i) => { if (!ck || !ck.d) return; const l = dueIn(ck.d, ck.m || 6); if (l <= 14 && gentle(l)) due.push(['chk' + i, 'فحص ' + ck.n, l < 0 ? 'ميعاده عدّى' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); });
+    }
+  }
+  if (c.h === 20 && new Date(c.key + 'T12:00:00Z').getUTCDay() === 5) {
+    const wf = await redis(['SET', 'ysg:flag:wk:' + c.key, '1', 'NX', 'EX', '604800']);
+    if (wf === 'OK') {
+      const flat = await redis(['HGETALL', 'ysg:entries']), lo = settings.low || 90, hi = settings.high || 250, G = [];
+      for (let i = 1; i < (flat || []).length; i += 2) { try { const e = JSON.parse(flat[i]); if (e.glucose != null && now - Date.parse(e.ts) < 7 * 86400e3) G.push(e.glucose); } catch (x) {} }
+      if (G.length >= 5) {
+        const avg = Math.round(G.reduce((a, b) => a + b, 0) / G.length), inr = Math.round(G.filter(g => g >= lo && g <= hi).length / G.length * 100);
+        due.push(['week', 'ملخص الأسبوع', 'المتوسط ' + avg + '، في المدى ' + inr + '%، واطي ' + G.filter(g => g < lo).length + ' مرة، عالي ' + G.filter(g => g > hi).length + ' مرة']);
+      }
+    }
+  }
   const sent = [];
   if (!due.length) return { sent };
   const v = await getVapid();
   for (const [type, title, body] of due) {
-    const mark = await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
+    const mark = type.startsWith('stock') ? await redis(['SET', 'ysg:sent:' + type, '1', 'NX', 'EX', '864000']) : await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
     if (mark !== 'OK') continue;
     for (const sb of subs) await pushTo(sb, { t: title, b: body, tag: type.split(':')[0] }, v, host);
     sent.push(type.split(':')[0]);
@@ -325,7 +426,7 @@ module.exports = async (req, res) => {
       }
       if (b.action === 'testpush') {
         const ep = String(b.endpoint || ''); if (!PUSH_HOST_OK.test(ep)) return res.status(400).json({ error: 'bad_sub' });
-        const st = await pushTo({ endpoint: ep }, { t: 'متابعة السكر', b: 'الإشعارات شغالة على الموبايل ده', tag: 'test' }, await getVapid(), req.headers.host || 'localhost');
+        const st = await pushTo({ endpoint: ep }, { t: 'الإشعارات شغالة', b: 'التذكيرات هتوصلك على الموبايل ده', tag: 'test' }, await getVapid(), req.headers.host || 'localhost');
         return res.status(200).json({ ok: st >= 200 && st < 300, status: st });
       }
       if (b.action === 'setauth') {
@@ -365,8 +466,10 @@ module.exports = async (req, res) => {
       if (b.action === 'add') {
         const e = cleanEntry(b.entry);
         if (!e) return res.status(400).json({ error: 'bad_entry' });
+        const existed = !!(await redis(['HGET', 'ysg:entries', e.id]));
         await redis(['HSET', 'ysg:entries', e.id, JSON.stringify(e)]);
         try { await redis(['HSET', 'ysg:recent', e.id, JSON.stringify(e)]); } catch (x) {}
+        try { await entryAlerts(e, existed, String(b.src || ''), req.headers.host || 'localhost'); } catch (x) {}
         return res.status(200).json({ ok: true });
       }
       if (b.action === 'delete') {
