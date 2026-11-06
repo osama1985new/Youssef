@@ -899,6 +899,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .sw i::after{content:"";position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
 .sw input:checked+i{background:#1f8f9a}.sw input:checked+i::after{transform:translateX(-22px)}
 .sw input:disabled{cursor:default}.sw input:disabled+i{opacity:.5}
+.acc[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -1098,7 +1099,6 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   <!-- ===== screen 4: settings ===== -->
   <section class="card stack" id="set" data-tab="set">
     <h2>الإعدادات</h2>
-    <p class="small">الأرقام دي بتيجي من دكتور المتابعة. الصفحة مش بتحط أرقام جرعات من عندها.</p>
 
     <h3>حدود التنبيه</h3>
     <div class="two">
@@ -1127,7 +1127,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     </div>
 
     <h3>جهاز قياس مستمر</h3>
-    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر (فري ستايل)</span></label>
+    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر</span></label>
     <p class="hint">لما تفعّلها، تنبيهات القراءات (الصايم وبعد الفطار وقبل النوم) بتتقفل. تنبيهات الأنسولين بتفضل.</p>
     <h3>الأقلام المفتوحة</h3>
     <p class="hint">اكتب تاريخ فتح كل قلم، وبنفكّرك قبل ما يعدّي 28 يوم على فتحه.</p>
@@ -1137,26 +1137,24 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     </div>
     <p class="small" id="penleft"></p>
     <h3>مخزون الأقلام</h3>
-    <p class="hint">اكتب عدد الأقلام الاحتياطية (المقفولة). القلم 300 وحدة. التطبيق بيحسب الباقي من الجرعات المسجلة، وبينبّهك قبل ما يخلص.</p>
+    <p class="hint">اكتب عدد الأقلام اللي عندك دلوقتي (بالقلم الشغال). القلم 300 وحدة، وكل جرعة بتتسجل بعد كده بتتخصم لوحدها. الحساب بالجرعات الثابتة.</p>
     <div class="two cen">
-      <div class="field"><label for="sstocka">أقلام أبيدرا احتياطي</label><input id="sstocka" type="text" inputmode="numeric" placeholder="0"></div>
-      <div class="field"><label for="sstockt">أقلام ترسيبا احتياطي</label><input id="sstockt" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label for="sstocka">عدد أقلام أبيدرا</label><input id="sstocka" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label for="sstockt">عدد أقلام ترسيبا</label><input id="sstockt" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
-    <div class="two cen">
-      <div class="field"><label for="sprime">وحدات التجهيز لكل حقنة</label><input id="sprime" type="text" inputmode="numeric" placeholder="0"></div>
-      <div class="field"><label for="sstockd">نبّهني قبل (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div>
-    </div>
+    <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل ما يخلص بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
     <p class="small" id="stocktxt"></p>
-    <h3>أبيدرا — الجرعات الثابتة</h3>
-    <p class="hint">جرعة الدكتور الثابتة لكل وجبة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور.</p>
-    <div class="three cen">
-      <div class="field"><label for="sfixbf">الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
-      <div class="field"><label for="sfixln">الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
-      <div class="field"><label for="sfixdn">العشاء</label><input id="sfixdn" type="text" inputmode="decimal" placeholder="10"></div>
+    <h3>الجرعات الثابتة</h3>
+    <p class="hint">جرعات الدكتور الثابتة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور وبتتحسب بيها أيام المخزون.</p>
+    <div class="two cen">
+      <div class="field"><label for="sfixbf">أبيدرا الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
+      <div class="field"><label for="sfixln">أبيدرا الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
     </div>
-    <h3>ترسيبا</h3>
-    <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
-  
+    <div class="two cen">
+      <div class="field"><label for="sfixdn">أبيدرا العشاء</label><input id="sfixdn" type="text" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="splan">ترسيبا</label><input id="splan" type="text" inputmode="decimal" placeholder="28"></div>
+    </div>
+
     <h3>شرايط قياس السكر</h3>
     <p class="small">كل قراءة سكر بتتحسب شريط. البرنامج بيعد الباقي وينبهك لما يفضل 5 شرايط.</p>
     <div class="two cen one"><div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div></div>
@@ -1187,6 +1185,10 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     </div>
     <button type="button" class="link" id="pushtest" hidden>جرّب إشعار</button>
 
+    <h3>الحساب</h3>
+    <p class="small">اخرج من البرنامج على الموبايل ده، وهيطلب الرقم السري تاني في الدخول الجاي.</p>
+    <button type="button" class="ghost" id="logout" hidden>تسجيل الخروج</button>
+
     <h3>نسخة احتياطية</h3>
     <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
     <div class="two">
@@ -1206,14 +1208,8 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
   </section>
 
 
-  <section class="card stack" id="lgcard" data-tab="set">
-    <h2>الحساب</h2>
-    <p class="small">اخرج من البرنامج على الموبايل ده، وهيطلب الرقم السري تاني في الدخول الجاي.</p>
-    <button type="button" class="ghost" id="logout" hidden>تسجيل الخروج</button>
-  </section>
 
   <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
-  <p class="small" id="disc" data-tab="all">الصفحة دي للتسجيل والمتابعة بس. الجرعات المقترحة حساب بأرقام الدكتور، وراجعها دايمًا قبل الحقن. لو في هبوط شديد أو الطفل مش واعي اطلب الإسعاف فورًا.</p>
 </main>
 
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
@@ -1371,16 +1367,18 @@ var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
 function modeOf(a){var c={},b=null,bn=0; a.forEach(function(v){c[v]=(c[v]||0)+1; if(c[v]>bn||(c[v]===bn&&v>b)){bn=c[v]; b=v}}); return b}
 function penLeft(d){if(!d)return null; var o=new Date(d+'T12:00:00'); return 28-Math.floor((Date.now()-o.getTime())/DAY)}
 function penStock(kind,E){
-  var od=settings['pen'+kind+'Start']; if(!od)return null; E=E||prep();
-  var f=kind==='A'?'apidra':'tresiba', pr=settings.primeU||0, st=new Date(od+'T00:00:00').getTime(), now=Date.now(), used=0, sum=0, first=now;
-  E.forEach(function(e){if(!(e[f]>0))return; var t=e.d.getTime(); if(t<first)first=t; if(t>=st)used+=e[f]+pr; if(now-t<14*DAY)sum+=e[f]+pr});
-  var span=Math.max(3,Math.min(14,(now-first)/DAY)), avg=sum/span, cur=Math.max(0,300-used), spare=settings['stock'+kind]||0, total=cur+spare*300;
-  return {cur:cur,spare:spare,total:total,days:avg>0?Math.floor(total/avg):null};
+  var cnt=settings['stock'+kind], at=settings['stockAt'+kind]; if(!(cnt>0)||!at)return null; E=E||prep();
+  var f=kind==='A'?'apidra':'tresiba', st=new Date(at).getTime(), now=Date.now(), used=0, sum=0, first=now;
+  E.forEach(function(e){if(!(e[f]>0))return; var t=e.d.getTime(); if(t<first)first=t; if(t>=st)used+=e[f]; if(now-t<14*DAY)sum+=e[f]});
+  var daily=kind==='A'?(settings.fixBf||0)+(settings.fixLn||0)+(settings.fixDn||0):(settings.plan||0);
+  if(!(daily>0))daily=sum/Math.max(3,Math.min(14,(now-first)/DAY));
+  var left=Math.max(0,cnt*300-used);
+  return {left:left,days:daily>0?Math.floor(left/daily):null};
 }
 function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var p=[];
-  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': في القلم الحالي حوالي '+Math.round(i.cur)+' وحدة، وكله '+Math.round(i.total)+' وحدة'+(i.days!==null?'، يكفي حوالي '+i.days+' يوم':''))});
-  el.textContent=p.length?p.join('\n'):'اكتب تاريخ فتح القلم الحالي فوق علشان الحساب يشتغل.'; el.style.whiteSpace='pre-line';
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': باقي حوالي '+Math.round(i.left)+' وحدة'+(i.days!==null?'، تكفي حوالي '+i.days+' يوم':''))});
+  el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام علشان الحساب يشتغل.'; el.style.whiteSpace='pre-line';
 }
 function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'عدّى ميعاده':'باقي '+a+' يوم')); if(t!==null)p.push('ترسيبا: '+(t<0?'عدّى ميعاده':'باقي '+t+' يوم')); el.textContent=p.join(' · ')}
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
@@ -1413,7 +1411,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -2302,7 +2300,7 @@ function buildReport(){
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sfixbf','fixBf',0.5,100],['sstocka','stockA',0,50],['sstockt','stockT',0,50],['sprime','primeU',0,10],['sstockd','stockDays',1,60],['sfixln','fixLn',0.5,100],['sfixdn','fixDn',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sfixbf','fixBf',0.5,100],['sstocka','stockA',0,50],['sstockt','stockT',0,50],['sstockd','stockDays',1,60],['sfixln','fixLn',0.5,100],['sfixdn','fixDn',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
 function renderChecks(){
   var w=$('#ckwrap'); if(!w)return;
   w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
@@ -2358,7 +2356,8 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  settings=Object.assign({},DEFAULTS,{medGot:settings.medGot||null},s); persistSettings(); render(); toast('اتحفظت الإعدادات');
+  var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null))at.stockAtT=s.stockT>0?nowL:null;
+  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
@@ -2633,6 +2632,7 @@ function accordion(root,openFirst){
   });
 }
 accordion($('#set'),false); accordion($('#medcard'),false);
+[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
 function render(){try{updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
