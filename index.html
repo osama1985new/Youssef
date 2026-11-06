@@ -206,7 +206,9 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .acts{grid-area:del; justify-self:end; display:flex; gap:14px}
 .acts .del,.acts .edt{grid-area:auto}
 .edt{border:0; background:none; color:var(--accent); font-size:13px; padding:6px 4px; cursor:pointer; text-decoration:underline}
-body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #set,body.ro #medcard{display:none!important}
+body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #medcard{display:none!important}
+body.ro #set>:not(.acct){display:none!important}
+body.ro #set>.acct{display:block!important}
 .ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
 .care p{margin:0; line-height:1.5}
@@ -2636,7 +2638,7 @@ function accordion(root,openFirst){
   });
 }
 accordion($('#set'),false); accordion($('#medcard'),false);
-[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
+[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'){d.classList.add('acct'); d.open=true} if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
 function render(){try{updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
