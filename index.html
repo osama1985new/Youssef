@@ -1120,6 +1120,13 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
     <h3>جهاز قياس مستمر</h3>
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر (فري ستايل)</span></label>
     <p class="hint">لما تفعّلها، تنبيهات القراءات (الصايم وبعد الفطار وقبل النوم) بتتقفل. تنبيهات الأنسولين بتفضل.</p>
+    <h3>الأقلام المفتوحة</h3>
+    <p class="hint">اكتب تاريخ فتح كل قلم، وبنفكّرك قبل ما يعدّي 28 يوم على فتحه.</p>
+    <div class="two cen">
+      <div class="field"><label for="spena">فتح قلم أبيدرا</label><input id="spena" type="date"></div>
+      <div class="field"><label for="spent">فتح قلم ترسيبا</label><input id="spent" type="date"></div>
+    </div>
+    <p class="small" id="penleft"></p>
     <h3>أبيدرا — الجرعات الثابتة</h3>
     <p class="hint">جرعة الدكتور الثابتة لكل وجبة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور.</p>
     <div class="three cen">
@@ -1344,6 +1351,8 @@ function pad(n){return String(n).padStart(2,'0')}
 function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
 function modeOf(a){var c={},b=null,bn=0; a.forEach(function(v){c[v]=(c[v]||0)+1; if(c[v]>bn||(c[v]===bn&&v>b)){bn=c[v]; b=v}}); return b}
+function penLeft(d){if(!d)return null; var o=new Date(d+'T12:00:00'); return 28-Math.floor((Date.now()-o.getTime())/DAY)}
+function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'عدّى ميعاده':'باقي '+a+' يوم')); if(t!==null)p.push('ترسيبا: '+(t<0?'عدّى ميعاده':'باقي '+t+' يوم')); el.textContent=p.join(' · ')}
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
 function fixedDoses(E){
   var f=function(sl){return modeOf(E.filter(function(e){return e.slot===sl&&e.apidra>0&&!e.corr}).map(function(e){return e.apidra}))};
@@ -1374,7 +1383,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1511,7 +1520,7 @@ async function addEntry(doc){
   doc.id=doc.id||newId();
   if(mode==='cloud'){
     lastQueued=false;
-    try{await api({action:'add',entry:doc})}
+    try{await api({action:'add',entry:doc,src:lsGet('ysg-pushep','')})}
     catch(e){if(e.code==='net'){var q=qGet().filter(function(d){return d.id!==doc.id}); q.push(doc); lsSet(LS_Q,q); lastQueued=true; netErr=true; renderStore()} else throw e}
     entries=entries.filter(function(e){return e.id!==doc.id}).concat([doc])
   }
@@ -1522,7 +1531,7 @@ async function flushQ(){
   var q=qGet(); if(!q.length||mode!=='cloud'||flushing||!authed)return; flushing=true; var sentN=0;
   try{
     while(q.length){
-      try{await api({action:'add',entry:q[0]}); q.shift(); lsSet(LS_Q,q); sentN++}
+      try{await api({action:'add',entry:q[0],src:lsGet('ysg-pushep','')}); q.shift(); lsSet(LS_Q,q); sentN++}
       catch(e){ if(e.code==='net'||e.code==='auth'||e.code==='readonly')break; q.shift(); lsSet(LS_Q,q) }
     }
   }finally{flushing=false}
@@ -1739,6 +1748,7 @@ function careNotes(E){
   var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'أسنان الأقلام خلصت. جهّز علبة جديدة.':'باقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سن')+' بس في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'شرايط السكر خلصت. جهّز علبة جديدة.':'باقي '+si.left+(si.left===1?' شريط':' شرايط')+' بس في علبة الشرايط. جهّز علبة جديدة.');
+  [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'قلم '+x[1]+' عدّى 28 يوم على فتحه. غيّره.':'قلم '+x[1]+' باقي له '+l+' يوم بعد الفتح.')});
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var lastInj=inj[inj.length-1];
   if(lastInj&&now-lastInj.d.getTime()<2*DAY){
@@ -2269,7 +2279,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2289,7 +2299,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.cgm=!!$('#scgm').checked; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
@@ -2927,7 +2937,7 @@ async function pushEnable(){
   try{
     var reg=await navigator.serviceWorker.ready, k=(await api({action:'vapid'})).key;
     var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(k)});
-    await api({action:'subscribe',sub:sub.toJSON()}); toast('الإشعارات اتفعّلت');
+    await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint); toast('الإشعارات اتفعّلت');
   }catch(e){st.textContent='مقدرتش أفعّل الإشعارات. اتأكد من النت وجرب تاني.'; return}
   pushState();
 }
@@ -2935,12 +2945,12 @@ async function pushTest(){
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); var r=await api({action:'testpush',endpoint:sub.endpoint}); toast(r.ok?'بعتنالك إشعار تجريبي':'السيرفر ما قدرش يبعت. جرب تفعّلها من الأول.')}catch(e){toast('مقدرتش أجرّب الإشعار')}
 }
 async function pushOff(){
-  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){try{await api({action:'unsubscribe',endpoint:sub.endpoint})}catch(_){} await sub.unsubscribe()}}catch(_){}
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){try{await api({action:'unsubscribe',endpoint:sub.endpoint})}catch(_){} await sub.unsubscribe(); lsSet('ysg-pushep','')}}catch(_){}
   pushState();
 }
 async function pushSync(){
   if(!pushSupported()||Notification.permission!=='granted'||role!=='edit'||mode!=='cloud')return;
-  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub)await api({action:'subscribe',sub:sub.toJSON()})}catch(_){}
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint)}}catch(_){}
 }
 $('#pushon').addEventListener('click',pushEnable); $('#pushtest').addEventListener('click',pushTest); $('#pushoff').addEventListener('click',pushOff);
 
