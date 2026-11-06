@@ -883,6 +883,10 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .stripbox{text-align:center}
 .stripbox .stripline{justify-content:center;gap:12px}
 #stripnew,#needlenew{display:block;margin-inline:auto}
+@keyframes flashk{0%{box-shadow:0 0 0 0 var(--mc,#2F6FD0)}100%{box-shadow:0 0 0 14px transparent}}
+.flash{animation:flashk 1.2s ease-out}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.agebox{height:50px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line,#d8dee3);border-radius:12px;font-weight:700;font-size:16px}
 </style>
 </head>
 <body>
@@ -962,6 +966,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
           <input id="a" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
           <button type="button" data-step="a" data-d="0.5" aria-label="أكتر">+</button>
         </div>
+        <div class="tplan" id="aplan"></div>
       </div>
       <div class="field t" id="tbox" hidden>
         <label for="t">ترسيبا <em>(وحدات)</em></label>
@@ -1057,6 +1062,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
     </div>
     <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
+    <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن دلوقتي</label><div id="sage" class="agebox">—</div></div></div>
     <h3>زيارة الدكتور</h3>
     <div class="field"><label for="vlast">آخر زيارة (التاريخ والوقت)</label><input id="vlast" type="datetime-local"></div>
     <div class="field"><label for="vnext">الزيارة الجاية (التاريخ والوقت)</label><input id="vnext" type="datetime-local"></div>
@@ -1107,6 +1113,13 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
       <div class="field"><label for="smax">أقصى جرعة</label><input id="smax" type="text" inputmode="decimal"></div>
     </div>
 
+    <h3>أبيدرا — الجرعات الثابتة</h3>
+    <p class="hint">جرعة الدكتور الثابتة لكل وجبة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور.</p>
+    <div class="three cen">
+      <div class="field"><label for="sfixbf">الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
+      <div class="field"><label for="sfixln">الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
+      <div class="field"><label for="sfixdn">العشاء</label><input id="sfixdn" type="text" inputmode="decimal" placeholder="10"></div>
+    </div>
     <h3>ترسيبا</h3>
     <div class="field"><label for="splan">جرعة الدكتور <em>(وحدات)</em></label><input id="splan" type="text" inputmode="decimal" placeholder="مثلاً 12"></div>
   
@@ -1314,9 +1327,10 @@ function pad(n){return String(n).padStart(2,'0')}
 function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 var SHIFT=4*36e5; /* the sugar day starts at 4 AM */
 function modeOf(a){var c={},b=null,bn=0; a.forEach(function(v){c[v]=(c[v]||0)+1; if(c[v]>bn||(c[v]===bn&&v>b)){bn=c[v]; b=v}}); return b}
+function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
 function fixedDoses(E){
   var f=function(sl){return modeOf(E.filter(function(e){return e.slot===sl&&e.apidra>0&&!e.corr}).map(function(e){return e.apidra}))};
-  return {bf:f('bf_before'),ln:f('ln_before'),dn:f('dn_before'),tr:modeOf(E.filter(function(e){return e.tresiba>0}).map(function(e){return e.tresiba}))};
+  return {bf:settings.fixBf>0?settings.fixBf:f('bf_before'),ln:settings.fixLn>0?settings.fixLn:f('ln_before'),dn:settings.fixDn>0?settings.fixDn:f('dn_before'),tr:modeOf(E.filter(function(e){return e.tresiba>0}).map(function(e){return e.tresiba}))};
 }
 function lk(d){return dayKey(new Date(d.getTime()-SHIFT))}
 function dlog(d){return dayLong(new Date(d.getTime()-SHIFT))}
@@ -1343,7 +1357,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1479,6 +1493,9 @@ async function removeEntry(id){
   entries=entries.filter(function(e){return e.id!==id});
   if(mode!=='cloud')lsSet(LS_E,entries);
 }
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='slot')updateAplan()});
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#modebar'))setTimeout(updateAplan,30)});
+function showForm(){setTimeout(function(){var f=$('#f'); if(!f)return; var c=(f.closest('.card')||f); c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(function(){c.classList.remove('flash')},1400); var g=$('#g'); if(g&&!g.closest('[hidden]')&&imode!=='tres'){try{g.focus({preventScroll:true})}catch(_){}}},60)}
 function persistSettings(){
   if(mode==='cloud')api({action:'settings',settings:settings}).catch(function(){toast('تعذّر حفظ الإعدادات')});
   else lsSet(LS_S,settings);
@@ -1599,13 +1616,15 @@ document.addEventListener('click',function(e){
     if(act==='new'){go('report'); setTimeout(function(){var v=$('#vnext'); if(v){v.scrollIntoView({block:'center'}); v.focus()}},150)}
     return;
   }
-  var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); window.scrollTo(0,0); return}
-  if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); window.scrollTo(0,0)}});
+  var uf=e.target.closest&&e.target.closest('[data-usefix]'); if(uf){$('#a').value=uf.dataset.usefix; syncInj(); return}
+  var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
+  if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
   if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='ترسيبا بتتسجل بعد الساعة 10 بالليل بس.'; mh.hidden=false; toast('ترسيبا بتتسجل بعد الساعة 10 بالليل'); return}
   setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
-function syncInj(){syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+function updateAplan(){var el=$('#aplan'); if(!el)return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الدكتور الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
+function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
 $('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
@@ -2178,7 +2197,7 @@ function buildReport(){
 }
 
 /* ---------- settings ---------- */
-var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
+var SET_FIELDS=[['slow','low',40,120,true],['shigh','high',120,400,true],['splan','plan',0.5,100],['sfixbf','fixBf',0.5,100],['sfixln','fixLn',0.5,100],['sfixdn','fixDn',0.5,100],['sstripn','stripN',1,500],['sneedn','needleN',1,1000],['sicr','icr',1,150],['sicrbf','icrBf',1,150],['sicrln','icrLn',1,150],['sicrdn','icrDn',1,150],['sisf','isf',5,400],['starget','target',70,200],['smax','maxd',0.5,50],['a1cv','a1cVal',3,20],['sketh','ketHigh',180,500],['skethr','ketHours',1,8],['swt','wt',20,250],['sht','ht',100,230],['sbps','bps',60,230],['sbpd','bpd',30,150]];
 function renderChecks(){
   var w=$('#ckwrap'); if(!w)return;
   w.innerHTML=checksList().map(function(c,i){return '<div class="ckrow"><input type="text" data-ck="n" placeholder="اسم الفحص" value="'+esc(c.n)+'"><div class="field"><label>آخر مرة</label><input type="date" data-ck="d" value="'+esc(c.d||'')+'"></div><div class="field"><label>كل كام شهر</label><input type="text" inputmode="numeric" data-ck="m" value="'+esc(String(c.m))+'"></div><button type="button" class="link" data-ckdel="'+i+'">حذف</button></div>'}).join('');
@@ -2194,7 +2213,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2214,7 +2233,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
@@ -2267,6 +2286,7 @@ function glStats(E){
 }
 function reportInfo(){
   var s=settings, t=[], now=Date.now();
+  if(ageTxt())t.push(['السن',ageTxt()]);
   if(s.wt)t.push(['الوزن',fmt(s.wt)+' <small>كجم</small>']);
   if(s.ht)t.push(['الطول',fmt(s.ht)+' <small>سم</small>']);
   if(s.wt&&s.ht)t.push(['مؤشر كتلة الجسم',fmt(r1(s.wt/Math.pow(s.ht/100,2)))+' <small>BMI</small>']);
@@ -2510,7 +2530,7 @@ function accordion(root,openFirst){
 accordion($('#set'),false); accordion($('#medcard'),false);
 
 /* ---------- render all ---------- */
-function render(){
+function render(){try{updateAplan(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
   renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
