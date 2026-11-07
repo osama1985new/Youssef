@@ -905,6 +905,13 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .tiles>div{display:flex!important;flex-direction:column;align-items:center!important;justify-content:center;text-align:center!important;gap:4px}
 .tiles>div b{display:block;text-align:center!important;width:100%}
 .tiles>div span{text-align:center!important;width:100%}
+input[type=datetime-local],input[type=date],input[type=time]{direction:ltr;text-align:center;unicode-bidi:plaintext}
+input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direction:ltr;unicode-bidi:isolate}
+.dtw{position:relative;display:block;flex:1 1 auto;min-width:0;width:100%}
+.dtw>input{color:transparent!important;-webkit-text-fill-color:transparent;text-shadow:none}
+.dtw>input::-webkit-datetime-edit,.dtw>input::-webkit-date-and-time-value{color:transparent;-webkit-text-fill-color:transparent}
+.dtv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:15px;color:var(--text,#1c2b2a);direction:rtl;white-space:nowrap}
+.dtv.empty{color:var(--muted,#7a8a88)}
 </style>
 </head>
 <body>
@@ -3009,6 +3016,24 @@ $('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); 
 setPreset(14); renderMeal(); applyTab();
 syncSettingsInputs(); render();
 start(true);
+/* Arabic display for native date / time inputs (the picker itself stays native) */
+(function(){
+  var MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  function fmtD(v){var m=/^(\d{4})-(\d\d)-(\d\d)/.exec(v); return m?(+m[3])+' '+MON[+m[2]-1]+' '+m[1]:''}
+  function fmtT(v){var m=/(\d\d):(\d\d)/.exec(v.split('T')[1]||v); if(!m)return ''; var h=+m[1], ap=h>=12?'م':'ص'; h=h%12||12; return h+':'+m[2]+' '+ap}
+  function txt(el){var v=el.value; if(!v)return '—'; if(el.type==='date')return fmtD(v); if(el.type==='time')return fmtT(v); return fmtD(v)+' - '+fmtT(v)}
+  function wrap(el){
+    if(el.hidden||el.__dtw||el.closest('.dtw'))return;
+    var w=document.createElement('div'); w.className='dtw'; el.parentNode.insertBefore(w,el); w.appendChild(el);
+    var sp=document.createElement('span'); sp.className='dtv'; w.appendChild(sp); el.__dtw=sp; sp.__v=null;
+  }
+  function tick(){
+    [].forEach.call(document.querySelectorAll('input[type=date],input[type=datetime-local],input[type=time]'),function(el){
+      wrap(el); var sp=el.__dtw; if(!sp)return; var k=el.type+'|'+el.value; if(sp.__v!==k){sp.__v=k; sp.textContent=txt(el); sp.classList.toggle('empty',!el.value)}
+    });
+  }
+  tick(); setInterval(tick,400); document.addEventListener('change',tick,true); document.addEventListener('input',tick,true);
+})();
 })();
 </script>
 </body>
