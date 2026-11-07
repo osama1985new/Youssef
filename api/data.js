@@ -468,6 +468,11 @@ module.exports = async (req, res) => {
       if (b.action === 'settings') {
         const clean = cleanSettings(b.settings);
         if (!clean) return res.status(400).json({ error: 'bad_settings' });
+        const prevRaw = await redis(['GET', 'ysg:settings']);
+        let prev = null; try { prev = JSON.parse(prevRaw || 'null'); } catch (x) {}
+        const real = o => Object.keys(o || {}).filter(k => !['low', 'high', 'scale'].includes(k) && o[k] != null && o[k] !== '' && o[k] !== false && !(Array.isArray(o[k]) && !o[k].length)).length;
+        if (prev && real(prev) >= 4 && real(clean) === 0 && !b.force) return res.status(409).json({ error: 'looks_empty' });
+        if (prevRaw) await redis(['SET', 'ysg:settings:prev', prevRaw]);
         await redis(['SET', 'ysg:settings', JSON.stringify(clean)]);
         return res.status(200).json({ ok: true });
       }
