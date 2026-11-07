@@ -258,11 +258,8 @@ async function entryAlerts(e, existed, srcEp, host) {
   let st = {}; try { st = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (x) {}
   const c = cairo(Date.parse(e.ts)), tm = t12(String(c.h).padStart(2, '0') + ':' + String(c.m).padStart(2, '0')), msgs = [];
   const fm = n => (Number.isInteger(n) ? String(n) : String(n).replace(/\.0+$/, ''));
-  if (e.apidra > 0) msgs.push({ t: 'أبيدرا', b: fm(e.apidra) + ' وحدة اتسجلت الساعة ' + tm, tag: 'dose-a' });
-  if (e.tresiba > 0) msgs.push({ t: 'ترسيبا', b: fm(e.tresiba) + ' وحدة اتسجلت الساعة ' + tm, tag: 'dose-t' });
   if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: 'سكر واطي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-low' });
   if (e.glucose != null && e.glucose > (st.high || 250)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
-  if (e.slot === 'bed' && e.glucose != null && !msgs.some(m => m.tag === 'g-low' || m.tag === 'g-high')) msgs.push({ t: 'قراءة قبل النوم', b: 'اتسجلت ' + e.glucose + ' الساعة ' + tm, tag: 'g-bed' });
   if (msgs.length) await notifyOthers(msgs, srcEp, host);
 }
 async function runCron(host, force) {
@@ -278,8 +275,6 @@ async function runCron(host, force) {
   const due = [];
   if (!settings.cgm) {
     if (morning && !hasRead('fast')) due.push(['fast', 'قراءة الصايم', 'لسه ما اتسجلتش النهاردة']);
-    const bb = E.filter(e => e.slot === 'bf_before').sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts)).pop();
-    if (bb) { const dt = now - Date.parse(bb.ts); if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !hasRead('bf_after')) due.push(['bfa', 'بعد الفطار', 'عدّى ساعتين. سجّل قراءة بعد الفطار']); }
     if (night && !hasRead('bed')) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
   }
   if (night && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لسه ما اتسجلتش النهاردة']);
@@ -328,18 +323,14 @@ async function runCron(host, force) {
       const stamp = e => cairo(Date.parse(e.ts)).stamp;
       if (settings.stripStart) {
         const total = settings.stripN || 50, used = all.filter(e => e.glucose != null && stamp(e) >= settings.stripStart).length, left = total - used;
-        if (left <= 5) due.push(['strips', 'شرايط السكر', left <= 0 ? 'الشرايط خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left === 1 ? ' شريط' : ' شرايط') + ' بس. جهّز علبة جديدة']);
+        if (left <= 2) due.push(['strips', 'شرايط السكر', left <= 0 ? 'الشرايط خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left === 1 ? ' شريط' : ' شرايط') + ' بس. جهّز علبة جديدة']);
       }
       if (settings.needleStart) {
         const total = settings.needleN || 100; let used = settings.needleUsed || 0;
         all.forEach(e => { if (stamp(e) < settings.needleStart) return; if (e.apidra > 0 && e.needle === 'new') used++; if (e.tresiba > 0 && (e.needleT || (e.apidra > 0 ? null : e.needle)) === 'new') used++; });
         const left = total - used;
-        if (left <= 10) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'الأسنان خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left > 2 ? ' أسنان' : ' سن') + ' بس. جهّز علبة جديدة']);
+        if (left <= 3) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'الأسنان خلصت. جهّز علبة جديدة' : 'باقي ' + left + (left > 2 ? ' أسنان' : ' سن') + ' بس. جهّز علبة جديدة']);
       }
-      [['penAStart', 'قلم أبيدرا', 'penA'], ['penTStart', 'قلم ترسيبا', 'penT']].forEach(([k, nm, ty]) => {
-        if (!settings[k]) return; const l = 28 - (todayN - dayNo(settings[k]));
-        if ((l === 7 || l === 3 || l === 1 || l === 0 || (l < 0 && (-l - 1) % 7 === 0))) due.push([ty, nm, l < 0 ? 'عدّى 28 يوم على فتحه. غيّره' : l === 0 ? 'آخر يوم لاستخدامه (28 يوم من فتحه)' : 'باقي ' + l + ' يوم على انتهاء صلاحيته بعد الفتح']);
-      });
       [['A', 'apidra', 'أبيدرا'], ['T', 'tresiba', 'ترسيبا']].forEach(([k, f, nm]) => {
         const cnt = settings['stock' + k], at = settings['stockAt' + k];
         if (!(cnt > 0) || !at) return;
@@ -349,49 +340,17 @@ async function runCron(host, force) {
         if (!(daily > 0)) daily = sum14 / Math.max(3, Math.min(14, (now - firstMs) / 86400e3));
         if (!(daily > 0)) return;
         const left = Math.max(0, cnt * 300 - used), days = Math.floor(left / daily), thr = settings.stockDays || 14;
-        const lvl = [thr, 7, 3, 1, 0].filter(x => x <= thr).sort((a, b) => a - b).find(x => days <= x);
+        const lvl = [7, 3, 1, 0].find(x => days <= x);
         if (lvl === undefined) return;
         due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك الخلاص. جهّز أقلام جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(left) + ' وحدة). جهّز أقلام جديدة']);
       });
-      if (settings.ketExp) { const l = dueIn(settings.ketExp, 0); if (gentle(l)) due.push(['ketexp', 'شرايط الكيتون', l < 0 ? 'انتهت صلاحيتها. جدّد الشرايط' : l === 0 ? 'بتنتهي النهاردة' : 'بتنتهي بعد ' + l + ' يوم']); }
-      if (settings.a1cDate) { const l = dueIn(settings.a1cDate, 3); if (l <= 14 && gentle(l)) due.push(['a1c', 'التحليل التراكمي', l < 0 ? 'ميعاده عدّى. اعمله وسجّل التاريخ' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); }
-      (Array.isArray(settings.checks) ? settings.checks : []).forEach((ck, i) => { if (!ck || !ck.d) return; const l = dueIn(ck.d, ck.m || 6); if (l <= 14 && gentle(l)) due.push(['chk' + i, 'فحص ' + ck.n, l < 0 ? 'ميعاده عدّى' : l === 0 ? 'ميعاده النهاردة' : 'باقي ' + l + ' يوم على ميعاده']); });
     }
   }
-  if (c.h === 20 && new Date(c.key + 'T12:00:00Z').getUTCDay() === 5) {
-    const wf = await redis(['SET', 'ysg:flag:wk:' + c.key, '1', 'NX', 'EX', '604800']);
-    if (wf === 'OK') {
-      const flat = await redis(['HGETALL', 'ysg:entries']), lo = settings.low || 90, hi = settings.high || 250, G = [];
-      for (let i = 1; i < (flat || []).length; i += 2) { try { const e = JSON.parse(flat[i]); if (e.glucose != null && now - Date.parse(e.ts) < 7 * 86400e3) G.push(e.glucose); } catch (x) {} }
-      if (G.length >= 5) {
-        const avg = Math.round(G.reduce((a, b) => a + b, 0) / G.length), inr = Math.round(G.filter(g => g >= lo && g <= hi).length / G.length * 100);
-        due.push(['week', 'ملخص الأسبوع', 'المتوسط ' + avg + '، في المدى ' + inr + '%، واطي ' + G.filter(g => g < lo).length + ' مرة، عالي ' + G.filter(g => g > hi).length + ' مرة']);
-      }
-    }
-  }
-  /* alerts that the app also shows in-page: dangerous ketone result, repeated needle / injection site, missed vitamins */
+  /* dangerous ketone result */
   const lastK = recentAll.filter(e => e.ketT).sort((x, y) => Date.parse(x.ts) - Date.parse(y.ts)).pop();
   if (lastK && now - Date.parse(lastK.ts) < 12 * 3600e3) {
     const kd = lastK.ketT === 'b' ? Number(lastK.ketV) >= 1.5 : !['neg', 'small'].includes(lastK.ketV);
     if (kd) due.push(['ketd:' + lastK.ts, 'كيتون', 'آخر نتيجة كيتون خطر. كلّم الدكتور فورًا واتبع خطته']);
-  }
-  const INJ = recentAll.filter(e => e.apidra > 0 || e.tresiba > 0).sort((x, y) => Date.parse(x.ts) - Date.parse(y.ts));
-  if (INJ.length && now - Date.parse(INJ[INJ.length - 1].ts) < 2 * 86400e3) {
-    const pn = (e, pen) => pen === 'a' ? (e.apidra > 0 ? (e.needle || null) : null) : (e.tresiba > 0 ? (e.needleT || (e.apidra > 0 ? null : e.needle) || null) : null);
-    [['a', 'أبيدرا'], ['t', 'ترسيبا']].forEach(([k, nm]) => {
-      let lastNew = null, lastInfo = null, lastUse = null;
-      INJ.forEach(e => { const v = pn(e, k); if (!v) return; lastUse = e; if (v === 'new') lastNew = e; lastInfo = e; });
-      if (lastInfo && pn(lastInfo, k) === 'reuse' && (!lastNew || now - Date.parse(lastNew.ts) >= 86400e3) && now - Date.parse(lastUse.ts) < 2 * 86400e3)
-        due.push(['nreuse' + k + ':' + lastInfo.ts, 'سن قلم ' + nm, 'بيتعاد استخدامه. غيّره قبل حقنة ' + nm + ' الجاية']);
-    });
-    const ws = INJ.filter(e => e.site);
-    if (ws.length >= 2 && ws[ws.length - 1].site === ws[ws.length - 2].site)
-      due.push(['site:' + ws[ws.length - 1].ts, 'مكان الحقن', 'آخر حقنتين في نفس المكان. غيّر مكان الحقن']);
-  }
-  if (c.h === 20) {
-    const vit = recentAll.filter(e => (e.supp || []).includes('vit'));
-    if (vit.length && !vit.some(e => sday(Date.parse(e.ts)) === today || sday(Date.parse(e.ts)) === sday(now - 24 * 3600e3)))
-      due.push(['vit', 'الفيتامينات', 'ماتسجلتش من يومين. لو ماخدتهاش خدها النهاردة']);
   }
   const sent = [];
   if (!due.length) return { sent };
