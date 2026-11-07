@@ -298,6 +298,12 @@ async function runCron(host, force) {
     if (dt >= 20 * 60e3 && dt < 90 * 60e3 && !recentAll.some(x => x.apidra > 0 && Date.parse(x.ts) >= t - 5 * 60e3 && Date.parse(x.ts) <= t + dt))
       due.push(['nodose:' + t, 'جرعة أبيدرا', 'سجلت قراءة ' + ({ bf_before: 'قبل الفطار', ln_before: 'قبل الغدا', dn_before: 'قبل العشا' })[e.slot] + ' وما سجلتش الجرعة']);
   });
+  /* 2 hours after an Apidra dose: remind to check sugar (unless a reading was logged after the dose) */
+  if (!settings.cgm) recentAll.filter(e => e.apidra > 0).forEach(e => {
+    const t = Date.parse(e.ts), dt = now - t;
+    if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !RR.some(r => Date.parse(r.ts) >= t + 30 * 60e3))
+      due.push(['apd:' + t, 'قراءة بعد الأكل', 'عدّى ساعتين على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قيس السكر وسجّله']);
+  });
   /* yesterday's Tresiba missing */
   if (c.h >= 8 && c.h < 11) {
     const yk = sday(now - 24 * 3600e3), Y = recentAll.filter(e => sday(Date.parse(e.ts)) === yk);
