@@ -912,6 +912,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .dtw>input::-webkit-datetime-edit,.dtw>input::-webkit-date-and-time-value{color:transparent;-webkit-text-fill-color:transparent}
 .dtv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:15px;color:var(--text,#1c2b2a);direction:rtl;white-space:nowrap}
 .dtv.empty{color:var(--muted,#7a8a88)}
+.supp .chip:disabled{opacity:.6;cursor:default}
 </style>
 </head>
 <body>
@@ -1626,6 +1627,8 @@ function curSlot(){return $('#slot').value}
 $('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
 $('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('');
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
+function suppDoneToday(k){var td=lk(new Date()); return (typeof entries!=='undefined'?entries:[]).some(function(e){return e.id!==editingId&&(e.supp||[]).indexOf(k)>=0&&lk(new Date(e.ts))===td})}
+function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; b.textContent=done?base+' ✓ اتسجلت':base})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
@@ -2652,7 +2655,7 @@ accordion($('#set'),false); accordion($('#medcard'),false);
 [].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
-function render(){try{updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
+function render(){try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
   renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
@@ -2667,7 +2670,7 @@ document.addEventListener('click',function(ev){
     var inp=$('#'+t.dataset.step), cur=num(inp.value); if(cur==null||isNaN(cur))cur=0;
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
-  if(t.dataset.supp){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
+  if(t.dataset.supp){if(t.disabled)return; t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
   if(t.id==='showk'){$('#kbox').hidden=false; t.hidden=true; $('#kv').focus(); return}
   if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
   if(t.dataset.ckdel!==undefined){
@@ -2941,7 +2944,7 @@ $('#f').addEventListener('submit',async function(ev){
     if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
     return {n:nm,q:m.q,c:m.c};
   });
-  var supp=getSupp(), ket=readKet();
+  var supp=getSupp().filter(function(k){return !suppDoneToday(k)}), ket=readKet();
   if(!ket.ok){err.textContent='نتيجة الكيتون (دم) لازم تكون رقم بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   if(imode==='nofood'&&!items.length){err.textContent='اختار السناك اللي أكلته.'; return}
