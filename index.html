@@ -1460,7 +1460,9 @@ async function api(body){
 var LS_Q='ysg-queue-v1', LS_SNAP='ysg-snap-v2';
 function qGet(){return lsGet(LS_Q,[])}
 function mergeQueue(){qGet().forEach(function(d){entries=entries.filter(function(e){return e.id!==d.id}).concat([d])})}
+var settingsLoaded=false;
 function applyServer(j){
+  if(!j.__snap)settingsLoaded=true;
   if(!j.__snap)lsSet(LS_SNAP,{entries:j.entries||[],settings:j.settings||null,role:j.role,protected:j.protected});
   entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
   document.body.classList.toggle('ro',role==='view'); if(role==='view'&&tab==='add')tab='log'; renderSecurity();
@@ -1590,6 +1592,7 @@ document.addEventListener('change',function(e){if(e.target&&e.target.id==='slot'
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#modebar'))setTimeout(updateAplan,30)});
 function showForm(){setTimeout(function(){var f=$('#f'); if(!f)return; var c=(f.closest('.card')||f); c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(function(){c.classList.remove('flash')},1400); var g=$('#g'); if(g&&!g.closest('[hidden]')&&imode!=='tres'){try{g.focus({preventScroll:true})}catch(_){}}},60)}
 function persistSettings(){
+  if(mode==='cloud'&&!settingsLoaded){toast('الإعدادات لسه بتتحمّل. جرّب كمان لحظة'); refresh(); return}
   if(mode==='cloud')api({action:'settings',settings:settings}).catch(function(){toast('تعذّر حفظ الإعدادات')});
   else lsSet(LS_S,settings);
 }
@@ -2359,6 +2362,7 @@ function readSettings(){
   return bad?null:out;
 }
 function onSetChange(){
+  if(mode==='cloud'&&!settingsLoaded){refresh(); return}
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
