@@ -943,6 +943,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .selwrap{position:relative}
 .selshield{position:absolute;inset:0;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .selshield[hidden]{display:none}
+#smclose .smalt{font-size:12px;opacity:.8}
 </style>
 </head>
 <body>
@@ -1282,7 +1283,7 @@ var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','
 var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
 function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
-var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','فخذ يمين'],['th_l','فخذ شمال'],['ar_r','دراع يمين'],['ar_l','دراع شمال']];
+var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','رجل يمين'],['th_l','رجل شمال'],['ar_r','ذراع يمين'],['ar_l','ذراع شمال']];
 var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
 var SUPPS=[['omega','أوميجا'],['vit','فيتامينات']];
 var SUPP_LABEL={}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
@@ -2363,6 +2364,11 @@ function openSiteMap(kind){
     var li=SITES.map(function(x){return x[0]}).indexOf(last.site);
     for(var k=1;k<=SITES.length;k++){var c=SITES[(li+k)%SITES.length][0]; if(cnt[c]===mn&&c!==last.site){next=c; break}}
   }
+  var alts=[];
+  if(last&&next){
+    var order=SITES.map(function(x){return x[0]}), li2=order.indexOf(next);
+    alts=SITES.filter(function(x){return x[0]!==next}).sort(function(a,b){return cnt[a[0]]-cnt[b[0]]||((order.indexOf(a[0])-li2+6)%6)-((order.indexOf(b[0])-li2+6)%6)}).slice(0,2).map(function(x){return x[1]});
+  }
   var ago='';
   if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'النهاردة':dd===1?'إمبارح':'من '+dd+' أيام'}
   var seg=[['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="smseg" data-smk="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'</button>'}).join('');
@@ -2371,7 +2377,7 @@ function openSiteMap(kind){
     (E.length?'<div class="smfig">'+siteSvg(cnt,next)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
     '<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>'
     :'<div class="smfig">'+siteSvg(cnt,null)+'</div><p class="smempty" style="padding:8px 6px">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>');
-  $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+(E.length&&next?SITE_LABEL[next]:'أي مكان')+'</small>';
+  $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+(E.length&&next?SITE_LABEL[next]:'أي مكان')+'</small>'+(alts.length?'<small class="smalt">الأقل استخدامًا بعده: '+alts.join(' و ')+'</small>':'');
   $('#sitemodal').hidden=false;
 }
 function closeSiteMap(){
