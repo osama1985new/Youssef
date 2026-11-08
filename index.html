@@ -914,6 +914,26 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .dtv.empty{color:var(--muted,#7a8a88)}
 .supp .chip:disabled{opacity:.6;cursor:default}
 .tabs button[aria-current=page]{background:color-mix(in srgb,var(--tc,var(--accent)) 28%,var(--surface))!important;font-weight:700}
+.smodal{position:fixed;inset:0;z-index:60;background:rgba(15,31,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.smodal[hidden]{display:none}
+.smcard{background:var(--surface,#fff);border-radius:22px;padding:18px 16px 14px;width:100%;max-width:340px;max-height:92vh;overflow:auto}
+.smhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.smhead b{font-size:18px}.smhead span{font-size:12.5px;color:var(--muted,#55656f)}
+.smsegs{display:flex;background:rgba(13,116,128,.08);border-radius:12px;padding:3px;gap:3px;margin-bottom:6px}
+.smseg{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 0;font:inherit;font-size:14px;color:var(--muted,#55656f)}
+.smseg[aria-pressed=true]{background:#fff;color:#0D7480;font-weight:700;box-shadow:0 1px 4px rgba(15,31,42,.12)}
+.smfig{display:flex;justify-content:center}
+.smfig svg{width:200px!important}
+.smleg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;color:var(--muted,#55656f);margin:2px 0 12px}
+.smleg i{display:block;width:80px;height:6px;border-radius:3px;background:linear-gradient(270deg,rgba(13,116,128,.08),rgba(13,116,128,.5))}
+.smrows{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.smrows div{background:rgba(13,116,128,.06);border-radius:12px;padding:10px 8px;text-align:center}
+.smrows small{display:block;font-size:11.5px;color:var(--muted,#55656f);margin-bottom:3px}
+.smrows b{display:block;font-size:14.5px}
+.smrows em{display:block;font-style:normal;font-size:12px;color:var(--muted,#55656f);margin-top:2px}
+.smempty{text-align:center;color:var(--muted,#55656f);padding:26px 6px;font-size:14px;margin:0}
+.smcard .ghost{margin-top:14px;width:100%}
+#sitemapbtn{margin-top:6px}
 </style>
 </head>
 <body>
@@ -1011,7 +1031,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="injrow" id="injrow" hidden>
       <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
-      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select></div>
+      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select><button type="button" class="link" id="sitemapbtn">خريطة الأماكن</button></div>
     </div>
     <input type="checkbox" id="nodose" hidden><input type="checkbox" id="corr" hidden>
     <p class="msg high" id="injhint" hidden></p>
@@ -1233,6 +1253,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
   <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
 </main>
 
+<div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">تمام</button></div></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -2284,33 +2305,56 @@ function rangeStats(E){
   return {n:n, avg:avg, a1c:Math.round(((avg+46.7)/28.7)*10)/10, inr:pc(n-lo-hi), lo:pc(lo), hi:pc(hi), perDay:n/nd, ok:(n/nd>=3&&n>=20)};
 }
 var siteKind='all';
-function siteMapHTML(E){
+function siteCounts(E,kind){
   var cnt={}; SITES.forEach(function(x){cnt[x[0]]=0});
   E.forEach(function(e){
     if(!e.site||cnt[e.site]==null)return;
-    if(e.apidra>0&&(siteKind==='all'||siteKind==='a'))cnt[e.site]++;
-    if(e.tresiba>0&&(siteKind==='all'||siteKind==='t'))cnt[e.site]++;
+    if(e.apidra>0&&(kind==='all'||kind==='a'))cnt[e.site]++;
+    if(e.tresiba>0&&(kind==='all'||kind==='t'))cnt[e.site]++;
   });
-  var mx=0, tot=0; SITES.forEach(function(x){mx=Math.max(mx,cnt[x[0]]); tot+=cnt[x[0]]});
+  return cnt;
+}
+function siteSvg(cnt,ring){
+  var mx=0; SITES.forEach(function(x){mx=Math.max(mx,cnt[x[0]])});
   function z(id,shape){
-    var n=cnt[id], a=mx?(0.08+0.42*n/mx):0.08, nm=SITE_LABEL[id].split(' '), light=false, fg='#1d3a43';
-    return '<g>'+shape.replace('FILL','fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="#9FB8BF" stroke-width="1.2"')+
-      '<text x="'+shape.cx+'" y="'+(shape.cy-8)+'" style="font-weight:700;font-size:17px;fill:'+(light?'#fff':'#0b3d44')+';text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
-      '<text x="'+shape.cx+'" y="'+(shape.cy+10)+'" style="font-size:8.5px;fill:'+fg+';text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
-      '<text x="'+shape.cx+'" y="'+(shape.cy+20)+'" style="font-size:8.5px;fill:'+fg+';text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text></g>';
+    var n=cnt[id], a=mx?(0.08+0.42*n/mx):0.08, nm=SITE_LABEL[id].split(' '), isLast=ring===id;
+    return '<g>'+shape.replace('FILL','fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="'+(isLast?'#0D7480':'#9FB8BF')+'" stroke-width="'+(isLast?'3':'1.2')+'"')+
+      '<text x="'+shape.cx+'" y="'+(shape.cy-8)+'" style="font-weight:700;font-size:17px;fill:#0b3d44;text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
+      '<text x="'+shape.cx+'" y="'+(shape.cy+10)+'" style="font-size:8.5px;fill:#1d3a43;text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
+      '<text x="'+shape.cx+'" y="'+(shape.cy+20)+'" style="font-size:8.5px;fill:#1d3a43;text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text></g>';
   }
   function R_(x,y,w,h,r,cx,cy){var o=new String('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+r+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
   function E_(cx,cy,rx,ry){var o=new String('<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
   var body='<circle cx="120" cy="34" r="22" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="108" y="54" width="24" height="16" rx="6" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="72" y="66" width="96" height="128" rx="30" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/>';
-  var svg='<svg viewBox="0 0 240 330" role="img" aria-label="خريطة أماكن الحقن" style="width:230px;max-width:100%;height:auto">'+body+
+  return '<svg viewBox="0 0 240 330" role="img" aria-label="خريطة أماكن الحقن" style="width:230px;max-width:100%;height:auto">'+body+
     z('ar_r',R_(36,74,30,112,15,51,122))+z('ar_l',R_(174,74,30,112,15,189,122))+
     z('ab_r',E_(101,142,20,28))+z('ab_l',E_(139,142,20,28))+
     z('th_r',R_(78,200,40,118,20,98,250))+z('th_l',R_(122,200,40,118,20,142,250))+'</svg>';
-  var low=SITES.filter(function(x){return cnt[x[0]]===mn_()}).map(function(x){return x[1]});
-  function mn_(){var m=1e9; SITES.forEach(function(x){m=Math.min(m,cnt[x[0]])}); return m}
+}
+function siteMapHTML(E){
+  var cnt=siteCounts(E,siteKind), tot=0; SITES.forEach(function(x){tot+=cnt[x[0]]});
   var chips=[['all','الكل'],['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="chip" data-sk="'+k[0]+'" aria-pressed="'+(siteKind===k[0])+'">'+k[1]+'</button>'}).join('');
   return '<h3 style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
-    (tot?'<div style="display:flex;justify-content:center">'+svg+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكتر · الإجمالي '+tot+' حقنة</p>':'<p class="small">مفيش حقن متسجلة بمكان في الفترة دي.</p>');
+    (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكتر · الإجمالي '+tot+' حقنة</p>':'<p class="small">مفيش حقن متسجلة بمكان في الفترة دي.</p>');
+}
+function openSiteMap(kind){
+  if(kind!=='a'&&kind!=='t')kind=imode==='tres'?'t':'a';
+  var now=Date.now(), from=now-14*864e5;
+  var E=prep().filter(function(e){return e.site&&e.d.getTime()>=from&&((kind==='a'&&e.apidra>0)||(kind==='t'&&e.tresiba>0))});
+  var cnt=siteCounts(E,kind);
+  var last=E.slice().sort(function(a,b){return b.d-a.d})[0], ring=last?last.site:null;
+  var mn=1e9, mxc=0; SITES.forEach(function(x){mn=Math.min(mn,cnt[x[0]]); mxc=Math.max(mxc,cnt[x[0]])});
+  var least=SITES.filter(function(x){return cnt[x[0]]===mn}).map(function(x){return x[1]});
+  var leastTxt=!last?'—':mxc===mn?'كلهم متساويين':least.length<=2?least.join(' و '):'باقي الأماكن';
+  var ago='';
+  if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'النهاردة':dd===1?'إمبارح':'من '+dd+' أيام'}
+  var seg=[['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="smseg" data-smk="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'</button>'}).join('');
+  $('#sitemodal').querySelector('.smbody').innerHTML=
+    '<div class="smhead"><b>أماكن الحقن</b><span>آخر 14 يوم</span></div><div class="smsegs">'+seg+'</div>'+
+    (E.length?'<div class="smfig">'+siteSvg(cnt,ring)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
+    '<div class="smrows"><div><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div><div><small>الأقل استخدامًا</small><b>'+leastTxt+'</b></div></div>'
+    :'<p class="smempty">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>');
+  $('#sitemodal').hidden=false;
 }
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
@@ -2778,6 +2822,10 @@ function rangeNote(){
   var t=[['أيام مسجلة',Object.keys(days).length+' من '+r.days],['قراءات',G.length],['المتوسط',G.length?Math.round(avgOf(G)):'—'],['في المعدل',G.length?Math.round(inr/G.length*100)+'%':'—']];
   st.innerHTML=t.map(function(x){return '<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join('');
 }
+$('#sitemapbtn').addEventListener('click',function(){openSiteMap()});
+$('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b)openSiteMap(b.dataset.smk)});
+$('#smclose').addEventListener('click',function(){$('#sitemodal').hidden=true});
+$('#sitemodal').addEventListener('click',function(ev){if(ev.target===this)this.hidden=true});
 $('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
 $('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
