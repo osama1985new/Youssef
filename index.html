@@ -2653,7 +2653,7 @@ function accordion(root,openFirst){
   });
 }
 accordion($('#set'),false); accordion($('#medcard'),false);
-[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
+[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الموبايل'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
 function render(){try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
