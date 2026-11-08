@@ -2275,6 +2275,14 @@ function setPreset(n){
   document.querySelectorAll('#presets button').forEach(function(b){b.setAttribute('aria-pressed',String(Number(b.dataset.days)===n))});
 }
 function periodEntries(r){var ka=dayKey(r.a), kb=dayKey(r.b); return prep().filter(function(e){var k=lk(e.d); return k>=ka&&k<=kb})}
+function rangeStats(E){
+  var G=E.filter(function(e){return e.glucose!=null}).map(function(e){return e.glucose}), n=G.length;
+  if(!n)return null;
+  var avg=G.reduce(function(a,b){return a+b},0)/n, lo=G.filter(function(v){return v<settings.low}).length, hi=G.filter(function(v){return v>settings.high}).length;
+  var days={}; E.forEach(function(e){if(e.glucose!=null)days[lk(e.d)]=1}); var nd=Math.max(1,Object.keys(days).length);
+  var pc=function(x){return Math.round(x/n*100)};
+  return {n:n, avg:avg, a1c:Math.round(((avg+46.7)/28.7)*10)/10, inr:pc(n-lo-hi), lo:pc(lo), hi:pc(hi), perDay:n/nd, ok:(n/nd>=3&&n>=20)};
+}
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
   if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
@@ -2303,6 +2311,7 @@ function buildReport(){
     '<div><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd></div>'+
     '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
+    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · مش موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
   '</dl>';
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
@@ -2790,6 +2799,12 @@ async function buildDoctorPdf(E,r){
   var fd=fixedDoses(E), dt4=[['أبيدرا قبل الفطار',fd.bf,'#2F6FD0'],['أبيدرا قبل الغداء',fd.ln,'#2F6FD0'],['أبيدرا قبل العشاء',fd.dn,'#2F6FD0'],['ترسيبا',fd.tr,'#7B3FD1']], dw=(CW-3*6)/4;
   dt4.forEach(function(t,i){var x=R-(i+1)*dw-i*6; rr(x,y,dw,52,8,'#F7F9FB','#D5E0E5'); T(t[1]!=null?fmt(t[1])+' وحدة':'—',x+dw/2,y+19,16.5,700,t[2],'center'); T(t[0],x+dw/2,y+40,10,400,'#3F505A','center')});
   y+=64;
+  var RS=rangeStats(E);
+  if(RS){
+    var st4=[['في المدى',RS.inr+'%','#1E7F47'],['أقل من '+settings.low,RS.lo+'%','#B3261E'],['أعلى من '+settings.high,RS.hi+'%','#A85A00'],['A1c تقديري'+(RS.ok?'':' (مش موثوق)'),'~'+fmt(RS.a1c)+'%','#0D7480']], sw=(CW-3*6)/4;
+    st4.forEach(function(t,i){var x=R-(i+1)*sw-i*6; rr(x,y,sw,52,8,'#F7F9FB','#D5E0E5'); T(t[1],x+sw/2,y+19,16.5,700,t[2],'center'); T(t[0],x+sw/2,y+40,10,400,'#3F505A','center')});
+    y+=64;
+  }
   function header(){
     rr(M,y,CW,28,6,'#E3EEF3');
     T('اليوم والتاريخ',R-8,y+14,11.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+14,11.5,700,'#17303B');
