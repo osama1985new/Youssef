@@ -1176,6 +1176,12 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <h3>جهاز قياس مستمر</h3>
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر</span></label>
     <p class="hint">لما تفعّلها، تنبيهات القراءات (الصايم وبعد الفطار وقبل النوم) بتتقفل. تنبيهات الأنسولين بتفضل.</p>
+    <h3>المكملات</h3>
+    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span>تنبيه الأوميجا بعد الفطار</span></label>
+    <div class="field"><label for="somegat">وقت بديل لو ما اتسجلش فطار</label><input id="somegat" type="time"></div>
+    <label class="cgmrow"><input type="checkbox" id="ssuppv"><span>تنبيه الفيتامينات بعد الغداء</span></label>
+    <div class="field"><label for="svitat">وقت بديل لو ما اتسجلش غداء</label><input id="svitat" type="time"></div>
+    <p class="hint">التنبيه بيوصل بعد الوجبة بساعة (من جرعة أبيدرا المسجلة)، ومرة واحدة في اليوم، ومش بيوصل لو سجلتها. لو مفيش جرعة اتسجلت، بيوصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
     <h3>الأقلام المفتوحة</h3>
     <p class="hint">اكتب تاريخ فتح كل قلم، وبنفكّرك قبل ما يعدّي 28 يوم على فتحه.</p>
     <div class="two cen">
@@ -1465,7 +1471,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],suppOmega:false,suppVit:false,omegaAt:null,vitAt:null,a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -2475,7 +2481,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2495,7 +2501,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.suppOmega=!!$('#ssuppo').checked; out.suppVit=!!$('#ssuppv').checked; out.omegaAt=$('#somegat').value||null; out.vitAt=$('#svitat').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
