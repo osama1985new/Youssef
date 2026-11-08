@@ -944,6 +944,8 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .selshield{position:absolute;inset:0;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .selshield[hidden]{display:none}
 #smclose .smalt{font-size:12px;opacity:.8}
+.smtip{margin:10px 2px 0;font-size:13px;line-height:1.7;text-align:right}
+.smnote{margin:4px 2px 0;font-size:11.5px;color:var(--muted,#7a8a88);text-align:right}
 </style>
 </head>
 <body>
@@ -2327,7 +2329,7 @@ function siteCounts(E,kind){
 function siteSvg(cnt,ring){
   var mx=0; SITES.forEach(function(x){mx=Math.max(mx,cnt[x[0]])});
   /* [id, x, y, w, h, radius] zone rectangles over the silhouette */
-  var Z=[['ar_r',67,96,24,76,12],['ar_l',209,96,24,76,12],['ab_r',110,128,36,50,16],['ab_l',154,128,36,50,16],['th_r',112,240,32,68,16],['th_l',156,240,32,68,16]];
+  var Z=[['ar_r',67,96,24,76,12],['ar_l',209,96,24,76,12],['ab_r',110,128,36,56,16],['ab_l',154,128,36,56,16],['th_r',112,240,32,68,16],['th_l',156,240,32,68,16]];
   var out='<svg viewBox="0 0 300 340" role="img" aria-label="خريطة أماكن الحقن" style="width:260px;max-width:100%;height:auto;direction:ltr">'+
    '<defs><linearGradient id="smg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9F1F4"/></linearGradient></defs>'+
    '<g fill="url(#smg)" stroke="#BFD0D6" stroke-width="1.4">'+
@@ -2358,26 +2360,25 @@ function openSiteMap(kind){
   var E=prep().filter(function(e){return e.site&&e.d.getTime()>=from&&((kind==='a'&&e.apidra>0)||(kind==='t'&&e.tresiba>0))});
   var cnt=siteCounts(E,kind);
   var last=E.slice().sort(function(a,b){return b.d-a.d})[0];
-  var mn=1e9; SITES.forEach(function(x){mn=Math.min(mn,cnt[x[0]])});
-  var next=null;
-  if(last){
-    var li=SITES.map(function(x){return x[0]}).indexOf(last.site);
-    for(var k=1;k<=SITES.length;k++){var c=SITES[(li+k)%SITES.length][0]; if(cnt[c]===mn&&c!==last.site){next=c; break}}
-  }
-  var alts=[];
-  if(last&&next){
-    var order=SITES.map(function(x){return x[0]}), li2=order.indexOf(next);
-    alts=SITES.filter(function(x){return x[0]!==next}).sort(function(a,b){return cnt[a[0]]-cnt[b[0]]||((order.indexOf(a[0])-li2+6)%6)-((order.indexOf(b[0])-li2+6)%6)}).slice(0,2).map(function(x){return x[1]});
-  }
+  var PREF=kind==='a'?['ab_r','ab_l']:['th_r','th_l','ar_r','ar_l'], SEC=kind==='a'?['ar_r','ar_l','th_r','th_l']:['ab_r','ab_l'];
+  var allIds=SITES.map(function(x){return x[0]}), li=last?allIds.indexOf(last.site):-1;
+  function rot(id){return ((allIds.indexOf(id)-li-1)+6)%6}
+  function rankGroup(g){return g.slice().sort(function(a,b){return cnt[a]-cnt[b]||rot(a)-rot(b)})}
+  var ranked=rankGroup(PREF).concat(rankGroup(SEC));
+  var next=ranked[0];
+  var alts=ranked.slice(1,3).map(function(id){return SITE_LABEL[id]});
+  var tip=kind==='a'
+    ?'الأفضل لأبيدرا: <b>البطن</b> (بعيد عن السرة بإصبعين على الأقل)، لأن الامتصاص فيه أسرع وأثبت. البدائل: الذراع أو الرجل، والامتصاص فيهم أبطأ شوية.'
+    :'الأفضل لترسيبا: <b>الرجل أو الذراع</b>، لأن الامتصاص فيهم بطيء وثابت. بديل: البطن، ويفضّل تنويع المنطقة عن الأنسولين السريع.';
   var ago='';
   if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'النهاردة':dd===1?'إمبارح':'من '+dd+' أيام'}
   var seg=[['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="smseg" data-smk="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'</button>'}).join('');
   $('#sitemodal').querySelector('.smbody').innerHTML=
     '<div class="smhead"><b>أماكن الحقن</b><span>آخر 14 يوم</span></div><div class="smsegs">'+seg+'</div>'+
-    (E.length?'<div class="smfig">'+siteSvg(cnt,next)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
-    '<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>'
-    :'<div class="smfig">'+siteSvg(cnt,null)+'</div><p class="smempty" style="padding:8px 6px">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>');
-  $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+(E.length&&next?SITE_LABEL[next]:'أي مكان')+'</small>'+(alts.length?'<small class="smalt">الأقل استخدامًا بعده: '+alts.join(' و ')+'</small>':'');
+    '<div class="smfig">'+siteSvg(cnt,next)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
+    (last?'<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>':'<p class="smempty" style="padding:2px 6px 0">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>')+
+    '<p class="smtip">'+tip+'</p><p class="smnote">إرشاد عام، والقرار النهائي للدكتور</p>';
+  $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+SITE_LABEL[next]+'</small><small class="smalt">بعده: '+alts.join(' و ')+'</small>';;
   $('#sitemodal').hidden=false;
 }
 function closeSiteMap(){
@@ -3215,6 +3216,25 @@ start(true);
     });
   }
   tick(); setInterval(tick,400); document.addEventListener('change',tick,true); document.addEventListener('input',tick,true);
+})();
+/* Arabic-Indic digits typed or pasted anywhere become English digits */
+(function(){
+  var AR='٠١٢٣٤٥٦٧٨٩', FA='۰۱۲۳۴۵۶۷۸۹', RX=/[٠-٩۰-۹٫٬،]/;
+  function conv(t){return String(t).replace(/[٠-٩]/g,function(c){return AR.indexOf(c)}).replace(/[۰-۹]/g,function(c){return FA.indexOf(c)}).replace(/٫/g,'.').replace(/٬/g,',')}
+  function isField(el){return el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA')}
+  document.addEventListener('beforeinput',function(ev){
+    var el=ev.target; if(!isField(el))return;
+    var d=ev.data; if(d==null&&ev.dataTransfer)try{d=ev.dataTransfer.getData('text')}catch(e){}
+    if(!d||!RX.test(d)||/^(insertCompositionText)$/.test(ev.inputType))return;
+    var t=el.type; if(t==='checkbox'||t==='radio'||t==='file')return;
+    ev.preventDefault(); document.execCommand('insertText',false,conv(d).replace(/،/g,'،'));
+  },true);
+  document.addEventListener('input',function(ev){
+    var el=ev.target; if(!isField(el)||!el.value||!RX.test(el.value.replace(/،/g,'')))return;
+    var t=el.type; if(t==='number'||t==='date'||t==='time'||t==='datetime-local')return;
+    var pos=null; try{pos=el.selectionStart}catch(e){}
+    var nv=conv(el.value); if(nv!==el.value){el.value=nv; try{if(pos!=null)el.setSelectionRange(pos,pos)}catch(e){}}
+  },true);
 })();
 })();
 </script>
