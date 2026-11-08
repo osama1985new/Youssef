@@ -1072,6 +1072,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <div class="rlbl">التقرير</div>
       <div class="acts">
         <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للدكتور</b><small>كل يوم بتاريخه وقراءاته والأنسولين، بيفتح على الموبايل</small></span></button>
+        <button type="button" class="act" id="pdfshare"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="at"><b>مشاركة التقرير (واتساب)</b><small>يبعت ملف PDF الدكتور من قايمة المشاركة</small></span></button>
         <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يوم بيوم</small></span></button>
         <button type="button" class="act" id="rshow"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></svg></span><span class="at"><b>التقرير الكامل على الشاشة</b><small>رسومات وأنماط وتفاصيل الفترة</small></span></button>
       </div>
@@ -1210,6 +1211,12 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <button type="button" class="ghost" id="bkimp">استرجاع من ملف</button>
     </div>
     <input type="file" id="bkfile" accept=".json,application/json" hidden>
+    <p class="small">السيرفر بيحتفظ بنسخة كل يوم لمدة 30 يوم.</p>
+    <button type="button" class="ghost" id="bksrv">نسخ السيرفر</button>
+    <div id="bksrvbox" hidden>
+      <select id="bksel" aria-label="اختار نسخة"></select>
+      <button type="button" class="ghost" id="bkrest">استرجاع النسخة دي</button>
+    </div>
     <p class="small" id="bkmsg" role="status"></p>
 
     <h3>الأمان والمتابعة</h3>
@@ -1543,6 +1550,25 @@ async function importBackup(file){
 }
 $('#bkexp').addEventListener('click',exportBackup);
 $('#bkimp').addEventListener('click',function(){$('#bkfile').click()});
+$('#bksrv').addEventListener('click',async function(){
+  var m=$('#bkmsg'); m.textContent='';
+  if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+  try{
+    var r=await api({action:'backups'}), L=r.backups||[];
+    if(!L.length){m.textContent='لسه مفيش نسخ على السيرفر. أول نسخة بتتعمل الصبح.'; $('#bksrvbox').hidden=true; return}
+    var MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    $('#bksel').innerHTML=L.map(function(b){var p=b.d.split('-'); return '<option value="'+b.d+'">'+(+p[2])+' '+MON[+p[1]-1]+' '+p[0]+(b.n?' ('+b.n+' تسجيل)':'')+'</option>'}).join('');
+    $('#bksrvbox').hidden=false;
+  }catch(e){m.textContent='معرفتش أجيب النسخ. جرب تاني.'}
+});
+$('#bkrest').addEventListener('click',async function(){
+  var m=$('#bkmsg'), d=$('#bksel').value; if(!d)return;
+  if(!confirm('هترجّع نسخة '+$('#bksel').selectedOptions[0].textContent+'. القراءات هتتضاف فوق الموجود، والإعدادات هتتبدل بإعدادات النسخة. تكمل؟'))return;
+  var btn=this; btn.disabled=true; m.textContent='بسترجع…';
+  try{var r=await api({action:'restorebk',d:d}); await refresh(); m.textContent='اترجّع '+r.restored+' تسجيل'+(r.settings?' والإعدادات':'')+'.'}
+  catch(e){m.textContent='معرفتش أرجّع النسخة دي.'}
+  btn.disabled=false;
+});
 $('#bkfile').addEventListener('change',function(){var f=this.files&&this.files[0]; this.value=''; if(f)importBackup(f)});
 $('#logout').addEventListener('click',function(){lsSet(LS_P,''); try{localStorage.removeItem(LS_SNAP); localStorage.removeItem(LS_Q)}catch(_){} pin=''; location.reload()});
 function ready(){
@@ -2819,6 +2845,34 @@ $('#pdfview').addEventListener('click',async function(){
     setTimeout(function(){URL.revokeObjectURL(url)},60000);
   }catch(e){if(w)try{w.close()}catch(x){} toast('معرفتش أجهّز الملف. جرب تاني.')}
   btn.disabled=false; tl.textContent=old;
+});
+var shareBlob=null;
+$('#pdfshare').addEventListener('click',async function(){
+  var btn=this, tl=btn.querySelector('b'), old='مشاركة التقرير (واتساب)';
+  var name='sugar-report.pdf';
+  async function doShare(blob){
+    var f=new File([blob],name,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'تقرير السكر'}); return true}
+    return false;
+  }
+  try{
+    if(shareBlob){var b0=shareBlob; shareBlob=null; tl.textContent=old; await doShare(b0); return}
+    var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
+    var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+    btn.disabled=true; tl.textContent='بجهّز الملف…';
+    var blob=await buildDoctorPdf(E,r); name='sugar-report-'+$('#rfrom').value+'_'+$('#rto').value+'.pdf';
+    btn.disabled=false;
+    try{
+      if(!(await doShare(blob))){toast('المشاركة مش متاحة هنا. استخدم زرار PDF'); tl.textContent=old}
+      else tl.textContent=old;
+    }catch(e){
+      if(e&&e.name==='AbortError'){tl.textContent=old; return}
+      shareBlob=blob; tl.textContent='الملف جاهز. دوس هنا للمشاركة';
+    }
+  }catch(e){
+    btn.disabled=false; tl.textContent=old;
+    if(!(e&&e.name==='AbortError'))toast('معرفتش أجهّز الملف. جرب تاني.');
+  }
 });
 /* ---------- Excel export (real .xlsx, built in the browser) ---------- */
 var CRC_T=(function(){var t=[],c,n,k; for(n=0;n<256;n++){c=n; for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0} return t})();
