@@ -946,6 +946,25 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 #smclose .smalt{font-size:12px;opacity:.8}
 .smtip{margin:10px 2px 0;font-size:13px;line-height:1.7;text-align:right}
 .smnote{margin:4px 2px 0;font-size:11.5px;color:var(--muted,#7a8a88);text-align:right}
+
+@media (prefers-color-scheme: dark){
+  .smfig .sg0{stop-color:#243943}
+  .smfig .sg1{stop-color:#1A2B33}
+  .smfig .sbody{stroke:#6F8E9B!important;stroke-width:1.6!important}
+  .smfig .sz{fill:#4FC3CE!important;fill-opacity:calc(.16 + .7*var(--o,0))!important;stroke:#8FB3BE!important;stroke-opacity:.9!important;stroke-width:1.2!important}
+  .smfig .sz.snext{stroke:#FFD479!important;stroke-width:3!important;stroke-opacity:1!important}
+  .smfig .sbd{fill:#0D171C!important;stroke:#4FC3CE!important}
+  .smfig .scn{fill:#F2F7F9!important}
+  .smfig .scn:not(.on){fill:#8FA6B1!important}
+  .smfig .sln{fill:#E6EEF2!important;paint-order:stroke;stroke:#0D171C;stroke-width:2.2px;stroke-linejoin:round}
+  .smfig .sln.snext{fill:#FFD479!important}
+  .smseg[aria-pressed=true]{background:#2B4552!important;color:#7FE0EA!important;box-shadow:none!important}
+  .smsegs{background:rgba(79,195,206,.14)!important}
+  .smleg i{background:linear-gradient(270deg,rgba(79,195,206,.15),rgba(79,195,206,.85))!important}
+  .smrows div{background:rgba(79,195,206,.12)!important}
+  .smrows .smnext b{color:#7FE0EA!important}
+  .smodal{background:rgba(0,0,0,.6)!important}
+}
 </style>
 </head>
 <body>
@@ -1041,9 +1060,9 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     </div>
         <div class="hint" id="thint" hidden></div>
     <div class="injrow" id="injrow" hidden>
-      <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
-      <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="">مش محدد</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
-      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="">مش محدد</option></select></div>
+      <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="" disabled selected>اختار…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختار…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="" disabled selected>اختار…</option></select></div>
     </div>
     <input type="checkbox" id="nodose" hidden><input type="checkbox" id="corr" hidden>
     <p class="msg high" id="injhint" hidden></p>
@@ -1707,10 +1726,20 @@ function updateModeButtons(){
 }
 setInterval(function(){updateModeButtons(); renderTresRem(); renderReadRem()},60000);
 var lastMode=null;
+function recSite(kind){
+  var from=Date.now()-14*864e5;
+  var E=prep().filter(function(e){return e.site&&e.d.getTime()>=from&&((kind==='a'&&e.apidra>0)||(kind==='t'&&e.tresiba>0))});
+  var cnt=siteCounts(E,kind), last=E.slice().sort(function(a,b){return b.d-a.d})[0];
+  var PREF=kind==='a'?['ab_r','ab_l']:['th_r','th_l','ar_r','ar_l'], SEC=kind==='a'?['ar_r','ar_l','th_r','th_l']:['ab_r','ab_l'];
+  var allIds=SITES.map(function(x){return x[0]}), li=last?allIds.indexOf(last.site):-1;
+  function rot(id){return ((allIds.indexOf(id)-li-1)+6)%6}
+  function rg(g){return g.slice().sort(function(a,b){return cnt[a]-cnt[b]||rot(a)-rot(b)})}
+  var ranked=kind==='t'?rg(['th_r','th_l']).concat(rg(['ar_r','ar_l']),rg(['ab_r','ab_l'])):rg(PREF).concat(rg(SEC));
+  return {E:E,cnt:cnt,last:last,ranked:ranked,next:ranked[0]};
+}
 function nextSite(){
-  var L=prep().filter(function(e){return e.tresiba>0&&e.site}); if(!L.length)return {last:'',next:''};
-  var ls=L[L.length-1].site, i=SITES.map(function(x){return x[0]}).indexOf(ls);
-  return {last:SITE_LABEL[ls]||'',next:i<0?'':SITES[(i+1)%SITES.length][0]};
+  var r=recSite('t'), L=prep().filter(function(e){return e.tresiba>0&&e.site});
+  return {last:L.length?(SITE_LABEL[L[L.length-1].site]||''):'',next:L.length?r.next:''};
 }
 function renderReadRem(E){
   var el=$('#readrem'); if(!el)return; if(role==='view'){el.hidden=true; return}
@@ -2337,19 +2366,19 @@ function siteSvg(cnt,ring){
   /* [id, x, y, w, h, radius] zone rectangles over the silhouette */
   var Z=[['ar_r',67,96,24,76,12],['ar_l',209,96,24,76,12],['ab_r',110,128,36,56,16],['ab_l',154,128,36,56,16],['th_r',112,240,32,68,16],['th_l',156,240,32,68,16]];
   var out='<svg viewBox="0 0 300 340" role="img" aria-label="خريطة أماكن الحقن" style="width:260px;max-width:100%;height:auto;direction:ltr">'+
-   '<defs><linearGradient id="smg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9F1F4"/></linearGradient></defs>'+
-   '<g fill="url(#smg)" stroke="#BFD0D6" stroke-width="1.4">'+
+   '<defs><linearGradient id="smg" x1="0" y1="0" x2="0" y2="1"><stop class="sg0" offset="0" stop-color="#FFFFFF"/><stop class="sg1" offset="1" stop-color="#E9F1F4"/></linearGradient></defs>'+
+   '<g class="sbody" fill="url(#smg)" stroke="#BFD0D6" stroke-width="1.4">'+
    '<circle cx="150" cy="32" r="20"/><rect x="141" y="50" width="18" height="16" rx="6"/>'+
    '<path d="M100 68 Q150 58 200 68 Q212 71 212 86 L206 196 Q204 220 198 230 L102 230 Q96 220 94 196 L88 86 Q88 71 100 68Z"/>'+
    '<rect x="64" y="76" width="28" height="136" rx="14"/><rect x="208" y="76" width="28" height="136" rx="14"/>'+
    '<rect x="108" y="226" width="40" height="110" rx="20"/><rect x="152" y="226" width="40" height="110" rx="20"/></g>';
   Z.forEach(function(z){
     var id=z[0], n=cnt[id], a=mx?(0.10+0.55*n/mx):0.10, cx=z[1]+z[3]/2, nm=SITE_LABEL[id].split(' '), isNext=ring===id;
-    out+='<rect x="'+z[1]+'" y="'+z[2]+'" width="'+z[3]+'" height="'+z[4]+'" rx="'+z[5]+'" fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="'+(isNext?'#0D7480':'#7FA3AD')+'" stroke-width="'+(isNext?'2.6':'1')+'"'+(isNext?'':' stroke-opacity=".6"')+'/>'+
-      '<circle cx="'+cx+'" cy="'+(z[2]+15)+'" r="10.5" fill="#fff" stroke="'+(n?'#0D7480':'#BFD0D6')+'" stroke-width="1.2"/>'+
-      '<text x="'+cx+'" y="'+(z[2]+15.5)+'" style="font-weight:700;font-size:12px;fill:'+(n?'#0b3d44':'#7B8F96')+';text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
-      '<text x="'+cx+'" y="'+(z[2]+36)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
-      '<text x="'+cx+'" y="'+(z[2]+47)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text>';
+    out+='<rect style="--o:'+(mx?n/mx:0).toFixed(2)+'" class="sz'+(isNext?' snext':'')+'" x="'+z[1]+'" y="'+z[2]+'" width="'+z[3]+'" height="'+z[4]+'" rx="'+z[5]+'" fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="'+(isNext?'#0D7480':'#7FA3AD')+'" stroke-width="'+(isNext?'2.6':'1')+'"'+(isNext?'':' stroke-opacity=".6"')+'/>'+
+      '<circle class="sbd'+(n?' on':'')+'" cx="'+cx+'" cy="'+(z[2]+15)+'" r="10.5" fill="#fff" stroke="'+(n?'#0D7480':'#BFD0D6')+'" stroke-width="1.2"/>'+
+      '<text class="scn'+(n?' on':'')+'" x="'+cx+'" y="'+(z[2]+15.5)+'" style="font-weight:700;font-size:12px;fill:'+(n?'#0b3d44':'#7B8F96')+';text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
+      '<text class="sln'+(isNext?' snext':'')+'" x="'+cx+'" y="'+(z[2]+36)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
+      '<text class="sln'+(isNext?' snext':'')+'" x="'+cx+'" y="'+(z[2]+47)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text>';
   });
   return out+'</svg>';
 }
@@ -2362,20 +2391,11 @@ function siteMapHTML(E){
 var siteNativeUntil=0, siteShieldT=0;
 function openSiteMap(kind){
   if(kind!=='a'&&kind!=='t')kind=imode==='tres'?'t':'a';
-  var now=Date.now(), from=now-14*864e5;
-  var E=prep().filter(function(e){return e.site&&e.d.getTime()>=from&&((kind==='a'&&e.apidra>0)||(kind==='t'&&e.tresiba>0))});
-  var cnt=siteCounts(E,kind);
-  var last=E.slice().sort(function(a,b){return b.d-a.d})[0];
-  var PREF=kind==='a'?['ab_r','ab_l']:['th_r','th_l','ar_r','ar_l'], SEC=kind==='a'?['ar_r','ar_l','th_r','th_l']:['ab_r','ab_l'];
-  var allIds=SITES.map(function(x){return x[0]}), li=last?allIds.indexOf(last.site):-1;
-  function rot(id){return ((allIds.indexOf(id)-li-1)+6)%6}
-  function rankGroup(g){return g.slice().sort(function(a,b){return cnt[a]-cnt[b]||rot(a)-rot(b)})}
-  var ranked=rankGroup(PREF).concat(rankGroup(SEC));
-  var next=ranked[0];
+  var R=recSite(kind), E=R.E, cnt=R.cnt, last=R.last, ranked=R.ranked, next=R.next;
   var alts=ranked.slice(1,3).map(function(id){return SITE_LABEL[id]});
   var tip=kind==='a'
     ?'الأفضل لأبيدرا: <b>البطن</b> (بعيد عن السرة بإصبعين على الأقل)، لأن الامتصاص فيه أسرع. البدائل: الذراع أو الرجل، والامتصاص فيهم أبطأ شوية.'
-    :'الأفضل لترسيبا: <b>الرجل أو الذراع</b>، لأن الامتصاص فيهم بطيء وثابت. بديل: البطن، ويفضّل تنويع المنطقة عن الأنسولين السريع.';
+    :'الأفضل لترسيبا بالترتيب: <b>الرجل</b> ثم <b>الذراع</b> ثم البطن، لأن الامتصاص في الرجل والذراع بطيء وثابت.';
   var ago='';
   if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'النهاردة':dd===1?'إمبارح':'من '+dd+' أيام'}
   var seg=[['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="smseg" data-smk="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'</button>'}).join('');
