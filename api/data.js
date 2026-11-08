@@ -263,7 +263,29 @@ async function entryAlerts(e, existed, srcEp, host) {
   if (e.glucose != null && e.glucose > Math.min(st.high || 200, 200)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
   if (msgs.length) await notifyOthers(msgs, null, host);
 }
+const zlib = require('zlib');
+const BK_DAYS = 30;
+async function backupNow(now) {
+  const c = cairo(now); if (c.h < 4) return null;
+  const key = 'ysg:bk:' + c.key;
+  if (Number(await redis(['EXISTS', key]))) return null;
+  const flat = await redis(['HGETALL', 'ysg:entries']); let entries = [];
+  for (let i = 1; i < (flat || []).length; i += 2) { try { entries.push(JSON.parse(flat[i])); } catch (x) {} }
+  entries.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+  const st = await redis(['GET', 'ysg:settings']);
+  let blob, n = entries.length;
+  for (;;) {
+    blob = zlib.gzipSync(Buffer.from(JSON.stringify({ at: now, settings: st ? JSON.parse(st) : null, entries }))).toString('base64');
+    if (blob.length < 900000 || entries.length < 50) break;
+    entries = entries.slice(Math.ceil(entries.length * 0.1));
+  }
+  const ttl = String(BK_DAYS * 86400);
+  await redis(['SET', key, blob, 'EX', ttl]);
+  await redis(['SET', 'ysg:bkn:' + c.key, String(entries.length), 'EX', ttl]);
+  return { key, n: entries.length };
+}
 async function runCron(host, force) {
+  try { await backupNow(force && force.now ? force.now : Date.now()); } catch (e) {}
   const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
   for (let i = 1; i < (subsFlat || []).length; i += 2) { try { const sb = JSON.parse(subsFlat[i]); if (sb && sb.role === 'edit') subs.push(sb); } catch (e) {} }
   if (!subs.length) return { sent: [], note: 'no_subscribers' };
@@ -444,6 +466,29 @@ module.exports = async (req, res) => {
         if (img.length < 100 || img.length > 3000000 || !/^[A-Za-z0-9+/=]+$/.test(img)) return res.status(400).json({ error: 'bad_image' });
         try { return res.status(200).json(await analyzeFood(img)); }
         catch (e) { return res.status(e.code === 'no_ai_key' ? 400 : 502).json({ error: e.code || 'ai_failed' }); }
+      }
+      if (b.action === 'backups') {
+        const ks = (await redis(['KEYS', 'ysg:bk:*'])) || [];
+        const days = ks.map(k => k.slice(7)).filter(d => /^\d{4}-\d\d-\d\d$/.test(d)).sort().reverse();
+        const out = [];
+        for (const d of days) out.push({ d, n: Number(await redis(['GET', 'ysg:bkn:' + d])) || 0 });
+        return res.status(200).json({ backups: out });
+      }
+      if (b.action === 'restorebk') {
+        const d = String(b.d || ''); if (!/^\d{4}-\d\d-\d\d$/.test(d)) return res.status(400).json({ error: 'bad_date' });
+        const raw = await redis(['GET', 'ysg:bk:' + d]); if (!raw) return res.status(404).json({ error: 'no_backup' });
+        let data; try { data = JSON.parse(zlib.gunzipSync(Buffer.from(raw, 'base64')).toString('utf8')); } catch (x) { return res.status(500).json({ error: 'bad_backup' }); }
+        let ok = 0; const recent72 = Date.now() - 72 * 3600e3;
+        const list = Array.isArray(data.entries) ? data.entries : [];
+        for (let i = 0; i < list.length; i += 300) {
+          const a = ['HSET', 'ysg:entries'], r = ['HSET', 'ysg:recent'];
+          list.slice(i, i + 300).forEach(x => { const e = cleanEntry(x); if (!e) return; a.push(e.id, JSON.stringify(e)); ok++; if (Date.parse(e.ts) > recent72) r.push(e.id, JSON.stringify(e)); });
+          if (a.length > 2) await redis(a);
+          if (r.length > 2) await redis(r);
+        }
+        let restoredSettings = false;
+        if (data.settings) { const cs = cleanSettings(data.settings); if (cs) { const prevRaw = await redis(['GET', 'ysg:settings']); if (prevRaw) await redis(['SET', 'ysg:settings:prev', prevRaw]); await redis(['SET', 'ysg:settings', JSON.stringify(cs)]); restoredSettings = true; } }
+        return res.status(200).json({ ok: true, restored: ok, settings: restoredSettings });
       }
       if (b.action === 'import') {
         if (!Array.isArray(b.entries) || b.entries.length > 1000) return res.status(400).json({ error: 'bad_import' });
