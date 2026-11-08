@@ -120,6 +120,9 @@ function cleanSettings(s) {
   if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
   out.cgm = s.cgm === true;
+  out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
+  out.omegaAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.omegaAt || '')) ? String(s.omegaAt) : null;
+  out.vitAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.vitAt || '')) ? String(s.vitAt) : null;
   out.birth = dOk(s.birth) ? String(s.birth) : null;
   out.medGot = /^\d{4}-(0[1-9]|1[0-2])$/.test(String(s.medGot || '')) ? String(s.medGot) : null;
   out.penAStart = dOk(s.penAStart) ? String(s.penAStart) : null;
@@ -326,6 +329,16 @@ async function runCron(host, force) {
     const t = Date.parse(e.ts), dt = now - t;
     if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !RR.some(r => Date.parse(r.ts) >= t + 30 * 60e3))
       due.push(['apd:' + t, 'قراءة بعد الأكل', 'عدّى ساعتين على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قيس السكر وسجّله']);
+  });
+  /* omega after breakfast / vitamins after lunch: 1h after the meal's Apidra dose, or a fixed time when no dose was logged; once a day, only if not logged yet */
+  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, 'الأوميجا', 'وقت الأوميجا بعد الفطار'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, 'الفيتامينات', 'وقت الفيتامينات بعد الغدا']].forEach(([k, on, at, h1, h2, nm, msg]) => {
+    if (!on) return;
+    if (recentAll.some(e => (e.supp || []).includes(k) && sday(Date.parse(e.ts)) === today)) return;
+    const meal = E.filter(e => e.apidra > 0).map(e => Date.parse(e.ts)).filter(t => { const h = cairo(t).h; return h >= h1 && h < h2; }).sort((a, b) => a - b)[0];
+    let ok;
+    if (meal) ok = now - meal >= 3600e3 && now - meal < 5 * 3600e3;
+    else { const [hh, mm] = at.split(':').map(Number), mins = c.h * 60 + c.m, tgt = hh * 60 + mm; ok = mins >= tgt && mins < tgt + 180; }
+    if (ok) due.push(['sp_' + k, nm, msg + '. لسه ما اتسجلتش النهاردة']);
   });
   /* yesterday's Tresiba missing */
   if (c.h >= 8 && c.h < 11) {
