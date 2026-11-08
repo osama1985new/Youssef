@@ -923,7 +923,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .smseg{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 0;font:inherit;font-size:14px;color:var(--muted,#55656f)}
 .smseg[aria-pressed=true]{background:#fff;color:#0D7480;font-weight:700;box-shadow:0 1px 4px rgba(15,31,42,.12)}
 .smfig{display:flex;justify-content:center}
-.smfig svg{width:200px!important}
+.smfig svg{width:250px!important}
 .smleg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;color:var(--muted,#55656f);margin:2px 0 12px}
 .smleg i{display:block;width:80px;height:6px;border-radius:3px;background:linear-gradient(270deg,rgba(13,116,128,.08),rgba(13,116,128,.5))}
 .smrows{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -936,6 +936,13 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 #sitemapbtn{margin-top:6px}
 .smrows .smnext{background:rgba(13,116,128,.14)}
 .smrows .smnext b{color:#0D7480}
+.smrows{grid-template-columns:1fr!important}
+#smclose{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 10px;background:#0D7480;border-color:#0D7480;color:#fff}
+#smclose b{font-size:17px}
+#smclose small{font-size:13px;opacity:.95}
+.selwrap{position:relative}
+.selshield{position:absolute;inset:0;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.selshield[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -1255,7 +1262,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
   <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
 </main>
 
-<div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">تمام، اختار المكان</button></div></div>
+<div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">تمام</button></div></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -2318,20 +2325,24 @@ function siteCounts(E,kind){
 }
 function siteSvg(cnt,ring){
   var mx=0; SITES.forEach(function(x){mx=Math.max(mx,cnt[x[0]])});
-  function z(id,shape){
-    var n=cnt[id], a=mx?(0.08+0.42*n/mx):0.08, nm=SITE_LABEL[id].split(' '), isLast=ring===id;
-    return '<g>'+shape.replace('FILL','fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="'+(isLast?'#0D7480':'#9FB8BF')+'" stroke-width="'+(isLast?'3':'1.2')+'"')+
-      '<text x="'+shape.cx+'" y="'+(shape.cy-8)+'" style="font-weight:700;font-size:17px;fill:#0b3d44;text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
-      '<text x="'+shape.cx+'" y="'+(shape.cy+10)+'" style="font-size:8.5px;fill:#1d3a43;text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
-      '<text x="'+shape.cx+'" y="'+(shape.cy+20)+'" style="font-size:8.5px;fill:#1d3a43;text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text></g>';
-  }
-  function R_(x,y,w,h,r,cx,cy){var o=new String('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+r+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
-  function E_(cx,cy,rx,ry){var o=new String('<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
-  var body='<circle cx="120" cy="34" r="22" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="108" y="54" width="24" height="16" rx="6" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="72" y="66" width="96" height="128" rx="30" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/>';
-  return '<svg viewBox="0 0 240 330" role="img" aria-label="خريطة أماكن الحقن" style="width:230px;max-width:100%;height:auto">'+body+
-    z('ar_r',R_(36,74,30,112,15,51,122))+z('ar_l',R_(174,74,30,112,15,189,122))+
-    z('ab_r',E_(101,142,20,28))+z('ab_l',E_(139,142,20,28))+
-    z('th_r',R_(78,200,40,118,20,98,250))+z('th_l',R_(122,200,40,118,20,142,250))+'</svg>';
+  /* [id, x, y, w, h, radius] zone rectangles over the silhouette */
+  var Z=[['ar_r',67,96,24,76,12],['ar_l',209,96,24,76,12],['ab_r',110,128,36,50,16],['ab_l',154,128,36,50,16],['th_r',112,240,32,68,16],['th_l',156,240,32,68,16]];
+  var out='<svg viewBox="0 0 300 340" role="img" aria-label="خريطة أماكن الحقن" style="width:260px;max-width:100%;height:auto;direction:ltr">'+
+   '<defs><linearGradient id="smg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9F1F4"/></linearGradient></defs>'+
+   '<g fill="url(#smg)" stroke="#BFD0D6" stroke-width="1.4">'+
+   '<circle cx="150" cy="32" r="20"/><rect x="141" y="50" width="18" height="16" rx="6"/>'+
+   '<path d="M100 68 Q150 58 200 68 Q212 71 212 86 L206 196 Q204 220 198 230 L102 230 Q96 220 94 196 L88 86 Q88 71 100 68Z"/>'+
+   '<rect x="64" y="76" width="28" height="136" rx="14"/><rect x="208" y="76" width="28" height="136" rx="14"/>'+
+   '<rect x="108" y="226" width="40" height="110" rx="20"/><rect x="152" y="226" width="40" height="110" rx="20"/></g>';
+  Z.forEach(function(z){
+    var id=z[0], n=cnt[id], a=mx?(0.10+0.55*n/mx):0.10, cx=z[1]+z[3]/2, nm=SITE_LABEL[id].split(' '), isNext=ring===id;
+    out+='<rect x="'+z[1]+'" y="'+z[2]+'" width="'+z[3]+'" height="'+z[4]+'" rx="'+z[5]+'" fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="'+(isNext?'#0D7480':'#7FA3AD')+'" stroke-width="'+(isNext?'2.6':'1')+'"'+(isNext?'':' stroke-opacity=".6"')+'/>'+
+      '<circle cx="'+cx+'" cy="'+(z[2]+15)+'" r="10.5" fill="#fff" stroke="'+(n?'#0D7480':'#BFD0D6')+'" stroke-width="1.2"/>'+
+      '<text x="'+cx+'" y="'+(z[2]+15.5)+'" style="font-weight:700;font-size:12px;fill:'+(n?'#0b3d44':'#7B8F96')+';text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
+      '<text x="'+cx+'" y="'+(z[2]+36)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
+      '<text x="'+cx+'" y="'+(z[2]+47)+'" style="font-size:8.5px;font-weight:'+(isNext?'700':'500')+';fill:'+(isNext?'#0b5a63':'#2c4a52')+';text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text>';
+  });
+  return out+'</svg>';
 }
 function siteMapHTML(E){
   var cnt=siteCounts(E,siteKind), tot=0; SITES.forEach(function(x){tot+=cnt[x[0]]});
@@ -2339,7 +2350,7 @@ function siteMapHTML(E){
   return '<h3 style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
     (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكتر · الإجمالي '+tot+' حقنة</p>':'<p class="small">مفيش حقن متسجلة بمكان في الفترة دي.</p>');
 }
-var siteNativeUntil=0;
+var siteNativeUntil=0, siteShieldT=0;
 function openSiteMap(kind){
   if(kind!=='a'&&kind!=='t')kind=imode==='tres'?'t':'a';
   var now=Date.now(), from=now-14*864e5;
@@ -2358,12 +2369,14 @@ function openSiteMap(kind){
   $('#sitemodal').querySelector('.smbody').innerHTML=
     '<div class="smhead"><b>أماكن الحقن</b><span>آخر 14 يوم</span></div><div class="smsegs">'+seg+'</div>'+
     (E.length?'<div class="smfig">'+siteSvg(cnt,next)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
-    '<div class="smrows"><div class="smnext"><small>المرة الجاية يفضل</small><b>'+(next?SITE_LABEL[next]:'أي مكان')+'</b></div><div><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>'
+    '<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>'
     :'<div class="smfig">'+siteSvg(cnt,null)+'</div><p class="smempty" style="padding:8px 6px">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>');
+  $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+(E.length&&next?SITE_LABEL[next]:'أي مكان')+'</small>';
   $('#sitemodal').hidden=false;
 }
 function closeSiteMap(){
   $('#sitemodal').hidden=true; siteNativeUntil=Date.now()+30000;
+  var sh=window.__siteShield; if(sh){sh.hidden=true; clearTimeout(siteShieldT); siteShieldT=setTimeout(function(){sh.hidden=false},30000)}
   var sl=$('#site'); try{sl.focus(); if(sl.showPicker)sl.showPicker()}catch(e){}
 }
 function buildReport(){
@@ -2833,10 +2846,12 @@ function rangeNote(){
   st.innerHTML=t.map(function(x){return '<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join('');
 }
 (function(){
-  var sel=$('#site'), busy=0;
-  function open(ev){if(Date.now()<siteNativeUntil)return; ev.preventDefault(); if(Date.now()-busy<500)return; busy=Date.now(); sel.blur(); openSiteMap()}
-  sel.addEventListener('mousedown',open); sel.addEventListener('touchstart',open,{passive:false});
-  sel.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){open(ev)}});
+  var sel=$('#site'), wrap=document.createElement('div'), shield=document.createElement('div');
+  wrap.className='selwrap'; shield.className='selshield'; shield.setAttribute('role','button'); shield.setAttribute('aria-label','مكان الحقن');
+  sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel); wrap.appendChild(shield);
+  shield.addEventListener('click',function(){openSiteMap()});
+  sel.addEventListener('change',function(){shield.hidden=false; clearTimeout(siteShieldT)});
+  window.__siteShield=shield;
 })();
 $('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b)openSiteMap(b.dataset.smk)});
 $('#smclose').addEventListener('click',closeSiteMap);
