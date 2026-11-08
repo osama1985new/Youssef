@@ -207,13 +207,14 @@ function vapidAuth(v, endpoint, host) {
 }
 async function pushTo(sub, msg, v, host) {
   const id = subId(sub.endpoint);
-  await redis(['RPUSH', 'ysg:inbox:' + id, JSON.stringify(msg)]);
+  await redis(['RPUSH', 'ysg:inbox:' + id, JSON.stringify(Object.assign({ at: Date.now() }, msg))]);
   await redis(['EXPIRE', 'ysg:inbox:' + id, '86400']);
   let status = 0;
   try {
     const r = await fetch(sub.endpoint, { method: 'POST', headers: { Authorization: vapidAuth(v, sub.endpoint, host), TTL: '7200', Urgency: 'high', 'Content-Length': '0' } });
     status = r.status;
   } catch (e) { status = 0; }
+  try { await redis(['LPUSH', 'ysg:pushlog', new Date().toISOString().slice(0, 16) + ' ' + (msg.tag || msg.t) + ' ' + id.slice(0, 4) + ' ' + status]); await redis(['LTRIM', 'ysg:pushlog', '0', '59']); } catch (x) {}
   if (status === 404 || status === 410) { await redis(['HDEL', 'ysg:subs', id]); await redis(['DEL', 'ysg:inbox:' + id]); }
   return status;
 }
@@ -248,7 +249,7 @@ async function recentEntries(now) {
 async function notifyOthers(msgs, srcEp, host) {
   const flat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
   const skip = srcEp ? subId(srcEp) : null;
-  for (let i = 0; i < (flat || []).length; i += 2) { try { const sb = JSON.parse(flat[i + 1]); if (sb && sb.role === 'edit' && flat[i] !== skip) subs.push(sb); } catch (e) {} }
+  for (let i = 0; i < (flat || []).length; i += 2) { try { const sb = JSON.parse(flat[i + 1]); if (sb && (sb.role === 'edit' || sb.role === 'view') && flat[i] !== skip) subs.push(sb); } catch (e) {} }
   if (!subs.length) return;
   const v = await getVapid();
   for (const m of msgs) await Promise.allSettled(subs.map(sb => pushTo(sb, m, v, host)));
@@ -259,8 +260,8 @@ async function entryAlerts(e, existed, srcEp, host) {
   const c = cairo(Date.parse(e.ts)), tm = t12(String(c.h).padStart(2, '0') + ':' + String(c.m).padStart(2, '0')), msgs = [];
   const fm = n => (Number.isInteger(n) ? String(n) : String(n).replace(/\.0+$/, ''));
   if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: 'سكر واطي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-low' });
-  if (e.glucose != null && e.glucose > (st.high || 250)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
-  if (msgs.length) await notifyOthers(msgs, srcEp, host);
+  if (e.glucose != null && e.glucose > Math.min(st.high || 200, 200)) msgs.push({ t: 'سكر عالي', b: e.glucose + ' اتسجل الساعة ' + tm, tag: 'g-high' });
+  if (msgs.length) await notifyOthers(msgs, null, host);
 }
 async function runCron(host, force) {
   const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
@@ -404,12 +405,12 @@ module.exports = async (req, res) => {
     }
     if (req.method === 'POST') {
       const b = req.body || {};
-      if (role !== 'edit') return res.status(403).json({ error: 'read_only' });
+      if (role !== 'edit' && !['vapid', 'subscribe', 'unsubscribe', 'testpush'].includes(b.action)) return res.status(403).json({ error: 'read_only' });
       if (b.action === 'vapid') { const v = await getVapid(); return res.status(200).json({ key: v.pub }); }
       if (b.action === 'subscribe') {
         const ep = b.sub && String(b.sub.endpoint || '');
         if (!ep || ep.length > 700 || !PUSH_HOST_OK.test(ep)) return res.status(400).json({ error: 'bad_sub' });
-        await redis(['HSET', 'ysg:subs', subId(ep), JSON.stringify({ endpoint: ep, role: 'edit', t: Date.now() })]);
+        await redis(['HSET', 'ysg:subs', subId(ep), JSON.stringify({ endpoint: ep, role: role === 'edit' ? 'edit' : 'view', t: Date.now() })]);
         return res.status(200).json({ ok: true });
       }
       if (b.action === 'unsubscribe') {
