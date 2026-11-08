@@ -2283,6 +2283,35 @@ function rangeStats(E){
   var pc=function(x){return Math.round(x/n*100)};
   return {n:n, avg:avg, a1c:Math.round(((avg+46.7)/28.7)*10)/10, inr:pc(n-lo-hi), lo:pc(lo), hi:pc(hi), perDay:n/nd, ok:(n/nd>=3&&n>=20)};
 }
+var siteKind='all';
+function siteMapHTML(E){
+  var cnt={}; SITES.forEach(function(x){cnt[x[0]]=0});
+  E.forEach(function(e){
+    if(!e.site||cnt[e.site]==null)return;
+    if(e.apidra>0&&(siteKind==='all'||siteKind==='a'))cnt[e.site]++;
+    if(e.tresiba>0&&(siteKind==='all'||siteKind==='t'))cnt[e.site]++;
+  });
+  var mx=0, tot=0; SITES.forEach(function(x){mx=Math.max(mx,cnt[x[0]]); tot+=cnt[x[0]]});
+  function z(id,shape){
+    var n=cnt[id], a=mx?(0.08+0.42*n/mx):0.08, nm=SITE_LABEL[id].split(' '), light=false, fg='#1d3a43';
+    return '<g>'+shape.replace('FILL','fill="#0D7480" fill-opacity="'+a.toFixed(2)+'" stroke="#9FB8BF" stroke-width="1.2"')+
+      '<text x="'+shape.cx+'" y="'+(shape.cy-8)+'" style="font-weight:700;font-size:17px;fill:'+(light?'#fff':'#0b3d44')+';text-anchor:middle;dominant-baseline:central">'+n+'</text>'+
+      '<text x="'+shape.cx+'" y="'+(shape.cy+10)+'" style="font-size:8.5px;fill:'+fg+';text-anchor:middle;dominant-baseline:central">'+nm[0]+'</text>'+
+      '<text x="'+shape.cx+'" y="'+(shape.cy+20)+'" style="font-size:8.5px;fill:'+fg+';text-anchor:middle;dominant-baseline:central">'+nm[1]+'</text></g>';
+  }
+  function R_(x,y,w,h,r,cx,cy){var o=new String('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+r+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
+  function E_(cx,cy,rx,ry){var o=new String('<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" FILL/>'); o.cx=cx; o.cy=cy; return o}
+  var body='<circle cx="120" cy="34" r="22" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="108" y="54" width="24" height="16" rx="6" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/><rect x="72" y="66" width="96" height="128" rx="30" fill="#fff" stroke="#BFD0D6" stroke-width="1.5"/>';
+  var svg='<svg viewBox="0 0 240 330" role="img" aria-label="خريطة أماكن الحقن" style="width:230px;max-width:100%;height:auto">'+body+
+    z('ar_r',R_(36,74,30,112,15,51,122))+z('ar_l',R_(174,74,30,112,15,189,122))+
+    z('ab_r',E_(101,142,20,28))+z('ab_l',E_(139,142,20,28))+
+    z('th_r',R_(78,200,40,118,20,98,250))+z('th_l',R_(122,200,40,118,20,142,250))+'</svg>';
+  var low=SITES.filter(function(x){return cnt[x[0]]===mn_()}).map(function(x){return x[1]});
+  function mn_(){var m=1e9; SITES.forEach(function(x){m=Math.min(m,cnt[x[0]])}); return m}
+  var chips=[['all','الكل'],['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="chip" data-sk="'+k[0]+'" aria-pressed="'+(siteKind===k[0])+'">'+k[1]+'</button>'}).join('');
+  return '<h3 style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
+    (tot?'<div style="display:flex;justify-content:center">'+svg+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكتر · الإجمالي '+tot+' حقنة</p>':'<p class="small">مفيش حقن متسجلة بمكان في الفترة دي.</p>');
+}
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
   if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
@@ -2313,6 +2342,7 @@ function buildReport(){
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
     (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · مش موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
   '</dl>';
+  h+=siteMapHTML(E);
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
   h+='<details class="wk"><summary><b>الرسومات والتحليل</b><span class="wks">رسم القراءات · الأنماط · الملاحظات · متوسط كل وقت</span></summary><div class="wkin">'+dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
@@ -2842,6 +2872,7 @@ async function buildDoctorPdf(E,r){
   var jpegs=await Promise.all(pages.map(function(c){return new Promise(function(res){c.toBlob(function(b){b.arrayBuffer().then(function(ab){res(new Uint8Array(ab))})},'image/jpeg',0.92)})}));
   return makePdf(jpegs,PW*SC,PH*SC);
 }
+$('#report').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-sk]'); if(!b)return; siteKind=b.dataset.sk; buildReport()});
 $('#pdfview').addEventListener('click',async function(){
   var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
