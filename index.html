@@ -1810,6 +1810,7 @@ function syncCorr(){
 var modeTouched=false;
 function setMode(m){
   modeTouched=true;
+  if(window.__siteShield){window.__siteShield.hidden=false; clearTimeout(siteShieldT)}
   if(lastMode==='tres'&&m!=='tres'){$('#site').value=''; $('#needleT').value=''; $('#t').value=''}
   imode=m;
   keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other'; if(m==='tres')$('#slot').value='bed';
@@ -2882,7 +2883,8 @@ function rangeNote(){
   var sel=$('#site'), wrap=document.createElement('div'), shield=document.createElement('div');
   wrap.className='selwrap'; shield.className='selshield'; shield.setAttribute('role','button'); shield.setAttribute('aria-label','مكان الحقن');
   sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel); wrap.appendChild(shield);
-  shield.addEventListener('click',function(){openSiteMap()});
+  shield.addEventListener('click',function(){try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(x){} openSiteMap()});
+  sel.addEventListener('blur',function(){setTimeout(function(){shield.hidden=false;clearTimeout(siteShieldT)},400)});
   sel.addEventListener('change',function(){shield.hidden=false; clearTimeout(siteShieldT)});
   window.__siteShield=shield;
 })();
