@@ -979,6 +979,12 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 #f .two:not(.cen) input,#add .two:not(.cen) select{text-align:center;text-align-last:center;padding-inline:8px}
 #f .two:not(.cen) select{-webkit-appearance:none;appearance:none;background-image:none}
 #f .two:not(.cen) select{text-align:center!important;text-align-last:center!important;direction:rtl;padding-inline:8px!important}
+.row{grid-template-columns:minmax(0,1fr) 150px!important}
+.row .val{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:6px;width:150px;justify-self:end}
+.row .val b{text-align:center}
+.row .val .tag{justify-self:start;white-space:nowrap}
+.row .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:150px;justify-self:end}
+.row .acts .edt,.row .acts .del{width:100%;text-align:center;padding:5px 4px}
 </style>
 </head>
 <body>
@@ -1876,7 +1882,7 @@ function renderBanner(E){
   if(!authed||!last||!(last.glucose<settings.low||last.glucose>settings.high)||Date.now()-last.d.getTime()>6*36e5||lsGet(LS_D,'')===last.id){el.hidden=true; return}
   var low=last.glucose<settings.low, wasHidden=el.hidden;
   el.dataset.k=low?'low':'high';
-  el.innerHTML='<div><b>تنبيه: القراءة '+fmt(last.glucose)+' '+(low?'أقل من '+settings.low:'أعلى من '+settings.high)+'</b><p>'+esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d)+'</p><p>'+adviceFor(last.glucose)+'</p></div><button type="button" data-dismiss="'+esc(last.id)+'">تمام، شفت</button>';
+  el.innerHTML='<div><b>تنبيه: القراءة '+fmt(last.glucose)+' '+(low?'أقل من '+settings.low:'أعلى من '+settings.high)+'</b><p>'+esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d)+'</p><p>'+adviceFor(last.glucose)+'</p></div><button type="button" data-dismiss="'+esc(last.id)+'">حسنًا، اطّلعت</button>';
   if(wasHidden&&shownAlertId!==last.id){try{if(navigator.vibrate)navigator.vibrate([250,120,250])}catch(e){}}
   shownAlertId=last.id; el.hidden=false;
 }
