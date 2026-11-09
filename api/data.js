@@ -354,6 +354,11 @@ async function runCron(host, force) {
   /* low reading: remind to re-check 2 hours later if nothing newer was logged */
   if (lastR && !settings.cgm) {
     const dt = now - Date.parse(lastR.ts);
+    if (lastR.glucose < (settings.low || 90)) {
+      const t = Date.parse(lastR.ts);
+      if (dt >= 15 * 60e3 && dt < 30 * 60e3) due.push(['hypo15:' + t, 'أعد قياس السكر', 'مضت 15 دقيقة على قراءة ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب وسجّل القراءة']);
+      else if (dt >= 30 * 60e3 && dt < 60 * 60e3) due.push(['hypo30:' + t, 'أعد قياس السكر', 'لم تُسجَّل قراءة جديدة بعد ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب وسجّلها']);
+    }
     if (lastR.glucose < (settings.low || 90) && dt >= 2 * 3600e3 && dt < 6 * 3600e3)
       due.push(['low2h:' + Date.parse(lastR.ts), 'قراءة أخرى', 'آخر قراءة كانت ' + lastR.glucose + ' قبل ساعتين. قِس السكر مرة أخرى']);
   }
