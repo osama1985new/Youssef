@@ -1080,9 +1080,9 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="panel p-extra">
       <h3>إضافات <em style="font-style:normal;font-weight:400">(اختياري)</em></h3>
     <details class="more">
-      <summary>الوقت وملاحظة</summary>
+      <summary>ملاحظة</summary>
       <div class="stack" style="margin-top:8px">
-        <div class="field"><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
+        <div class="field" id="dtf" hidden><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
       </div>
     </details>
@@ -3119,7 +3119,7 @@ $('#dt').addEventListener('change',updateCalc);
 
 var editingId=null;
 function setEditing(id){
-  editingId=id; $('#editbar').hidden=!id; $('#save').textContent=id?'حفظ التعديل':'حفظ التسجيل';
+  editingId=id; $('#dtf').hidden=!id; $('#editbar').hidden=!id; $('#save').textContent=id?'حفظ التعديل':'حفظ التسجيل';
 }
 function cancelEdit(){
   setEditing(null);
@@ -3150,6 +3150,7 @@ $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
   var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
+  if(!editingId)setNow();
   var d=new Date($('#dt').value);
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='في خانة فيها رقم مش مفهوم. اكتب أرقام بس.'; return}
   if(g!=null&&(g<20||g>600)){err.textContent='قراءة السكر لازم تكون بين 20 و600. راجع الرقم.'; return}
