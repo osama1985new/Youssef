@@ -984,12 +984,12 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
   <header class="top" id="top">
     <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.6 2.6 0 0 0 2.5 2"/></svg></span><h1>متابعة السكر</h1></div>
     <p class="date" id="today"></p>
-    <p class="store" id="store"><i></i><span>بيحمّل…</span></p>
+    <p class="store" id="store"><i></i><span>جارٍ التحميل…</span></p>
   </header>
 
   <section class="card stack tabhide" id="gate" data-gate hidden>
     <h2>الدخول</h2>
-    <p class="small">اكتب الرقم السري اللي اتحدد للعيلة علشان تفتح السجل. هيتحفظ على الموبايل ده.</p>
+    <p class="small">اكتب الرقم السري المحدَّد للعائلة لفتح السجل. سيُحفظ على هذا الهاتف.</p>
     <div class="field"><label for="pin">الرقم السري</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password"></div>
     <p class="err" id="gerr" role="alert"></p>
     <button class="primary" id="gbtn" type="button">دخول</button>
@@ -1027,10 +1027,10 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="sect panel p-food">
       <h3>الأكل</h3>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
-      <div class="field"><label for="foodpick">أو ضيف صنف</label><select id="foodpick"></select></div>
+      <div class="field"><label for="foodpick">أو أضف صنفًا</label><select id="foodpick"></select></div>
       <ul class="mlist" id="mlist"></ul>
       <details class="more" id="manualbox">
-        <summary>صنف تاني مش في القايمة</summary>
+        <summary>صنف آخر غير موجود في القائمة</summary>
         <div class="manual"><input id="m1n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m1c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
         <div class="manual"><input id="m2n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m2c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
       </details>
@@ -1040,19 +1040,19 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="panel p-ins">
     <h3>الأنسولين</h3>
     <div class="setup" id="icrbox" hidden>
-      <b>علشان الجرعة تتحسب لوحدها</b>
-      <p class="small">اكتب نسبة الدكتور: كام جرام كارب بتغطيها وحدة أبيدرا واحدة (مثلاً 15). تتكتب مرة واحدة.</p>
+      <b>لكي تُحسب الجرعة تلقائيًا</b>
+      <p class="small">اكتب نسبة الطبيب: كم جرامًا من الكارب تغطيها وحدة أبيدرا واحدة (مثلاً 15). تُكتب مرة واحدة.</p>
       <div class="row2"><div class="field"><label for="qicr">جرام كارب لكل وحدة</label><input id="qicr" type="text" inputmode="decimal" placeholder="15" autocomplete="off"></div><button type="button" class="ghost" id="qicrsave">حفظ</button></div>
     </div>
     <div id="calc"></div>
 
     <div class="two">
       <div class="field a">
-        <label for="a">أبيدرا اللي أخدتها <em>(وحدات)</em></label>
+        <label for="a">أبيدرا التي أخذتها <em>(وحدات)</em></label>
         <div class="stepper">
           <button type="button" data-step="a" data-d="-0.5" aria-label="أقل">−</button>
           <input id="a" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
-          <button type="button" data-step="a" data-d="0.5" aria-label="أكتر">+</button>
+          <button type="button" data-step="a" data-d="0.5" aria-label="أكثر">+</button>
         </div>
         <div class="tplan" id="aplan"></div>
       </div>
@@ -1061,7 +1061,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
         <div class="stepper">
           <button type="button" data-step="t" data-d="-1" aria-label="أقل">−</button>
           <input id="t" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
-          <button type="button" data-step="t" data-d="1" aria-label="أكتر">+</button>
+          <button type="button" data-step="t" data-d="1" aria-label="أكثر">+</button>
         </div>
         <input id="ttime" type="time" hidden>
         <div class="tplan" id="tplan"></div>
@@ -1069,9 +1069,9 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     </div>
         <div class="hint" id="thint" hidden></div>
     <div class="injrow" id="injrow" hidden>
-      <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="" disabled selected>اختار…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
-      <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختار…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
-      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="" disabled selected>اختار…</option></select></div>
+      <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
+      <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="" disabled selected>اختر…</option></select></div>
     </div>
     <input type="checkbox" id="nodose" hidden><input type="checkbox" id="corr" hidden>
     <p class="msg high" id="injhint" hidden></p>
@@ -1095,7 +1095,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <p class="msg" id="khint" hidden></p>
     <div class="supp" id="supp"><span class="lbl">المكملات</span></div>
     </div>
-    <div class="editbar" id="editbar" hidden><span>بتعدّل تسجيل قديم</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
+    <div class="editbar" id="editbar" hidden><span>تعدّل تسجيلًا قديمًا</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
     <button class="primary" id="save" type="submit">حفظ التسجيل</button>
   </form>
@@ -1112,7 +1112,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 
   <!-- ===== screen 3: report ===== -->
   <section class="card stack" id="rcard" aria-labelledby="rh" data-tab="report">
-    <h2 id="rh">تقرير للدكتور</h2>
+    <h2 id="rh">تقرير للطبيب</h2>
     <div class="rsec">
       <div class="rlbl">الفترة</div>
       <div class="presets" id="presets" role="group" aria-label="الفترة">
@@ -1131,16 +1131,16 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="rsec">
       <div class="rlbl">التقرير</div>
       <div class="acts">
-        <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للدكتور</b><small>كل يوم بتاريخه وقراءاته والأنسولين، بيفتح على الموبايل</small></span></button>
-        <button type="button" class="act" id="pdfshare"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="at"><b>مشاركة التقرير (واتساب)</b><small>يبعت ملف PDF الدكتور من قايمة المشاركة</small></span></button>
-        <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يوم بيوم</small></span></button>
+        <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للطبيب</b><small>كل يوم بتاريخه وقراءاته والأنسولين، يُفتح على الهاتف</small></span></button>
+        <button type="button" class="act" id="pdfshare"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="at"><b>مشاركة التقرير (واتساب)</b><small>يرسل ملف PDF للطبيب من قائمة المشاركة</small></span></button>
+        <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يومًا بيوم</small></span></button>
         <button type="button" class="act" id="rshow"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></svg></span><span class="at"><b>التقرير الكامل على الشاشة</b><small>رسومات وأنماط وتفاصيل الفترة</small></span></button>
       </div>
     </div>
   </section>
   <section class="card stack" id="medcard" data-tab="report">
     <h2>بيانات للتقرير</h2>
-    <p class="small">بتظهر في أول التقرير اللي بيروح للدكتور.</p>
+    <p class="small">تظهر في أول التقرير المرسَل إلى الطبيب.</p>
     <h3>الوزن والطول والضغط</h3>
     <div class="two">
       <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
@@ -1151,20 +1151,20 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
     </div>
     <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
-    <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن دلوقتي</label><div id="sage" class="agebox">—</div></div></div>
-    <h3>زيارة الدكتور</h3>
+    <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن الآن</label><div id="sage" class="agebox">—</div></div></div>
+    <h3>زيارة الطبيب</h3>
     <div class="field"><label for="vlast">آخر زيارة (التاريخ والوقت)</label><input id="vlast" type="datetime-local"></div>
-    <div class="field"><label for="vnext">الزيارة الجاية (التاريخ والوقت)</label><input id="vnext" type="datetime-local"></div>
-    <div class="field"><label for="vnote">ملاحظات الدكتور <em>(اختياري)</em></label><input id="vnote" type="text" maxlength="300" autocomplete="off" placeholder="مثلاً: يراجع الأكل، تحليل دم الأسبوع الجاي"></div>
+    <div class="field"><label for="vnext">الزيارة القادمة (التاريخ والوقت)</label><input id="vnext" type="datetime-local"></div>
+    <div class="field"><label for="vnote">ملاحظات الطبيب <em>(اختياري)</em></label><input id="vnote" type="text" maxlength="300" autocomplete="off" placeholder="مثلاً: يراجع الأكل، تحليل دم الأسبوع القادم"></div>
     <h3>التحليل التراكمي (HbA1c)</h3>
-    <p class="small">كل 3 شهور تقريباً. البرنامج بيفكرك لما الميعاد يقرّب.</p>
+    <p class="small">كل 3 أشهر تقريبًا. يُذكّرك البرنامج عند اقتراب الموعد.</p>
     <div class="two">
       <div class="field"><label for="a1cd">تاريخ آخر تحليل</label><input id="a1cd" type="date"></div>
       <div class="field"><label for="a1cv">النتيجة % <em>(اختياري)</em></label><input id="a1cv" type="text" inputmode="decimal" placeholder="مثلاً 7.5"></div>
     </div>
 
     <h3>الفحوصات الدورية</h3>
-    <p class="small">سجّل تاريخ آخر مرة، وأفكرك قبل الميعاد بأسبوعين. المدة بالشهور بتحددها الدكتور.</p>
+    <p class="small">سجّل تاريخ آخر مرة، وسنُذكّرك قبل الموعد بأسبوعين. يحدد الطبيب المدة بالأشهر.</p>
     <div id="ckwrap" class="stack"></div>
     <button type="button" class="ghost" id="ckadd">+ أضف فحص</button>
 
@@ -1177,8 +1177,8 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 
     <h3>حدود التنبيه</h3>
     <div class="two">
-      <div class="field"><label for="slow">نبّهني لو أقل من</label><input id="slow" type="text" inputmode="numeric"></div>
-      <div class="field"><label for="shigh">نبّهني لو أعلى من</label><input id="shigh" type="text" inputmode="numeric"></div>
+      <div class="field"><label for="slow">نبّهني إذا كان أقل من</label><input id="slow" type="text" inputmode="numeric"></div>
+      <div class="field"><label for="shigh">نبّهني إذا كان أعلى من</label><input id="shigh" type="text" inputmode="numeric"></div>
     </div>
 
     <h3>أبيدرا للأكل</h3>
@@ -1186,47 +1186,47 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <details class="sub">
       <summary>نسبة مختلفة لكل وجبة</summary>
       <div class="three" style="margin-top:8px">
-        <div class="field"><label for="sicrbf">فطار</label><input id="sicrbf" type="text" inputmode="decimal"></div>
-        <div class="field"><label for="sicrln">غدا</label><input id="sicrln" type="text" inputmode="decimal"></div>
-        <div class="field"><label for="sicrdn">عشا</label><input id="sicrdn" type="text" inputmode="decimal"></div>
+        <div class="field"><label for="sicrbf">فطور</label><input id="sicrbf" type="text" inputmode="decimal"></div>
+        <div class="field"><label for="sicrln">غداء</label><input id="sicrln" type="text" inputmode="decimal"></div>
+        <div class="field"><label for="sicrdn">عشاء</label><input id="sicrdn" type="text" inputmode="decimal"></div>
       </div>
     </details>
 
-    <h3>تصحيح السكر العالي</h3>
-    <p class="small">اكتب جدول الدكتور (من كام لكام = كام وحدة)، أو الهدف وكام mg/dL بتنزّلها الوحدة. لو كتبت الجدول هو اللي بيتستخدم.</p>
+    <h3>تصحيح السكر المرتفع</h3>
+    <p class="small">اكتب جدول الطبيب (من كذا إلى كذا = كم وحدة)، أو الهدف وكم mg/dL تخفضها الوحدة. إذا كتبت الجدول فهو الذي يُستخدم.</p>
     <div id="sscale" class="stack" style="gap:8px"></div>
     <div class="three">
       <div class="field"><label for="starget">الهدف</label><input id="starget" type="text" inputmode="numeric" placeholder="120"></div>
-      <div class="field"><label for="sisf">الوحدة تنزّل</label><input id="sisf" type="text" inputmode="numeric" placeholder="50"></div>
+      <div class="field"><label for="sisf">الوحدة تخفض</label><input id="sisf" type="text" inputmode="numeric" placeholder="50"></div>
       <div class="field"><label for="smax">أقصى جرعة</label><input id="smax" type="text" inputmode="decimal"></div>
     </div>
 
     <h3>جهاز قياس مستمر</h3>
-    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أنا بستخدم جهاز قياس مستمر</span></label>
-    <p class="hint">لما تفعّلها، تنبيهات القراءات (الصايم وبعد الفطار وقبل النوم) بتتقفل. تنبيهات الأنسولين بتفضل.</p>
+    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
+    <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطور وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>المكملات</h3>
-    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span>تنبيه الأوميجا بعد الفطار</span></label>
-    <div class="field"><label for="somegat">وقت بديل لو ما اتسجلش فطار</label><input id="somegat" type="time"></div>
+    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span>تنبيه الأوميجا بعد الفطور</span></label>
+    <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطور</label><input id="somegat" type="time"></div>
     <label class="cgmrow"><input type="checkbox" id="ssuppv"><span>تنبيه الفيتامينات بعد الغداء</span></label>
-    <div class="field"><label for="svitat">وقت بديل لو ما اتسجلش غداء</label><input id="svitat" type="time"></div>
-    <p class="hint">التنبيه بيوصل بعد الوجبة بساعة (من جرعة أبيدرا المسجلة)، ومرة واحدة في اليوم، ومش بيوصل لو سجلتها. لو مفيش جرعة اتسجلت، بيوصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
+    <div class="field"><label for="svitat">وقت بديل إن لم يُسجَّل الغداء</label><input id="svitat" type="time"></div>
+    <p class="hint">يصل التنبيه بعد الوجبة بساعة (من جرعة أبيدرا المسجَّلة)، ومرة واحدة في اليوم، ولا يصل إن سجّلتها. وإن لم تُسجَّل جرعة، يصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
     <h3>الأقلام المفتوحة</h3>
-    <p class="hint">اكتب تاريخ فتح كل قلم، وبنفكّرك قبل ما يعدّي 28 يوم على فتحه.</p>
+    <p class="hint">اكتب تاريخ فتح كل قلم، وسنُذكّرك قبل مرور 28 يومًا على فتحه.</p>
     <div class="two cen">
       <div class="field"><label for="spena">فتح قلم أبيدرا</label><input id="spena" type="date"></div>
       <div class="field"><label for="spent">فتح قلم ترسيبا</label><input id="spent" type="date"></div>
     </div>
     <p class="small" id="penleft"></p>
     <h3>مخزون الأقلام</h3>
-    <p class="hint">اكتب عدد الأقلام اللي عندك دلوقتي (بالقلم الشغال). القلم 300 وحدة، وكل جرعة بتتسجل بعد كده بتتخصم لوحدها. الحساب بالجرعات الثابتة.</p>
+    <p class="hint">اكتب عدد الأقلام التي لديك الآن (مع القلم المستخدم). القلم 300 وحدة، وكل جرعة تُسجَّل بعد ذلك تُخصم تلقائيًا. الحساب بالجرعات الثابتة.</p>
     <div class="two cen">
       <div class="field"><label for="sstocka">عدد أقلام أبيدرا</label><input id="sstocka" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="field"><label for="sstockt">عدد أقلام ترسيبا</label><input id="sstockt" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
-    <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل ما يخلص بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
+    <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل نفاده بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
     <p class="small" id="stocktxt"></p>
     <h3>الجرعات الثابتة</h3>
-    <p class="hint">جرعات الدكتور الثابتة. تقدر تغيّرها في أي وقت، وبتظهر في تقرير الدكتور وبتتحسب بيها أيام المخزون.</p>
+    <p class="hint">جرعات الطبيب الثابتة. يمكنك تغييرها في أي وقت، وتظهر في تقرير الطبيب وتُحسب بها أيام المخزون.</p>
     <div class="two cen">
       <div class="field"><label for="sfixbf">أبيدرا الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
       <div class="field"><label for="sfixln">أبيدرا الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
@@ -1236,70 +1236,70 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <div class="field"><label for="splan">ترسيبا</label><input id="splan" type="text" inputmode="decimal" placeholder="28"></div>
     </div>
 
-    <h3>شرايط قياس السكر</h3>
-    <p class="small">كل قراءة سكر بتتحسب شريط. البرنامج بيعد الباقي وينبهك لما يفضل 5 شرايط.</p>
-    <div class="two cen one"><div class="field"><label for="sstripn">عدد شرايط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div></div>
+    <h3>شرائط قياس السكر</h3>
+    <p class="small">كل قراءة سكر تُحتسب شريطًا. يحسب البرنامج المتبقي وينبّهك عند بقاء 5 شرائط.</p>
+    <div class="two cen one"><div class="field"><label for="sstripn">عدد شرائط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div></div>
     <div class="two cen one"><div class="field"><label for="sstripd">بداية الاستخدام</label><input id="sstripd" type="datetime-local"></div></div>
     <div id="stripbox" class="stripbox"></div>
     <button type="button" class="ghost" id="stripnew">بدء علبة جديدة</button>
-    <p class="small">العداد بيبدأ من آخر قراءة النهاردة (بيتحسب أول شريط)، ولو مفيش قراءة بيبدأ من دلوقتي. تقدر تعدّل الوقت بإيدك.</p>
+    <p class="small">يبدأ العدّاد من آخر قراءة اليوم (تُحتسب أول شريط)، وإن لم توجد قراءة فيبدأ من الآن. ويمكنك تعديل الوقت يدويًا.</p>
 
     <h3>أسنان الأقلام</h3>
-    <p class="small">كل مرة تسجل "سن جديد" بينقص سن من العلبة. وينبهك لما يفضل 10 أسنان.</p>
+    <p class="small">كل مرة تسجّل "سن جديد" ينقص سن من العلبة. وننبّهك عند بقاء 10 أسنان.</p>
     <div class="two cen one"><div class="field"><label for="sneedn">عدد أسنان العلبة</label><input id="sneedn" type="text" inputmode="numeric" placeholder="100"></div></div>
     <div class="two cen one"><div class="field"><label for="sneedd">بداية العد</label><input id="sneedd" type="datetime-local"></div></div>
     <div id="needlebox" class="stripbox"></div>
     <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
 
     <h3>الكيتون</h3>
-    <p class="small">الأرقام دي بتحددها خطة الدكتور. المكتوب تقريبي لو سبته فاضي: فوق 300 لمدة 3 ساعات.</p>
+    <p class="small">يحدد الطبيب هذه الأرقام في خطته. إن تركتها فارغة فالمعتمد تقريبًا: فوق 300 لمدة 3 ساعات.</p>
     <div class="two">
-      <div class="field"><label for="sketh">نبّهني لو السكر فوق</label><input id="sketh" type="text" inputmode="numeric" placeholder="300"></div>
+      <div class="field"><label for="sketh">نبّهني إذا كان السكر فوق</label><input id="sketh" type="text" inputmode="numeric" placeholder="300"></div>
       <div class="field"><label for="skethr">لمدة (ساعات)</label><input id="skethr" type="text" inputmode="numeric" placeholder="3"></div>
     </div>
-    <div class="field"><label for="sketexp">صلاحية شرايط الكيتون</label><input id="sketexp" type="date"></div>
+    <div class="field"><label for="sketexp">صلاحية شرائط الكيتون</label><input id="sketexp" type="date"></div>
 
-    <h3>إشعارات الموبايل</h3>
+    <h3>إشعارات الهاتف</h3>
     <div class="swrow">
-      <div class="swtxt"><b>تذكيرات على الموبايل ده</b><span id="pushst" class="small"></span></div>
-      <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الموبايل"><i></i></label>
+      <div class="swtxt"><b>تذكيرات على هذا الهاتف</b><span id="pushst" class="small"></span></div>
+      <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الهاتف"><i></i></label>
     </div>
-    <button type="button" class="link" id="pushtest" hidden>جرّب إشعار</button>
+    <button type="button" class="link" id="pushtest" hidden>جرّب إشعارًا</button>
 
     <h3>الحساب</h3>
-    <p class="small">اخرج من البرنامج على الموبايل ده، وهيطلب الرقم السري تاني في الدخول الجاي.</p>
+    <p class="small">اخرج من البرنامج على هذا الهاتف، وسيطلب الرقم السري مجددًا عند الدخول القادم.</p>
     <button type="button" class="ghost" id="logout" hidden>تسجيل الخروج</button>
 
     <h3>نسخة احتياطية</h3>
-    <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بيها (في الملفات أو واتساب). تقدر ترجّعها لو حصل أي مشكلة.</p>
+    <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بها (في الملفات أو واتساب). يمكنك استرجاعها إذا حدثت أي مشكلة.</p>
     <div class="two">
       <button type="button" class="ghost" id="bkexp">تنزيل نسخة</button>
       <button type="button" class="ghost" id="bkimp">استرجاع من ملف</button>
     </div>
     <input type="file" id="bkfile" accept=".json,application/json" hidden>
-    <p class="small">السيرفر بيحتفظ بنسخة كل يوم لمدة 30 يوم.</p>
-    <button type="button" class="ghost" id="bksrv">نسخ السيرفر</button>
+    <p class="small">يحتفظ الخادم بنسخة كل يوم لمدة 30 يومًا.</p>
+    <button type="button" class="ghost" id="bksrv">نسخ الخادم</button>
     <div id="bksrvbox" hidden>
-      <select id="bksel" aria-label="اختار نسخة"></select>
-      <button type="button" class="ghost" id="bkrest">استرجاع النسخة دي</button>
+      <select id="bksel" aria-label="اختر نسخة"></select>
+      <button type="button" class="ghost" id="bkrest">استرجاع هذه النسخة</button>
     </div>
     <p class="small" id="bkmsg" role="status"></p>
 
     <h3>الأمان والمتابعة</h3>
     <p class="small" id="secstat"></p>
     <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
-    <div class="field"><label for="authView">رقم للمتابعة بس <em>(اختياري. لو فاضي بيتلغي)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="ابعته للدكتور أو أي حد"></div>
+    <div class="field"><label for="authView">رقم للمتابعة فقط <em>(اختياري. إن تُرك فارغًا يُلغى)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="أرسله للطبيب أو لأي شخص"></div>
     <p class="err" id="secerr" role="alert"></p>
     <button type="button" class="ghost" id="authSave">حفظ الأرقام</button>
-    <p class="small">الرقم الثاني بيفتح السجل والتقرير بس، من غير تسجيل أو تعديل أو حذف. كل موبايل بيكتب الرقم مرة واحدة بس.</p>
+    <p class="small">الرقم الثاني يفتح السجل والتقرير فقط، دون تسجيل أو تعديل أو حذف. يكتب كل هاتف الرقم مرة واحدة فقط.</p>
   </section>
 
 
 
-  <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: مفيش تسجيل أو تعديل</p>
+  <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: لا تسجيل ولا تعديل</p>
 </main>
 
-<div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">تمام</button></div></div>
+<div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">حسنًا</button></div></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -1315,7 +1315,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 <script>
 (function(){
 var $=function(s){return document.querySelector(s)};
-var SLOTS=[['fast','صايم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
+var SLOTS=[['fast','صائم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
 function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
@@ -1465,10 +1465,10 @@ function penStock(kind,E){
 }
 function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var p=[];
-  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': باقي حوالي '+Math.round(i.left)+' وحدة'+(i.days!==null?'، تكفي حوالي '+i.days+' يوم':''))});
-  el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام علشان الحساب يشتغل.'; el.style.whiteSpace='pre-line';
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': المتبقي حوالي '+Math.round(i.left)+' وحدة'+(i.days!==null?'، تكفي حوالي '+i.days+' يومًا':''))});
+  el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام ليعمل الحساب.'; el.style.whiteSpace='pre-line';
 }
-function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'عدّى ميعاده':'باقي '+a+' يوم')); if(t!==null)p.push('ترسيبا: '+(t<0?'عدّى ميعاده':'باقي '+t+' يوم')); el.textContent=p.join(' · ')}
+function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'انتهى موعده':'المتبقي '+a+' يومًا')); if(t!==null)p.push('ترسيبا: '+(t<0?'انتهى موعده':'المتبقي '+t+' يومًا')); el.textContent=p.join(' · ')}
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
 function fixedDoses(E){
   var f=function(sl){return modeOf(E.filter(function(e){return e.slot===sl&&e.apidra>0&&!e.corr}).map(function(e){return e.apidra}))};
@@ -1482,7 +1482,7 @@ function dayLong(d){return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric
 function dayFull(d){return d.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'})}
 function relDay(d){
   var t=new Date(), y=new Date(t.getTime()-DAY);
-  if(lk(d)===lk(t))return 'النهاردة';
+  if(lk(d)===lk(t))return 'اليوم';
   if(lk(d)===lk(y))return 'امبارح';
   return d.toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'short'});
 }
@@ -1518,10 +1518,10 @@ function prep(){
 var tt; function toast(m){var el=$('#toast'); el.textContent=m; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){el.classList.remove('show')},2800)}
 
 function adviceFor(v){
-  if(v<54)return 'هبوط شديد. اتبع خطة الدكتور للهبوط فورًا، ولو الطفل مش واعي أو مش قادر يبلع اطلب الإسعاف.';
-  if(v<settings.low)return 'اتبع خطة الدكتور للهبوط (كارب سريع) وأعد القياس بعد حوالي 15 دقيقة.';
-  if(v>=300)return 'مرتفع جدًا. اتبع خطة الدكتور (زي قياس الكيتونات) وكلمه لو فضل عالي أو ظهرت أعراض.';
-  if(v>settings.high)return 'اتبع خطة الدكتور للتصحيح، وراجع آخر جرعة أبيدرا، وأعد القياس حسب خطته.';
+  if(v<54)return 'هبوط شديد. اتبع خطة الطبيب للهبوط فورًا، وإن كان الطفل غير واعٍ أو لا يستطيع البلع فاطلب الإسعاف.';
+  if(v<settings.low)return 'اتبع خطة الطبيب للهبوط (كارب سريع) وأعد القياس بعد حوالي 15 دقيقة.';
+  if(v>=300)return 'مرتفع جدًا. اتبع خطة الطبيب (مثل قياس الكيتونات) وتواصل معه إن استمر الارتفاع أو ظهرت أعراض.';
+  if(v>settings.high)return 'اتبع خطة الطبيب للتصحيح، وراجع آخر جرعة أبيدرا، وأعد القياس حسب خطته.';
   return '';
 }
 
@@ -1559,7 +1559,7 @@ async function start(first){
   try{
     var j=await api(); mode='cloud'; applyServer(j); ready();
   }catch(e){
-    if(e.code==='auth'){showGate(first?'':'الرقم السري غلط، جرب تاني.'); return}
+    if(e.code==='auth'){showGate(first?'':'الرقم السري غير صحيح، حاول مرة أخرى.'); return}
     var snap=lsGet(LS_SNAP,null);
     if(e.code==='net'&&snap&&snap.entries){mode='cloud'; netErr=true; snap.__snap=true; applyServer(snap); ready(); return}
     syncErr=e.code||'net'; mode='local'; entries=lsGet(LS_E,[]); var s=lsGet(LS_S,null); if(s)settings=Object.assign({},DEFAULTS,s); ready();
@@ -1570,20 +1570,20 @@ function showGate(msg){
 }
 function renderSecurity(){
   var el=$('#secstat'); if(!el)return;
-  $('#authEdit').placeholder=prot?'سيبه فاضي لو مش عايز تغيّره':'4 أرقام على الأقل';
+  $('#authEdit').placeholder=prot?'اتركه فارغًا إن لم ترد تغييره':'4 أرقام على الأقل';
   $('#logout').hidden=!prot; $('#ronote').hidden=role!=='view';
-  el.textContent=mode==='local'?'الحماية بالأرقام متاحة لما البرنامج يتوصل بالسيرفر.':prot?'الحماية شغالة. أي موبايل جديد لازم يكتب الرقم.':'مفيش رقم سري لسه، يعني أي حد معاه الرابط يقدر يشوف ويعدّل. حدد رقم دلوقتي.';
+  el.textContent=mode==='local'?'الحماية بالأرقام متاحة عند اتصال البرنامج بالخادم.':prot?'الحماية مفعّلة. أي هاتف جديد يجب أن يكتب الرقم.':'لا يوجد رقم سري بعد، أي شخص لديه الرابط يستطيع أن يرى ويعدّل. حدّد رقمًا الآن.';
 }
 async function saveAuth(){
   var ep=normPin($('#authEdit').value)||(prot?pin:''), vp=normPin($('#authView').value), err=$('#secerr'); err.textContent='';
-  if(mode!=='cloud'){err.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
-  if(ep.length<4){err.textContent='رقم التعديل لازم يكون 4 أرقام على الأقل.'; return}
-  if(vp&&(vp.length<4||vp===ep)){err.textContent='رقم المتابعة لازم يكون 4 أرقام على الأقل ومختلف عن رقم التعديل.'; return}
+  if(mode!=='cloud'){err.textContent='يجب أن يكون البرنامج متصلًا بالخادم.'; return}
+  if(ep.length<4){err.textContent='يجب أن يكون رقم التعديل 4 أرقام على الأقل.'; return}
+  if(vp&&(vp.length<4||vp===ep)){err.textContent='يجب أن يكون رقم المتابعة 4 أرقام على الأقل ومختلفًا عن رقم التعديل.'; return}
   var b=$('#authSave'); b.disabled=true;
   try{
     await api({action:'setauth',editPin:ep,viewPin:vp||null});
-    pin=ep; lsSet(LS_P,pin); prot=true; $('#authEdit').value=''; $('#authView').value=''; renderSecurity(); toast('اتحفظت الأرقام. باقي الموبايلات هتطلب الرقم.');
-  }catch(e){err.textContent=e.code==='pinformat'?'الأرقام مش مقبولة. جرب أرقام تانية.':'مقدرتش أحفظ. جرب تاني.'}
+    pin=ep; lsSet(LS_P,pin); prot=true; $('#authEdit').value=''; $('#authView').value=''; renderSecurity(); toast('حُفظت الأرقام. ستطلب باقي الهواتف الرقم.');
+  }catch(e){err.textContent=e.code==='pinformat'?'الأرقام غير مقبولة. جرّب أرقامًا أخرى.':'تعذّر الحفظ. حاول مرة أخرى.'}
   finally{b.disabled=false}
 }
 $('#kt').addEventListener('change',ketUI); $('#ku').addEventListener('change',ketUI); $('#kv').addEventListener('input',ketUI);
@@ -1596,16 +1596,16 @@ async function exportBackup(){
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sugar-backup-'+lk(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
     m.textContent='اتنزّلت نسخة فيها '+(j.entries||[]).length+' تسجيل.';
-  }catch(e){m.textContent='مقدرتش أنزّل النسخة. جرب تاني.'}
+  }catch(e){m.textContent='تعذّر تنزيل النسخة. حاول مرة أخرى.'}
 }
 async function importBackup(file){
   var m=$('#bkmsg'); m.textContent='';
   try{
     var data=JSON.parse(await file.text());
     var list=Array.isArray(data)?data:data.entries;
-    if(!Array.isArray(list)||!list.length){m.textContent='الملف ده مش نسخة احتياطية صحيحة.'; return}
-    if(!confirm('هيتم إضافة '+list.length+' تسجيل (والتسجيلات الموجودة بنفس الرقم هتتحدّث). تكمل؟'))return;
-    if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+    if(!Array.isArray(list)||!list.length){m.textContent='هذا الملف ليس نسخة احتياطية صحيحة.'; return}
+    if(!confirm('ستتم إضافة '+list.length+' تسجيل (والتسجيلات الموجودة بنفس الرقم ستُحدَّث). هل تكمل؟'))return;
+    if(mode!=='cloud'){m.textContent='يجب أن يكون البرنامج متصلًا بالخادم.'; return}
     var n=0, sk=0;
     for(var i=0;i<list.length;i+=500){
       var r=await api({action:'import',entries:list.slice(i,i+500),settings:i===0&&!Array.isArray(data)&&data.settings?data.settings:undefined});
@@ -1613,27 +1613,27 @@ async function importBackup(file){
     }
     await refresh();
     m.textContent='اترجّع '+n+' تسجيل'+(sk?' (واتخطّى '+sk+' غير صالح)':'')+'.';
-  }catch(e){m.textContent='الاسترجاع فشل. اتأكد إن الملف سليم وجرب تاني.'}
+  }catch(e){m.textContent='فشل الاسترجاع. تأكّد من سلامة الملف وحاول مرة أخرى.'}
 }
 $('#bkexp').addEventListener('click',exportBackup);
 $('#bkimp').addEventListener('click',function(){$('#bkfile').click()});
 $('#bksrv').addEventListener('click',async function(){
   var m=$('#bkmsg'); m.textContent='';
-  if(mode!=='cloud'){m.textContent='لازم البرنامج يكون متوصل بالسيرفر.'; return}
+  if(mode!=='cloud'){m.textContent='يجب أن يكون البرنامج متصلًا بالخادم.'; return}
   try{
     var r=await api({action:'backups'}), L=r.backups||[];
-    if(!L.length){m.textContent='لسه مفيش نسخ على السيرفر. أول نسخة بتتعمل الصبح.'; $('#bksrvbox').hidden=true; return}
+    if(!L.length){m.textContent='لا توجد نسخ على الخادم بعد. تُنشأ أول نسخة في الصباح.'; $('#bksrvbox').hidden=true; return}
     var MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
     $('#bksel').innerHTML=L.map(function(b){var p=b.d.split('-'); return '<option value="'+b.d+'">'+(+p[2])+' '+MON[+p[1]-1]+' '+p[0]+(b.n?' ('+b.n+' تسجيل)':'')+'</option>'}).join('');
     $('#bksrvbox').hidden=false;
-  }catch(e){m.textContent='معرفتش أجيب النسخ. جرب تاني.'}
+  }catch(e){m.textContent='تعذّر جلب النسخ. حاول مرة أخرى.'}
 });
 $('#bkrest').addEventListener('click',async function(){
   var m=$('#bkmsg'), d=$('#bksel').value; if(!d)return;
-  if(!confirm('هترجّع نسخة '+$('#bksel').selectedOptions[0].textContent+'. القراءات هتتضاف فوق الموجود، والإعدادات هتتبدل بإعدادات النسخة. تكمل؟'))return;
-  var btn=this; btn.disabled=true; m.textContent='بسترجع…';
+  if(!confirm('سيتم استرجاع نسخة '+$('#bksel').selectedOptions[0].textContent+'. ستُضاف القراءات إلى الموجود، وستُستبدل الإعدادات بإعدادات النسخة. هل تكمل؟'))return;
+  var btn=this; btn.disabled=true; m.textContent='جارٍ الاسترجاع…';
   try{var r=await api({action:'restorebk',d:d}); await refresh(); m.textContent='اترجّع '+r.restored+' تسجيل'+(r.settings?' والإعدادات':'')+'.'}
-  catch(e){m.textContent='معرفتش أرجّع النسخة دي.'}
+  catch(e){m.textContent='تعذّر استرجاع هذه النسخة.'}
   btn.disabled=false;
 });
 $('#bkfile').addEventListener('change',function(){var f=this.files&&this.files[0]; this.value=''; if(f)importBackup(f)});
@@ -1672,7 +1672,7 @@ async function flushQ(){
       catch(e){ if(e.code==='net'||e.code==='auth'||e.code==='readonly')break; q.shift(); lsSet(LS_Q,q) }
     }
   }finally{flushing=false}
-  if(sentN){netErr=false; toast('اتبعتت '+sentN+' تسجيل كانوا مستنيين النت'); refresh()}
+  if(sentN){netErr=false; toast('أُرسل '+sentN+' تسجيل كانت بانتظار الإنترنت'); refresh()}
 }
 window.addEventListener('online',function(){setTimeout(flushQ,800)});
 setInterval(flushQ,30000);
@@ -1684,17 +1684,17 @@ async function removeEntry(id){
   if(mode!=='cloud')lsSet(LS_E,entries);
 }
 var forceDup=false, undoT;
-function showUndo(id,q){var el=$('#undo'); el.innerHTML=(q?'اتحفظ على الموبايل وهيتبعت لما النت يرجع':'اتحفظ')+' <button type="button" class="link" data-undo="'+id+'">تراجع</button>'; el.classList.add('show'); clearTimeout(undoT); undoT=setTimeout(function(){el.classList.remove('show')},7000)}
+function showUndo(id,q){var el=$('#undo'); el.innerHTML=(q?'حُفظ على الهاتف وسيُرسل عند عودة الإنترنت':'حُفظ')+' <button type="button" class="link" data-undo="'+id+'">تراجع</button>'; el.classList.add('show'); clearTimeout(undoT); undoT=setTimeout(function(){el.classList.remove('show')},7000)}
 document.addEventListener('click',async function(e){
   var u=e.target.closest&&e.target.closest('[data-undo]');
-  if(u){var id=u.dataset.undo; $('#undo').classList.remove('show'); try{await removeEntry(id); toast('اتلغى التسجيل'); render()}catch(_){toast('مقدرتش أتراجع. جرب من السجل.')} return}
+  if(u){var id=u.dataset.undo; $('#undo').classList.remove('show'); try{await removeEntry(id); toast('أُلغي التسجيل'); render()}catch(_){toast('تعذّر التراجع. جرّب من السجل.')} return}
   if(e.target.id==='dupok'){forceDup=true; $('#ferr').textContent=''; $('#f').requestSubmit()}
 });
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='slot')updateAplan()});
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#modebar'))setTimeout(updateAplan,30)});
 function showForm(){setTimeout(function(){var f=$('#f'); if(!f)return; var c=(f.closest('.card')||f); c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('flash'); setTimeout(function(){c.classList.remove('flash')},1400); var g=$('#g'); if(g&&!g.closest('[hidden]')&&imode!=='tres'){try{g.focus({preventScroll:true})}catch(_){}}},60)}
 function persistSettings(){
-  if(mode==='cloud'&&!settingsLoaded){toast('الإعدادات لسه بتتحمّل. جرّب كمان لحظة'); refresh(); return}
+  if(mode==='cloud'&&!settingsLoaded){toast('الإعدادات قيد التحميل. جرّب بعد لحظة'); refresh(); return}
   if(mode==='cloud')api({action:'settings',settings:settings}).catch(function(){toast('تعذّر حفظ الإعدادات')});
   else lsSet(LS_S,settings);
 }
@@ -1722,7 +1722,7 @@ $('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x
 $('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('');
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
 function suppDoneToday(k){var td=lk(new Date()); return (typeof entries!=='undefined'?entries:[]).some(function(e){return e.id!==editingId&&(e.supp||[]).indexOf(k)>=0&&lk(new Date(e.ts))===td})}
-function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; b.textContent=done?base+' ✓ اتسجلت':base})}
+function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; b.textContent=done?base+' ✓ سُجّلت':base})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
@@ -1757,33 +1757,33 @@ function renderReadRem(E){
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
   if(settings.cgm){el.hidden=true; el.innerHTML=''; return}
   var TA=(E||prep()).filter(function(e){return lk(e.d)===tk});
-  if(h>=6&&!has('fast'))rows.push(['قراءة الصايم لسه ما اتسجلتش النهاردة','fast']);
+  if(h>=6&&!has('fast'))rows.push(['لم تُسجَّل قراءة الصائم اليوم بعد','fast']);
   var bb=TA.filter(function(e){return e.slot==='bf_before'}).pop();
-  if(bb&&!has('bf_after')&&now-bb.d>=2*36e5&&now-bb.d<7*36e5)rows.push(['عدّى ساعتين على الفطار. قراءة بعد الفطار لسه ما اتسجلتش','bf_after']);
-  if((h>=22||h<4)&&!has('bed'))rows.push(['قراءة قبل النوم لسه ما اتسجلتش','bed']);
+  if(bb&&!has('bf_after')&&now-bb.d>=2*36e5&&now-bb.d<7*36e5)rows.push(['مضت ساعتان على الفطار. لم تُسجَّل قراءة ما بعد الفطار بعد','bf_after']);
+  if((h>=22||h<4)&&!has('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
   el.hidden=!rows.length;
-  el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل دلوقتي</button></div>'}).join('');
+  el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button></div>'}).join('');
 }
 function monthKey(){var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)}
 function renderMedRem(){
   var el=$('#medrem'); if(!el)return;
   var show=authed&&role!=='view'&&settings.medGot!==monthKey();
-  el.hidden=!show; el.innerHTML=show?'<div class="rr"><span>العلاج الشهري: جبته؟</span><button type="button" class="link" data-med="done">جبته</button></div>':'';
+  el.hidden=!show; el.innerHTML=show?'<div class="rr"><span>العلاج الشهري: هل حصلتم عليه؟</span><button type="button" class="link" data-med="done">حصلنا عليه</button></div>':'';
 }
 function renderVisitRem(){
   var el=$('#visitrem'); if(!el)return; var vn=settings.visitNext, now=Date.now();
   if(role==='view'||!vn||new Date(vn).getTime()>now||now-new Date(vn).getTime()>30*DAY){el.hidden=true; return}
   var missed=false; try{missed=localStorage.getItem('ysg:vmiss')===vn}catch(e){}
   el.hidden=false;
-  el.innerHTML=missed?'<div class="rr"><span>زيارة الدكتور فاتت ومحتاجة ميعاد جديد</span><button type="button" class="link" data-visit="new">حدد ميعاد جديد</button></div>'
-   :'<div class="rr"><span>زيارة الدكتور ('+dayLong(new Date(vn))+') عدّت. رحت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">رحت</button><button type="button" class="link" data-visit="skip">مروحتش</button></span></div>';
+  el.innerHTML=missed?'<div class="rr"><span>فات موعد زيارة الطبيب. حدّد موعدًا جديدًا</span><button type="button" class="link" data-visit="new">حدّد موعدًا جديدًا</button></div>'
+   :'<div class="rr"><span>فات موعد الطبيب ('+dayLong(new Date(vn))+'). هل ذهبت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">نعم</button><button type="button" class="link" data-visit="skip">لا</button></span></div>';
 }
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var T=tresToday();
   if(!isNight()||role==='view'){el.hidden=true; return}
   if(T.length){el.hidden=true; el.innerHTML=''; return}
   el.hidden=false; el.classList.toggle('done',T.length>0);
-  el.innerHTML=T.length?'<span>ترسيبا النهاردة اتسجلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>ترسيبا لسه ما اتسجلتش النهاردة</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
+  el.innerHTML=T.length?'<span>ترسيبا اليوم سُجّلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>لم تُسجَّل ترسيبا اليوم بعد</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
 var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed'];
 function setSlotOptions(){
@@ -1813,7 +1813,7 @@ function syncCorr(){
   }
   lastMode=imode;
   var mh=$('#modehint'), ns2=imode==='tres'?nextSite():null;
-  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة ترسيبا كانت في: '+ns2.last+'. اتحط المكان اللي بعده للتدوير، غيّره لو عايز.';
+  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة ترسيبا كانت في: '+ns2.last+'. وُضع المكان التالي للتدوير، غيّره إن أردت.';
   $('#calc').hidden=imode!=='meal'; var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
 var modeTouched=false;
@@ -1829,11 +1829,11 @@ function setMode(m){
 }
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
-  if(mb){settings=Object.assign({},settings,{medGot:monthKey()}); persistSettings(); render(); toast('تمام. هنفكّرك الشهر الجاي'); return}
+  if(mb){settings=Object.assign({},settings,{medGot:monthKey()}); persistSettings(); render(); toast('تم. سنُذكّرك الشهر القادم'); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
     var act=vb.dataset.visit;
-    if(act==='done'){settings=Object.assign({},settings,{visitLast:settings.visitNext,visitNext:null}); persistSettings(); syncSettingsInputs(); render(); toast('اتسجلت الزيارة. حدد ميعاد الزيارة الجاية.'); act='new'}
+    if(act==='done'){settings=Object.assign({},settings,{visitLast:toLocalInput(new Date()),visitNext:null}); persistSettings(); syncSettingsInputs(); render(); toast('سُجّلت آخر زيارة اليوم. اكتب موعد الزيارة القادمة.'); act='new'}
     else if(act==='skip'){try{localStorage.setItem('ysg:vmiss',settings.visitNext)}catch(x){} render(); return}
     if(act==='new'){go('report'); setTimeout(function(){var v=$('#vnext'); if(v){v.scrollIntoView({block:'center'}); v.focus()}},150)}
     return;
@@ -1842,16 +1842,16 @@ document.addEventListener('click',function(e){
   var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
-  if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='ترسيبا بتتسجل بعد الساعة 10 بالليل بس.'; mh.hidden=false; toast('ترسيبا بتتسجل بعد الساعة 10 بالليل'); return}
+  if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='تُسجَّل ترسيبا بعد الساعة 10 مساءً فقط.'; mh.hidden=false; toast('تُسجَّل ترسيبا بعد الساعة 10 مساءً'); return}
   setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
-function updateAplan(){var el=$('#aplan'); if(!el)return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الدكتور الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
+function updateAplan(){var el=$('#aplan'); if(!el)return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
 function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
 $('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
 (function(){
-  var h='<option value="">+ اختار صنف…</option>', cur=null, open=false;
+  var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
   DB.forEach(function(f){
     if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
     h+='<option value="'+f.i+'">'+esc(f.n)+'</option>';
@@ -1894,22 +1894,22 @@ function needleInfo(E){
 }
 function renderNeedles(){
   var el=$('#needlebox'); if(!el)return; var i=needleInfo();
-  if(!i){el.innerHTML='<p class="small">اكتب بداية العد، أو دوس "بدء علبة أسنان جديدة".</p>'; return}
+  if(!i){el.innerHTML='<p class="small">اكتب بداية العد، أو اضغط "بدء علبة أسنان جديدة".</p>'; return}
   var pct=Math.max(0,Math.min(100,Math.round(i.used/i.total*100)));
-  el.innerHTML='<div class="stripline"><b>باقي '+Math.max(0,i.left)+'</b><span>اتستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=10?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
+  el.innerHTML='<div class="stripline"><b>المتبقي '+Math.max(0,i.left)+'</b><span>المستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=10?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
 }
 function renderStrips(){ renderNeedles();
   var el=$('#stripbox'); if(!el)return; var i=stripInfo();
-  if(!i){el.innerHTML='<p class="small">اكتب بداية استخدام العلبة، أو دوس "بدء علبة جديدة".</p>'; return}
+  if(!i){el.innerHTML='<p class="small">اكتب بداية استخدام العلبة، أو اضغط "بدء علبة جديدة".</p>'; return}
   var pct=Math.max(0,Math.min(100,Math.round(i.used/i.total*100)));
-  el.innerHTML='<div class="stripline"><b>باقي '+Math.max(0,i.left)+'</b><span>اتستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=5?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
+  el.innerHTML='<div class="stripline"><b>المتبقي '+Math.max(0,i.left)+'</b><span>المستخدم '+i.used+' من '+i.total+'</span></div><div class="stripbar'+(i.left<=5?' low':'')+'"><i style="width:'+pct+'%"></i></div>'+(i.left<=0?'<p class="small">العلبة خلصت. ابدأ علبة جديدة لما تفتحها.</p>':'');
 }
 function careNotes(E){
   var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
-  var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'أسنان الأقلام خلصت. جهّز علبة جديدة.':'باقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سن')+' بس في علبة أسنان الأقلام. جهّز علبة جديدة.');
-  var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'شرايط السكر خلصت. جهّز علبة جديدة.':'باقي '+si.left+(si.left===1?' شريط':' شرايط')+' بس في علبة الشرايط. جهّز علبة جديدة.');
-  [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'قلم '+x[1]+' عدّى 28 يوم على فتحه. غيّره.':'قلم '+x[1]+' باقي له '+l+' يوم بعد الفتح.')});
-  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0],E); if(i&&i.days!==null&&i.days<=(settings.stockDays||14))out.push(i.days<=0?'مخزون '+x[1]+' على وشك الخلاص. جهّز أقلام جديدة.':'مخزون '+x[1]+' يكفي حوالي '+i.days+' يوم. جهّز أقلام جديدة.')});
+  var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'نفدت أسنان الأقلام. جهّز علبة جديدة.':'المتبقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سنًّا')+' فقط في علبة أسنان الأقلام. جهّز علبة جديدة.');
+  var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'نفدت شرائط السكر. جهّز علبة جديدة.':'المتبقي '+si.left+(si.left===1?' شريط':' شرائط')+' فقط في علبة الشرائط. جهّز علبة جديدة.');
+  [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'القلم '+x[1]+' مضى 28 يومًا على فتحه. استبدله.':'القلم '+x[1]+' متبقٍّ له '+l+' يومًا بعد الفتح.')});
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0],E); if(i&&i.days!==null&&i.days<=(settings.stockDays||14))out.push(i.days<=0?'مخزون '+x[1]+' على وشك النفاد. جهّز أقلامًا جديدة.':'مخزون '+x[1]+' يكفي حوالي '+i.days+' يومًا. جهّز أقلام جديدة.')});
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var lastInj=inj[inj.length-1];
   if(lastInj&&now-lastInj.d.getTime()<2*DAY){
@@ -1917,7 +1917,7 @@ function careNotes(E){
       var lastNew=null, lastInfo=null, lastUse=null;
       inj.forEach(function(e){var v=penNeedle(e,pn[0]); if(!v)return; lastUse=e; if(v==='new')lastNew=e; lastInfo=e});
       if(lastInfo&&penNeedle(lastInfo,pn[0])==='reuse'&&(!lastNew||now-lastNew.d.getTime()>=DAY)&&now-lastUse.d.getTime()<2*DAY)
-        out.push(lastNew?'سن قلم '+pn[1]+' ماتغيّرش بقاله '+ago(now-lastNew.d.getTime())+'. غيّره قبل حقنة '+pn[1]+' الجاية.':'سن قلم '+pn[1]+' بيتعاد استخدامه. غيّره قبل حقنة '+pn[1]+' الجاية.');
+        out.push(lastNew?'لم يُغيَّر سن قلم '+pn[1]+' منذ '+ago(now-lastNew.d.getTime())+'. غيّره قبل حقنة '+pn[1]+' القادمة.':'يُعاد استخدام سن قلم '+pn[1]+'. غيّره قبل حقنة '+pn[1]+' القادمة.');
     });
     var withSite=inj.filter(function(e){return e.site&&SITE_LABEL[e.site]});
     if(withSite.length>=2){
@@ -1925,33 +1925,33 @@ function careNotes(E){
       if(a.site===b.site&&now-a.d.getTime()<2*DAY)out.push('آخر حقنتين في نفس المكان ('+SITE_LABEL[a.site]+'). غيّر مكان الحقن.');
     }
   }
-  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&dayKey(new Date(vt))<=dayKey(new Date(now+DAY)))out.push('زيارة الدكتور '+(dayKey(new Date(vt))===dayKey(new Date(now))?'النهاردة':'بكرة')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
+  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&dayKey(new Date(vt))<=dayKey(new Date(now+DAY)))out.push('زيارة الطبيب '+(dayKey(new Date(vt))===dayKey(new Date(now))?'اليوم':'غدًا')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
   var hasOld=E.some(function(e){return lk(e.d)<tk});
   var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
   if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
     var t0=lastR.d; for(var ri=R.length-2;ri>=0&&R[ri].glucose>kHi;ri--)t0=R[ri].d;
-    if(lastR.d-t0>=(kHr-0.25)*36e5&&!E.some(function(e){return e.ketT&&e.d>=t0}))out.push('السكر فوق '+kHi+' من '+ago(now-t0.getTime())+'. اعمل تحليل كيتون حسب خطة الدكتور.');
+    if(lastR.d-t0>=(kHr-0.25)*36e5&&!E.some(function(e){return e.ketT&&e.d>=t0}))out.push('السكر فوق '+kHi+' من '+ago(now-t0.getTime())+'. أجرِ تحليل كيتون حسب خطة الطبيب.');
   }
   var lastK=null; E.forEach(function(e){if(e.ketT)lastK=e});
-  if(lastK&&now-lastK.d.getTime()<12*36e5&&ketLevel(lastK.ketT,lastK.ketV)[0]==='danger')out.push('آخر نتيجة كيتون: '+ketText(lastK)+'. كلّم الدكتور فورًا واتبع خطته.');
-  if(settings.ketExp){var kl=Math.ceil((new Date(settings.ketExp+'T12:00:00').getTime()-now)/DAY); if(kl<0)out.push('شرايط الكيتون انتهت صلاحيتها. جدّد الشرايط.'); else if(kl<=30)out.push('شرايط الكيتون هتنتهي بعد '+kl+' يوم.')}
+  if(lastK&&now-lastK.d.getTime()<12*36e5&&ketLevel(lastK.ketT,lastK.ketV)[0]==='danger')out.push('آخر نتيجة كيتون: '+ketText(lastK)+'. تواصل مع الطبيب فورًا واتبع خطته.');
+  if(settings.ketExp){var kl=Math.ceil((new Date(settings.ketExp+'T12:00:00').getTime()-now)/DAY); if(kl<0)out.push('انتهت صلاحية شرائط الكيتون. جدّدها.'); else if(kl<=30)out.push('ستنتهي صلاحية شرائط الكيتون بعد '+kl+' يومًا.')}
   var ckMissing=false;
   checksList().forEach(function(c){
     if(!c.d){ckMissing=true; return}
     var nx=new Date(c.d+'T12:00:00'); nx.setMonth(nx.getMonth()+c.m); var cl=Math.ceil((nx.getTime()-now)/DAY);
-    if(cl<=0)out.push('معاد فحص '+c.n+' عدّى (كان '+dayFull(nx)+').'); else if(cl<=14)out.push('باقي '+cl+' يوم على فحص '+c.n+' ('+dayFull(nx)+').');
+    if(cl<=0)out.push('فات موعد فحص '+c.n+' (كان '+dayFull(nx)+').'); else if(cl<=14)out.push('المتبقي '+cl+' يومًا على فحص '+c.n+' ('+dayFull(nx)+').');
   });
-  if(ckMissing&&hasOld&&E.length&&now-E[0].d.getTime()>7*DAY){out.push('سجّل تواريخ آخر الفحوصات الدورية في الإعدادات علشان نفكرك بالمواعيد.')}
+  if(ckMissing&&hasOld&&E.length&&now-E[0].d.getTime()>7*DAY){out.push('سجّل تواريخ آخر الفحوصات الدورية في الإعدادات لنُذكّرك بالمواعيد.')}
   if(settings.a1cDate){
     var nx=new Date(settings.a1cDate+'T12:00:00'); nx.setMonth(nx.getMonth()+3);
     var left=Math.ceil((nx.getTime()-now)/DAY);
-    if(left<=0)out.push('معاد التحليل التراكمي عدّى (كان '+dayFull(nx)+'). اعمله وسجّل التاريخ في الإعدادات.');
-    else if(left<=14)out.push('باقي '+left+' يوم على معاد التحليل التراكمي ('+dayFull(nx)+').');
-  }else if(hasOld)out.push('سجّل تاريخ آخر تحليل تراكمي في الإعدادات علشان نفكرك بالميعاد الجاي.');
+    if(left<=0)out.push('فات موعد التحليل التراكمي (كان '+dayFull(nx)+'). أجرِه وسجّل التاريخ في الإعدادات.');
+    else if(left<=14)out.push('المتبقي '+left+' يومًا على موعد التحليل التراكمي ('+dayFull(nx)+').');
+  }else if(hasOld)out.push('سجّل تاريخ آخر تحليل تراكمي في الإعدادات لنُذكّرك بالموعد القادم.');
   if(hasOld){
     var vitDays={}, lastVit=null;
     E.forEach(function(e){if((e.supp||[]).indexOf('vit')>=0){vitDays[lk(e.d)]=1; lastVit=e}});
-    if(!vitDays[tk]&&!vitDays[yk])out.push(lastVit?'الفيتامينات ماتسجلتش من '+relDay(lastVit.d)+'. لو ماخدتهاش خدها النهاردة.':'لسه مسجلتش الفيتامينات.');
+    if(!vitDays[tk]&&!vitDays[yk])out.push(lastVit?'لم تُسجَّل الفيتامينات منذ '+relDay(lastVit.d)+'. إن لم يتناولها فليتناولها اليوم.':'لم تُسجَّل الفيتامينات بعد.');
   }
   return out;
 }
@@ -1962,13 +1962,13 @@ function renderCare(E){
 }
 function injHint(){
   var el=$('#injhint'), msgs=[];
-  if($('#needle').value==='reuse'&&num($('#a').value)>0)msgs.push('سن قلم أبيدرا للاستخدام مرة واحدة. غيّره لو تقدر.');
+  if($('#needle').value==='reuse'&&num($('#a').value)>0)msgs.push('سن قلم أبيدرا للاستخدام مرة واحدة. غيّره إن أمكن.');
   if($('#needleT').value==='reuse'&&num($('#t').value)>0)msgs.push('سن قلم ترسيبا للاستخدام مرة واحدة. غيّره لو تقدر.');
   var site=$('#site').value;
   if(site){
     var inj=prep().filter(function(e){return (e.apidra>0||e.tresiba>0)&&e.site&&e.id!==editingId});
     var last=inj[inj.length-1];
-    if(last&&last.site===site&&Date.now()-last.d.getTime()<2*DAY)msgs.push('ده نفس مكان آخر حقنة ('+SITE_LABEL[site]+'). يفضّل تغيّره.');
+    if(last&&last.site===site&&Date.now()-last.d.getTime()<2*DAY)msgs.push('هذا نفس مكان آخر حقنة ('+SITE_LABEL[site]+'). يُفضَّل تغييره.');
   }
   el.textContent=msgs.join(' '); el.hidden=!msgs.length;
 }
@@ -1991,7 +1991,7 @@ function doctorNotes(E){
   var rows=order.map(function(k){var g=groups[k]; return {n:g.n,c:g.r.length,r:g.r.reduce(function(a,b){return a+b},0)/g.r.length,a:g.a.length?g.a.reduce(function(a,b){return a+b},0)/g.a.length:null}})
     .filter(function(x){return x.c>=2}).sort(function(a,b){return b.r-a.r}).slice(0,8);
   if(rows.length){
-    h+='<h3>تأثير الوجبات على السكر</h3><p class="cap">الفرق بين قراءة قبل الوجبة وقراءة بعدها (بعد نص ساعة لحد 5 ساعات). الوجبات اللي اتسجلت مرتين أو أكتر بس.</p><div class="tw"><table><thead><tr><th>الوجبة</th><th>عدد المرات</th><th>متوسط الفرق</th><th>متوسط أبيدرا</th></tr></thead><tbody>'+
+    h+='<h3>تأثير الوجبات على السكر</h3><p class="cap">الفرق بين قراءة قبل الوجبة وقراءة بعدها (بعد نصف ساعة حتى 5 ساعات). الوجبات المسجَّلة مرتين أو أكثر فقط.</p><div class="tw"><table><thead><tr><th>الوجبة</th><th>عدد المرات</th><th>متوسط الفرق</th><th>متوسط أبيدرا</th></tr></thead><tbody>'+
       rows.map(function(x){return '<tr><td>'+esc(x.n.length>70?x.n.slice(0,70)+'…':x.n)+'</td><td>'+x.c+'</td><td>'+(x.r>0?'+':'')+Math.round(x.r)+'</td><td>'+(x.a!=null?fmt(r1(x.a)):'')+'</td></tr>'}).join('')+'</tbody></table></div>';
   }
   [['bf','الفطار'],['ln','الغداء'],['dn','العشاء']].forEach(function(m){
@@ -2007,9 +2007,9 @@ function doctorNotes(E){
   var days=Object.keys(fd), dv=days.map(function(k){return fd[k].reduce(function(a,b){return a+b},0)/fd[k].length});
   if(days.length>=3){
     var hi=dv.filter(function(v){return v>130}).length, av=Math.round(dv.reduce(function(a,b){return a+b},0)/dv.length);
-    if(hi/days.length>=0.5)notes.push('السكر الصايم عالي في '+hi+' من '+days.length+' يوم (المتوسط '+av+'، والمرجع المعتاد 80–130 والدكتور هو اللي يحدد الهدف).');
+    if(hi/days.length>=0.5)notes.push('سكر الصيام مرتفع في '+hi+' من '+days.length+' يومًا (المتوسط '+av+'، والمرجع المعتاد 80–130، والطبيب هو من يحدد الهدف).');
   }
-  if(notes.length)h+='<h3>ملاحظات من التسجيلات</h3><p class="cap">ملاحظات حسابية من التسجيلات بس، مش تعليمات علاج.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
+  if(notes.length)h+='<h3>ملاحظات من التسجيلات</h3><p class="cap">ملاحظات حسابية من التسجيلات فقط، وليست تعليمات علاجية.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
   return h;
 }
 function renderHero(E){
@@ -2023,8 +2023,8 @@ function renderHero(E){
   h.innerHTML=
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
-    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج اللي تحت.')+'</p>'+
-    '<div class="tiles"><div class="a"><span>وحدات أبيدرا النهاردة</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا النهاردة</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات النهاردة</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
+    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+
+    '<div class="tiles"><div class="a"><span>وحدات أبيدرا اليوم</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا اليوم</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات اليوم</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
 }
 
 /* ---------- chart ---------- */
@@ -2061,13 +2061,13 @@ function chartSVG(E,startMs,nDays,label){
 }
 function renderChart(E){
   var t0=midnight(new Date()), svg=chartSVG(E,t0-6*DAY,7,'رسم قراءات السكر في آخر 7 أيام');
-  $('#chart').innerHTML=svg?svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>':'<p class="empty">الرسم بيظهر بعد ما تسجّل قراءتين على الأقل في آخر 7 أيام.</p>';
+  $('#chart').innerHTML=svg?svg+'<p class="cap">المنطقة الخضراء هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL</p>':'<p class="empty">يظهر الرسم بعد تسجيل قراءتين على الأقل في آخر 7 أيام.</p>';
 }
 
 function rowGroup(sl){return sl==='fast'||sl==='bf_before'||sl==='bf_after'?'bf':sl==='ln_before'||sl==='ln_after'?'ln':sl==='dn_before'||sl==='dn_after'?'dn':sl==='bed'?'bed':'ot'}
 function ketLevel(t,v){
-  if(t==='b'){var n=Number(v); return n<0.6?['ok','طبيعي']:n<1.5?['watch','راقب']:n<=3?['danger','خطر: اتصل بالدكتور فورًا']:['danger','طوارئ: اتصل بالدكتور أو الإسعاف']}
-  return v==='neg'?['ok','طبيعي']:v==='small'?['watch','راقب']:v==='mod'?['danger','خطر: اتصل بالدكتور فورًا']:['danger','طوارئ: اتصل بالدكتور أو الإسعاف'];
+  if(t==='b'){var n=Number(v); return n<0.6?['ok','طبيعي']:n<1.5?['watch','راقب']:n<=3?['danger','خطر: اتصل بالطبيب فورًا']:['danger','طوارئ: اتصل بالطبيب أو الإسعاف']}
+  return v==='neg'?['ok','طبيعي']:v==='small'?['watch','راقب']:v==='mod'?['danger','خطر: اتصل بالطبيب فورًا']:['danger','طوارئ: اتصل بالطبيب أو الإسعاف'];
 }
 function ketText(e){var l=ketLevel(e.ketT,e.ketV); return 'كيتون '+(e.ketT==='b'?'دم '+e.ketV+' mmol/L':'بول '+(KET_U[e.ketV]||''))+' · '+l[1]}
 function ketUI(){
@@ -2107,7 +2107,7 @@ function mealText(e){
 var openDays={};
 function renderLog(E){
   var el=$('#log');
-  if(!E.length){el.innerHTML='<div class="card"><p class="empty">لسه مفيش تسجيلات. أول قراءة أو جرعة هتظهر هنا بعد ما تحفظها.</p></div>'; return}
+  if(!E.length){el.innerHTML='<div class="card"><p class="empty">لا توجد تسجيلات بعد. ستظهر أول قراءة أو جرعة هنا بعد حفظها.</p></div>'; return}
   var groups={}, order=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
@@ -2121,12 +2121,12 @@ function renderLog(E){
     var avg=gs.length?Math.round(gs.reduce(function(s,e){return s+e.glucose},0)/gs.length):null;
     var ap=G.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=G.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
     var sum=[]; if(avg!=null)sum.push('متوسط '+avg); sum.push('أبيدرا '+fmt(ap)+' وحدة'); if(tr>0)sum.push('ترسيبا '+fmt(tr)+' وحدة');
-    html+='<details class="day" data-k="'+k+'"'+((openDays[k]!==undefined?openDays[k]:di===0)?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">مفيش تسجيلات في اليوم ده</p></li>');
+    html+='<details class="day" data-k="'+k+'"'+((openDays[k]!==undefined?openDays[k]:di===0)?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">لا توجد تسجيلات في هذا اليوم</p></li>');
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (من غير أكل)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
         ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
@@ -2145,21 +2145,21 @@ function renderHint(E){
     var tr=E.filter(function(e){return e.tresiba>0&&lk(e.d)===tk});
     if(tr.length){
       var s=tr.reduce(function(a,e){return a+e.tresiba},0);
-      h+='<p><b class="warn">اتسجلت النهاردة:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. اتأكد إنك مش بتكرر الجرعة.</p>';
+      h+='<p><b class="warn">سُجّلت اليوم:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. تأكّد أنك لا تكرر الجرعة.</p>';
     }
-    $('#tplan').innerHTML=settings.plan>0?'جرعة الدكتور: <b>'+fmt(settings.plan)+' وحدة</b> <button type="button" class="link" data-useplan>اكتبها في الخانة</button>':'جرعة الدكتور: اكتبها في الإعدادات وهتظهر هنا كتذكير.';
+    $('#tplan').innerHTML=settings.plan>0?'جرعة الطبيب: <b>'+fmt(settings.plan)+' وحدة</b> <button type="button" class="link" data-useplan>اكتبها في الخانة</button>':'جرعة الطبيب: اكتبها في الإعدادات وستظهر هنا كتذكير.';
   }
   el.innerHTML=h; el.hidden=!h;
 }
 var SYNC_MSG={
-  noapi:'المزامنة مش شغالة: ملف السيرفر (فولدر api) مش مرفوع على Vercel مع index.html',
-  storage:'المزامنة مش شغالة: قاعدة البيانات (Upstash) مش موصّلة بالمشروع',
-  pinenv:'المزامنة مش شغالة: ضيف المتغير FAMILY_PIN في Environment Variables واعمل Redeploy',
-  net:'المزامنة مش شغالة: مفيش اتصال بالسيرفر'
+  noapi:'المزامنة لا تعمل: ملف الخادم (مجلد api) غير مرفوع على Vercel مع index.html',
+  storage:'المزامنة لا تعمل: قاعدة البيانات (Upstash) غير موصولة بالمشروع',
+  pinenv:'المزامنة لا تعمل: أضف المتغير FAMILY_PIN في Environment Variables ثم أعد النشر (Redeploy)',
+  net:'المزامنة لا تعمل: لا يوجد اتصال بالخادم'
 };
 function renderStore(){
   var el=$('#store'), txt='';
-  if(loaded&&mode==='cloud')txt=netErr?'مفيش اتصال دلوقتي، هيحاول تاني':'متزامن مع باقي الموبايلات';
+  if(loaded&&mode==='cloud')txt=netErr?'لا يوجد اتصال الآن، ستُعاد المحاولة':'متزامن مع باقي الهواتف';
   else if(loaded&&syncErr)txt=SYNC_MSG[syncErr]||SYNC_MSG.net;
   el.classList.toggle('show',!!txt);
   el.classList.toggle('local',mode!=='cloud'||netErr);
@@ -2214,7 +2214,7 @@ function renderMeal(){ setTimeout(syncCorr,0);
     var q=itemQ(m);
     var amount=m.mode==='g'
       ?'<label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label>'
-      :'<div class="qty"><button type="button" data-q="'+i+'" data-d="-0.5" aria-label="أقل">−</button><span>'+fmt(m.q)+'</span><button type="button" data-q="'+i+'" data-d="0.5" aria-label="أكتر">+</button></div>';
+      :'<div class="qty"><button type="button" data-q="'+i+'" data-d="-0.5" aria-label="أقل">−</button><span>'+fmt(m.q)+'</span><button type="button" data-q="'+i+'" data-d="0.5" aria-label="أكثر">+</button></div>';
     var opts='';
     if(m.w>0)opts+='<button type="button" class="link" data-mode="'+i+'">'+(m.mode==='g'?'بالعدد':'بالجرام')+'</button>';
     if(m.est||m.fruit||m.editc)opts+='<label>كارب الحصة <input type="text" inputmode="decimal" data-f="c" value="'+fmt(m.c)+'"> جم</label>';
@@ -2229,7 +2229,7 @@ $('#presetpick').addEventListener('change',function(){
   var v=this.value; this.value=''; if(v==='')return;
   var p=PRESETS[Number(v)]; if(!p)return;
   mealItems=p[2].map(function(x){return newItem(BY[x[0]],x[1])});
-  renderMeal(); updateCalc(); toast('اتحطت الوجبة: '+p[1]);
+  renderMeal(); updateCalc(); toast('أُضيفت الوجبة: '+p[1]);
 });
 $('#mlist').addEventListener('click',function(ev){
   var b=ev.target.closest('button'); if(!b)return;
@@ -2261,7 +2261,7 @@ function presetGroupOrder(){
   var g=slotGroup(curSlot()); var o=[g]; GROUPS.forEach(function(x){if(x[0]!==g)o.push(x[0])}); return o;
 }
 function renderPresets(){
-  var h='<option value="">اختار وجبة جاهزة…</option>';
+  var h='<option value="">اختر وجبة جاهزة…</option>';
   presetGroupOrder().forEach(function(g){
     var label=GROUPS.filter(function(x){return x[0]===g})[0][1], icr=icrForGroup(g), rows='';
     PRESETS.forEach(function(p,i){
@@ -2279,11 +2279,11 @@ function corrUnits(bg){
   var sc=settings.scale||[];
   if(sc.length){
     var top=Math.max.apply(null,sc.map(function(r){return r.b}));
-    for(var i=0;i<sc.length;i++){if(bg>=sc[i].a&&bg<=sc[i].b)return {u:sc[i].u,how:'جدول الدكتور ('+sc[i].a+'–'+sc[i].b+' = '+fmt(sc[i].u)+' وحدة)'}}
+    for(var i=0;i<sc.length;i++){if(bg>=sc[i].a&&bg<=sc[i].b)return {u:sc[i].u,how:'جدول الطبيب ('+sc[i].a+'–'+sc[i].b+' = '+fmt(sc[i].u)+' وحدة)'}}
     var minA=Math.min.apply(null,sc.map(function(r){return r.a}));
-    if(bg<minA)return {u:0,how:'تحت أول خانة في الجدول (مفيش تصحيح)'};
+    if(bg<minA)return {u:0,how:'تحت أول خانة في الجدول (لا يوجد تصحيح)'};
     if(bg>top)return {u:null,how:'فوق آخر خانة في الجدول',above:true};
-    return {u:0,how:'مش داخل في أي خانة في الجدول'};
+    return {u:0,how:'لا يدخل في أي خانة من الجدول'};
   }
   if(settings.isf&&settings.target){
     var u=Math.max(0,(bg-settings.target)/settings.isf);
@@ -2301,41 +2301,41 @@ function updateCalc(){
   if(!has&&!(g>0&&(before||g>settings.high))){el.innerHTML=''; return}
   var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>', notes=[], warns=[];
   if(g!=null&&g>0&&g<settings.low){
-    h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>مفيش جرعة تصحيح للهبوط، التصحيح بيبقى بكارب سريع مش بأنسولين.</li><li>اتبع خطة الدكتور للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li><li>جرعة الأكل بعد ما القراءة تتظبط، وتتحدد حسب خطة الدكتور، يمكن تتقلل أو تتأخر.</li></ul></div></div>';
+    h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>لا توجد جرعة تصحيح للهبوط؛ يكون التصحيح بكارب سريع لا بالأنسولين.</li><li>اتبع خطة الطبيب للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li><li>جرعة الأكل بعد أن تستقر القراءة، وتُحدَّد حسب خطة الطبيب، وقد تُخفَّض أو تتأخر.</li></ul></div></div>';
     el.innerHTML=h; return;
   }
   var meal=null, corr=null;
-  if(has&&afterSlot){notes.push('الجرعة بتتحسب قبل الأكل. اختار "قبل" في وقت القياس لو لسه هتاخد الجرعة.')}
+  if(has&&afterSlot){notes.push('تُحسب الجرعة قبل الأكل. اختر "قبل" في وقت القياس إن كنت ستأخذ الجرعة بعد.')}
   else if(has){
     if(icr){meal=carbs/icr; notes.push('الأكل: '+fmt(r1(carbs))+' جم ÷ '+fmt(icr)+' = '+fmt(r1(meal))+' وحدة')}
-    if(items.some(function(m){return m.missing}))warns.push('في صنف من غير رقم كارب، اكتب كارب الصنف علشان الحساب يبقى صح.');
+    if(items.some(function(m){return m.missing}))warns.push('يوجد صنف بلا رقم كارب، اكتب كارب الصنف ليصح الحساب.');
     if(items.some(function(m){return m.fruit&&!m.name}))notes.push('اكتب اسم الفاكهة.');
   }
   if(g!=null&&g>0){
     if(before){
       var c=corrUnits(g);
       if(c){
-        if(c.above)warns.push('القراءة أعلى من آخر خانة في جدول التصحيح. كلّم الدكتور قبل أي جرعة.');
+        if(c.above)warns.push('القراءة أعلى من آخر خانة في جدول التصحيح. تواصل مع الطبيب قبل أي جرعة.');
         else{corr=c.u; notes.push('التصحيح: '+c.how)}
-      }else if(g>settings.high)notes.push('اكتب جدول التصحيح أو الهدف في الإعدادات علشان التصحيح يتحسب.');
-    }else if(g>settings.high)notes.push('التصحيح في الأوقات دي بيحدده الدكتور، ومش بيتحسب هنا.');
+      }else if(g>settings.high)notes.push('اكتب جدول التصحيح أو الهدف في الإعدادات ليُحسب التصحيح.');
+    }else if(g>settings.high)notes.push('يحدد الطبيب التصحيح في هذه الأوقات، ولا يُحسب هنا.');
   }
   var total=null;
   if(meal!=null||corr!=null)total=r5((meal||0)+(corr||0));
   if(g!=null&&g>settings.high){
-    h+='<div class="guide high"><b>السكر عالي ('+fmt(g)+')</b><ul><li>التصحيح بيتحسب من جدول الدكتور، والصفحة مش بتحط رقم من عندها.</li>'+(g>=300?'<li>فوق 300: قيس الكيتونات حسب خطة الدكتور وكلمه لو موجودة أو لو في قيء أو ألم بطن أو تعب.</li>':'')+'<li>اشرب مياه، وأعد القياس حسب خطة الدكتور.</li></ul></div>';
+    h+='<div class="guide high"><b>السكر عالي ('+fmt(g)+')</b><ul><li>يُحسب التصحيح من جدول الطبيب، والصفحة لا تضع رقمًا من عندها.</li>'+(g>=300?'<li>فوق 300: قِس الكيتونات حسب خطة الطبيب وتواصل معه إن كانت موجودة، أو عند وجود قيء أو ألم بطن أو تعب.</li>':'')+'<li>اشرب ماءً، وأعد القياس حسب خطة الطبيب.</li></ul></div>';
   }
   if(total!=null){
     h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
-    if(settings.maxd&&total>settings.maxd)warns.push('الجرعة أعلى من أقصى جرعة كتبتها ('+fmt(settings.maxd)+'). راجعها مع الدكتور.');
+    if(settings.maxd&&total>settings.maxd)warns.push('الجرعة أعلى من أقصى جرعة كتبتها ('+fmt(settings.maxd)+'). راجعها مع الطبيب.');
   }
   var when=new Date($('#dt').value), recent=prep().filter(function(e){var dt=when-e.d; return e.apidra>0&&dt>=0&&dt<=3*36e5});
-  if(recent.length)warns.push('اتسجلت أبيدرا من أقل من 3 ساعات ('+fmt(recent[recent.length-1].apidra)+' وحدة الساعة '+timeStr(recent[recent.length-1].d)+'). ممكن يكون لسه شغال، اسأل الدكتور قبل التصحيح.');
+  if(recent.length)warns.push('سُجّلت أبيدرا قبل أقل من 3 ساعات ('+fmt(recent[recent.length-1].apidra)+' وحدة الساعة '+timeStr(recent[recent.length-1].d)+'). قد يكون لا يزال مفعوله مستمرًا، اسأل الطبيب قبل التصحيح.');
   if(notes.length||warns.length){
     h+='<ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+warns.map(function(w){return '<li class="bad">'+esc(w)+'</li>'}).join('')+'</ul>';
   }
   if(total!=null)h+='<button type="button" class="primary" data-usecalc="'+total+'">اكتب '+fmt(total)+' وحدة في خانة أبيدرا</button>';
-  h+='<p class="small">حساب بأرقام الدكتور اللي في الإعدادات. راجعه قبل الحقن، والدكتور هو اللي يحدد الجرعة.</p></div>';
+  h+='<p class="small">حساب بأرقام الطبيب المكتوبة في الإعدادات. راجعه قبل الحقن، والطبيب هو من يحدد الجرعة.</p></div>';
   el.innerHTML=h;
 }
 
@@ -2396,7 +2396,7 @@ function siteMapHTML(E){
   var cnt=siteCounts(E,siteKind), tot=0; SITES.forEach(function(x){tot+=cnt[x[0]]});
   var chips=[['all','الكل'],['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="chip" data-sk="'+k[0]+'" aria-pressed="'+(siteKind===k[0])+'">'+k[1]+'</button>'}).join('');
   return '<h3 style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
-    (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكتر · الإجمالي '+tot+' حقنة</p>':'<p class="small">مفيش حقن متسجلة بمكان في الفترة دي.</p>');
+    (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكثر · الإجمالي '+tot+' حقنة</p>':'<p class="small">لا توجد حقن مسجَّلة بمكان في هذه الفترة.</p>');
 }
 var siteNativeUntil=0, siteShieldT=0;
 function openSiteMap(kind){
@@ -2404,16 +2404,16 @@ function openSiteMap(kind){
   var R=recSite(kind), E=R.E, cnt=R.cnt, last=R.last, ranked=R.ranked, next=R.next;
   var alts=ranked.slice(1,3).map(function(id){return SITE_LABEL[id]});
   var tip=kind==='a'
-    ?'الأفضل لأبيدرا: <b>البطن</b> (بعيد عن السرة بإصبعين على الأقل)، لأن الامتصاص فيه أسرع. البدائل: الذراع أو الرجل، والامتصاص فيهم أبطأ شوية.'
+    ?'الأفضل لأبيدرا: <b>البطن</b> (على بعد إصبعين على الأقل من السرة)، لأن الامتصاص فيه أسرع. البدائل: الذراع أو الرجل، والامتصاص فيهما أبطأ قليلًا.'
     :'الأفضل لترسيبا بالترتيب: <b>الرجل</b> ثم <b>الذراع</b> ثم البطن، لأن الامتصاص في الرجل والذراع بطيء وثابت.';
   var ago='';
-  if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'النهاردة':dd===1?'إمبارح':'من '+dd+' أيام'}
+  if(last){var dd=Math.round((new Date(lk(new Date()))-new Date(lk(last.d)))/864e5); ago=dd<=0?'اليوم':dd===1?'أمس':'من '+dd+' أيام'}
   var seg=[['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="smseg" data-smk="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'</button>'}).join('');
   $('#sitemodal').querySelector('.smbody').innerHTML=
     '<div class="smhead"><b>أماكن الحقن</b><span>آخر 14 يوم</span></div><div class="smsegs">'+seg+'</div>'+
     '<div class="smfig">'+siteSvg(cnt,next)+'</div><div class="smleg"><span>قليل</span><i></i><span>كتير</span></div>'+
-    (last?'<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>':'<p class="smempty" style="padding:2px 6px 0">مفيش حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' متسجلة بمكان في آخر 14 يوم.</p>')+
-    '<p class="smtip">'+tip+'</p><p class="smnote">إرشاد عام، والقرار النهائي للدكتور</p>';
+    (last?'<div class="smrows"><div class="smone"><small>آخر مرة</small><b>'+SITE_LABEL[last.site]+'</b><em>'+ago+'</em></div></div>':'<p class="smempty" style="padding:2px 6px 0">لا توجد حقن '+(kind==='t'?'ترسيبا':'أبيدرا')+' مسجَّلة بمكان في آخر 14 يومًا.</p>')+
+    '<p class="smtip">'+tip+'</p><p class="smnote">إرشاد عام، والقرار النهائي للطبيب</p>';
   $('#smclose').innerHTML='<b>تمام</b>'+'<small>يفضل المرة القادمة: '+SITE_LABEL[next]+'</small><small class="smalt">بعده: '+alts.join(' و ')+'</small>';;
   $('#sitemodal').hidden=false;
 }
@@ -2424,7 +2424,7 @@ function closeSiteMap(){
 }
 function buildReport(){
   var r=rangeInputs(), el=$('#report');
-  if(!r){toast('اختار فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
+  if(!r){toast('اختر فترة صحيحة (من قبل إلى)'); el.hidden=true; return false}
   var E=periodEntries(r), G=E.filter(function(e){return e.glucose!=null});
   var vals=G.map(function(e){return e.glucose});
   var avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
@@ -2439,7 +2439,7 @@ function buildReport(){
   var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
   var h='<h2>تقرير متابعة السكر</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
   h+=reportInfo();
-  if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">مفيش تسجيلات في الفترة دي.</p>'; el.hidden=false; return true}
+  if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">لا توجد تسجيلات في هذه الفترة.</p>'; el.hidden=false; return true}
   h+=controlPanel(E);
   var fd=fixedDoses(E), dz=function(v){return v!=null?fmt(v)+' <small>وحدة</small>':'—'};
   h+='<dl class="rsum">'+
@@ -2450,7 +2450,7 @@ function buildReport(){
     '<div><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd></div>'+
     '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
-    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · مش موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
+    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · غير موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
   '</dl>';
   h+=siteMapHTML(E);
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
@@ -2466,7 +2466,7 @@ function buildReport(){
   h+='</div></details>';
   var SHOW_DAYS=false;
   if(SHOW_DAYS){
-  h+='<h3>التفاصيل يوم بيوم</h3>';
+  h+='<h3>التفاصيل يومًا بيوم</h3>';
   var byDay={}, dOrd=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!byDay[k]){byDay[k]=[]; dOrd.push(k)} byDay[k].push(e)});
   var weeks=[]; for(var wi=0;wi<dOrd.length;wi+=7)weeks.push(dOrd.slice(wi,wi+7));
@@ -2482,7 +2482,7 @@ function buildReport(){
       h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table class="dtab"><thead><tr><th>الوقت</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th></tr></thead><tbody>';
       G2.forEach(function(e){
         var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
-        var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (من غير أكل)':'',e.note||''].filter(Boolean).join(' · ');
+        var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (دون طعام)':'',e.note||''].filter(Boolean).join(' · ');
         h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(SLOT_LABEL[e.slot]||'')+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
       });
       h+='</tbody></table></div></div>';
@@ -2553,15 +2553,15 @@ function onSetChange(){
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null))at.stockAtT=s.stockT>0?nowL:null;
-  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); render(); toast('اتحفظت الإعدادات');
+  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
-  if(settings.stripStart&&!confirm('تبدأ علبة شرايط جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
+  if(settings.stripStart&&!confirm('هل تبدأ علبة شرائط جديدة من اليوم؟ سيبدأ العداد من صفر.'))return;
   var n=num($('#sstripn').value); $('#sstripn').value=n>0?String(n):'50'; var lr=prep().filter(function(e){return e.glucose!=null}).pop(); $('#sstripd').value=toLocalInput(lr&&lk(lr.d)===lk(new Date())?lr.d:new Date());
   onSetChange();
 });
 $('#needlenew').addEventListener('click',function(){
-  if(settings.needleStart&&!confirm('تبدأ علبة أسنان جديدة من النهاردة؟ العداد هيبدأ من صفر.'))return;
+  if(settings.needleStart&&!confirm('هل تبدأ علبة أسنان جديدة من اليوم؟ سيبدأ العداد من صفر.'))return;
   var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedd').value=toLocalInput(new Date());
   onSetChange();
 });
@@ -2569,7 +2569,7 @@ $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
   if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
-  settings=Object.assign({},settings,{icr:v}); persistSettings(); $('#qicr').value=''; syncSettingsInputs(); render(); toast('اتحفظت النسبة');
+  settings=Object.assign({},settings,{icr:v}); persistSettings(); $('#qicr').value=''; syncSettingsInputs(); render(); toast('حُفظت النسبة');
 });
 
 /* ---------- report: info, control indicator, charts, patterns ---------- */
@@ -2592,19 +2592,19 @@ function reportInfo(){
   if(s.wt&&s.ht)t.push(['مؤشر كتلة الجسم',fmt(r1(s.wt/Math.pow(s.ht/100,2)))+' <small>BMI</small>']);
   if(s.bps&&s.bpd)t.push(['ضغط الدم',s.bps+'/'+s.bpd+' <small>mmHg</small>']);
   var h='<h3>بيانات أساسية</h3>';
-  if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. مؤشر الكتلة للمراهقين بيتقيّم بمنحنيات النمو عند الدكتور.':'')+'</p>':'');
-  else h+='<p class="cap">الوزن والطول والضغط: لسه ما اتسجلوش.</p>';
+  if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. يُقيَّم مؤشر الكتلة للمراهقين بمنحنيات النمو عند الطبيب.':'')+'</p>':'');
+  else h+='<p class="cap">الوزن والطول والضغط: لم تُسجَّل بعد.</p>';
   var vl=s.visitLast?new Date(s.visitLast):null, vn=s.visitNext?new Date(s.visitNext):null;
   if(vl||vn||s.visitNote){
-    h+='<h3>زيارة الدكتور</h3><dl class="rsum">'+(vl?'<div><dt>آخر زيارة</dt><dd><small>'+dayFull(vl)+' · '+timeStr(vl)+'</small></dd></div>':'')+(vn?'<div><dt>الزيارة الجاية</dt><dd><small>'+dayFull(vn)+' · '+timeStr(vn)+(vn<now?' <span class="st-late">(فات ميعادها)</span>':'')+'</small></dd></div>':'')+'</dl>'+(s.visitNote?'<p class="cap">ملاحظات الدكتور: '+esc(s.visitNote)+'</p>':'');
+    h+='<h3>زيارة الطبيب</h3><dl class="rsum">'+(vl?'<div><dt>آخر زيارة</dt><dd><small>'+dayFull(vl)+' · '+timeStr(vl)+'</small></dd></div>':'')+(vn?'<div><dt>الزيارة القادمة</dt><dd><small>'+dayFull(vn)+' · '+timeStr(vn)+(vn<now?' <span class="st-late">(فات ميعادها)</span>':'')+'</small></dd></div>':'')+'</dl>'+(s.visitNote?'<p class="cap">ملاحظات الطبيب: '+esc(s.visitNote)+'</p>':'');
   }
   var a=s.a1cDate?new Date(s.a1cDate+'T12:00:00'):null, nx=a?addMonthsISO(s.a1cDate,3):null;
   h+='<dl class="rsum"><div><dt>آخر تحليل تراكمي (HbA1c)</dt><dd>'+(s.a1cVal?fmt(s.a1cVal)+' <small>%</small>':(a?'—':'غير مسجل'))+(a?' <small>بتاريخ '+dayFull(a)+'</small>':'')+'</dd></div>'+
-    (nx?'<div><dt>الميعاد التقريبي للجاي</dt><dd><small>'+dayFull(nx)+(nx<now?' <span class="st-late">(فات ميعاده)</span>':'')+'</small></dd></div>':'')+'</dl>';
+    (nx?'<div><dt>الموعد التقريبي القادم</dt><dd><small>'+dayFull(nx)+(nx<now?' <span class="st-late">(فات موعده)</span>':'')+'</small></dd></div>':'')+'</dl>';
   var C=checksList().filter(function(c){return c.n});
   if(C.length){
-    h+='<div class="tw"><table><thead><tr><th>الفحص</th><th>آخر مرة</th><th>الميعاد الجاي</th><th>الحالة</th></tr></thead><tbody>'+C.map(function(c){
-      var n=c.d?addMonthsISO(c.d,c.m):null, st=!c.d?'لم يُسجَّل':n<now?'<span class="st-late">متأخر</span>':(n-now<30*DAY?'<span class="st-soon">قرّب ميعاده</span>':'تمام');
+    h+='<div class="tw"><table><thead><tr><th>الفحص</th><th>آخر مرة</th><th>الموعد القادم</th><th>الحالة</th></tr></thead><tbody>'+C.map(function(c){
+      var n=c.d?addMonthsISO(c.d,c.m):null, st=!c.d?'لم يُسجَّل':n<now?'<span class="st-late">متأخر</span>':(n-now<30*DAY?'<span class="st-soon">اقترب موعده</span>':'تمام');
       return '<tr><td>'+esc(c.n)+'</td><td>'+(c.d?dayFull(new Date(c.d+'T12:00:00')):'—')+'</td><td>'+(n?dayFull(n):'—')+'</td><td>'+st+'</td></tr>';
     }).join('')+'</tbody></table></div>';
   }
@@ -2614,14 +2614,14 @@ function controlPanel(E){
   var S=glStats(E); if(!S)return '';
   var n=S.n, pc=function(k){return S.c[k]/n*100}, r1p=function(x){return fmt(Math.round(x*10)/10)+'%'};
   var tir=pc('ok'), below=pc('vl')+pc('lo'), vlow=pc('vl');
-  var goals=[['الوقت في المعدل (70–180)','المستهدف: أكتر من 70%',tir>=70,r1p(tir)],['الوقت تحت 70','المستهدف: أقل من 4%',below<4,r1p(below)],['الوقت تحت 54','المستهدف: أقل من 1%',vlow<1,r1p(vlow)],['تذبذب القراءات (CV)','المستهدف: 36% أو أقل',S.cv<=36,Math.round(S.cv)+'%']];
+  var goals=[['الوقت في المعدل (70–180)','المستهدف: أكثر من 70%',tir>=70,r1p(tir)],['الوقت تحت 70','المستهدف: أقل من 4%',below<4,r1p(below)],['الوقت تحت 54','المستهدف: أقل من 1%',vlow<1,r1p(vlow)],['تذبذب القراءات (CV)','المستهدف: 36% أو أقل',S.cv<=36,Math.round(S.cv)+'%']];
   var met=goals.filter(function(g){return g[2]}).length;
   var h='<div class="dcard"><h3 style="margin-top:0">مؤشر التحكم في السكر</h3><div class="ctl"><div class="ctl-n"><b>'+met+' من 4</b><span>أهداف متحققة</span></div><ul class="goals">'+
-    goals.map(function(g){return '<li><span>'+g[0]+': <b>'+g[3]+'</b> <small style="color:var(--r-muted)">'+g[1]+'</small></span><span class="tag '+(g[2]?'y':'n')+'">'+(g[2]?'متحقق':'لسه')+'</span></li>'}).join('')+'</ul></div>';
+    goals.map(function(g){return '<li><span>'+g[0]+': <b>'+g[3]+'</b> <small style="color:var(--r-muted)">'+g[1]+'</small></span><span class="tag '+(g[2]?'y':'n')+'">'+(g[2]?'متحقق':'لم يتحقق بعد')+'</span></li>'}).join('')+'</ul></div>';
   h+='<div class="tirbar" role="img" aria-label="توزيع القراءات حسب المدى">'+BAND.map(function(b){var p=pc(b[0]); return p>0?'<span style="flex:'+p+';background:'+b[2]+'"></span>':''}).join('')+'</div>';
   h+='<ul class="tirleg">'+BAND.map(function(b){return '<li><i style="background:'+b[2]+'"></i>'+b[1]+': <b>'+Math.round(pc(b[0]))+'%</b> <small style="color:var(--r-muted)">('+S.c[b[0]]+')</small></li>'}).join('')+'</ul>';
   h+='<dl class="kpis"><div><dt>المتوسط</dt><dd>'+Math.round(S.mean)+' <small>mg/dL</small></dd></div><div><dt>GMI تقريبي</dt><dd>'+fmt(r1(S.gmi))+' <small>%</small></dd></div><div><dt>CV</dt><dd>'+Math.round(S.cv)+' <small>%</small></dd></div><div><dt>عدد القراءات</dt><dd>'+n+'</dd></div></dl>';
-  h+='<p class="cap">الأهداف دي المعايير الدولية للمقارنة، والدكتور هو اللي يحدد الهدف المناسب ليوسف. الحساب من قراءات الصباع مش من حساس مستمر، فالنسب و GMI تقريبية'+(n<14?'، والقراءات قليلة ('+n+') فالمؤشر مش دقيق':'')+'.</p></div>';
+  h+='<p class="cap">هذه الأهداف هي المعايير الدولية للمقارنة، والطبيب هو من يحدد الهدف المناسب ليوسف. الحساب من قراءات الإصبع لا من حساس مستمر، فالنسب و GMI تقريبية'+(n<14?'، والقراءات قليلة ('+n+') فالمؤشر غير دقيق':'')+'.</p></div>';
   return h;
 }
 function topRound(x,y,w,h,r){r=Math.min(r,w/2,h); return 'M'+x+','+(y+h)+'V'+(y+r)+'Q'+x+','+y+' '+(x+r)+','+y+'H'+(x+w-r)+'Q'+(x+w)+','+y+' '+(x+w)+','+(y+r)+'V'+(y+h)+'Z'}
@@ -2660,9 +2660,9 @@ function insulinSVG(E,r){
 function dashCharts(E,r){
   var G=E.filter(function(e){return e.glucose!=null}), h='';
   var svg=chartSVG(E,r.from,r.days,'رسم قراءات السكر في الفترة');
-  if(svg)h+='<div class="dcard"><h3 style="margin-top:0">قراءات السكر على مدار الفترة</h3>'+svg+'<p class="cap">المنطقة الخضرا هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL. اللون: أحمر أقل من الحد، أخضر في المعدل، برتقالي أعلى من الحد.</p></div>';
+  if(svg)h+='<div class="dcard"><h3 style="margin-top:0">قراءات السكر على مدار الفترة</h3>'+svg+'<p class="cap">المنطقة الخضراء هي المعدل: من '+settings.low+' إلى '+settings.high+' mg/dL. اللون: أحمر أقل من الحد، أخضر في المعدل، برتقالي أعلى من الحد.</p></div>';
   var sl=[]; SLOTS.forEach(function(s){var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose}); if(v.length)sl.push({l:s[1],v:avgOf(v),n:v.length})});
-  if(sl.length)h+='<div class="dcard"><h3 style="margin-top:0">متوسط السكر حسب وقت القياس</h3>'+hbarSVG(sl,'متوسط السكر حسب وقت القياس')+'<p class="cap">المنطقة الخضرا هي المعدل. الرقم بين القوسين عدد القراءات.</p></div>';
+  if(sl.length)h+='<div class="dcard"><h3 style="margin-top:0">متوسط السكر حسب وقت القياس</h3>'+hbarSVG(sl,'متوسط السكر حسب وقت القياس')+'<p class="cap">المنطقة الخضراء هي المعدل. الرقم بين القوسين عدد القراءات.</p></div>';
   var wd=[]; for(var d=0;d<7;d++){var v2=G.filter(function(e){return e.d.getDay()===d}).map(function(e){return e.glucose}); if(v2.length)wd.push({l:WD[d],v:avgOf(v2),n:v2.length})}
   if(wd.length>=3)h+='<div class="dcard"><h3 style="margin-top:0">متوسط السكر حسب اليوم</h3>'+hbarSVG(wd,'متوسط السكر حسب اليوم')+'</div>';
   var ins=insulinSVG(E,r);
@@ -2686,7 +2686,7 @@ function patterns(E){
     if(m-all>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أعلى من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
     else if(all-m>=25)out.push('يوم '+WD[d]+': متوسط القراءات '+Math.round(m)+' أقل من المتوسط العام '+Math.round(all)+' ('+W.length+' قراءة في '+Object.keys(dk).length+' أيام).');
   }
-  function per(h){return h>=5&&h<11?'الصبح (5–11)':h>=11&&h<17?'الضهر والعصر (11–5)':h>=17&&h<22?'المسا (5–10)':'الليل (10 بالليل–5 الفجر)'}
+  function per(h){return h>=5&&h<11?'الصباح (5–11)':h>=11&&h<17?'الظهر والعصر (11–5)':h>=17&&h<22?'المساء (5–10)':'الليل (10 مساءً–5 فجرًا)'}
   [['lows',function(x){return x<lowT},'القراءات المنخفضة'],['highs',function(x){return x>highT},'القراءات العالية']].forEach(function(t){
     var L=G.filter(function(e){return t[1](e.glucose)}); if(L.length<3)return;
     var c={}; L.forEach(function(e){var k=per(e.d.getHours()); c[k]=(c[k]||0)+1});
@@ -2698,8 +2698,8 @@ function patterns(E){
 function patternsHTML(E){
   var P=patterns(E), h='<div class="dcard ptn"><h3 style="margin-top:0">أنماط متكررة</h3>';
   if(P.few)return h+'<p class="cap">القراءات قليلة لاكتشاف أنماط (محتاج 8 قراءات على الأقل في الفترة).</p></div>';
-  if(!P.list.length)return h+'<p class="cap">مفيش نمط متكرر واضح في الفترة دي.</p></div>';
-  return h+'<ul>'+P.list.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul><p class="cap">ملاحظات حسابية من التسجيلات بس. مش تشخيص ومش اقتراح لتغيير الجرعات، والدكتور هو اللي يفسّرها.</p></div>';
+  if(!P.list.length)return h+'<p class="cap">لا يوجد نمط متكرر واضح في هذه الفترة.</p></div>';
+  return h+'<ul>'+P.list.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul><p class="cap">ملاحظات حسابية من التسجيلات فقط. ليست تشخيصًا ولا اقتراحًا لتغيير الجرعات، والطبيب هو من يفسّرها.</p></div>';
 }
 
 /* ---------- assistant (answers only from the recorded data) ---------- */
@@ -2714,36 +2714,36 @@ function askIntent(q){
   if(hasAny(t,['ارتفع','ارتفاع','عالي','زاد','زايد','ليه','النهارده','اليوم']))return 'high';
   return null;
 }
-var MED_DEF='ده عرض لأرقام متسجلة بس. تفسيرها طبيًا وأي قرار في الجرعات أو العلاج بيحدده الدكتور، وتقدر تعرض عليه التقرير.';
+var MED_DEF='هذا عرض لأرقام مسجَّلة فقط. تفسيرها طبيًا وأي قرار في الجرعات أو العلاج يحدده الطبيب، ويمكنك عرض التقرير عليه.';
 function sinceDays(n){var m=new Date(Date.now()-SHIFT); m.setHours(0,0,0,0); var a=m.getTime()+SHIFT-(n-1)*DAY; return prep().filter(function(e){return e.d.getTime()>=a&&e.d.getTime()<=Date.now()+36e5})}
 function slotName(e){return SLOT_LABEL[e.slot]||''}
 function ansHigh(){
   var tk=lk(new Date()), all=prep().slice().sort(function(a,b){return a.d-b.d}), T=all.filter(function(e){return lk(e.d)===tk&&e.glucose!=null});
-  if(!T.length)return {obs:['لسه مفيش قراءات سكر اتسجلت النهاردة.'],med:MED_DEF};
+  if(!T.length)return {obs:['لم تُسجَّل قراءات سكر اليوم بعد.'],med:MED_DEF};
   var hi=T.filter(function(e){return e.glucose>settings.high}), obs=[];
   var mx=T.slice().sort(function(a,b){return b.glucose-a.glucose})[0];
-  if(!hi.length)return {obs:['مفيش قراءة النهاردة أعلى من '+settings.high+' ('+T.length+' قراءات). أعلى قراءة '+fmt(mx.glucose)+' ('+slotName(mx)+' '+timeStr(mx.d)+').'],med:MED_DEF};
-  obs.push('النهاردة '+hi.length+' قراءة أعلى من '+settings.high+' من '+T.length+'.');
+  if(!hi.length)return {obs:['لا توجد قراءة اليوم أعلى من '+settings.high+' ('+T.length+' قراءات). أعلى قراءة '+fmt(mx.glucose)+' ('+slotName(mx)+' '+timeStr(mx.d)+').'],med:MED_DEF};
+  obs.push('اليوم '+hi.length+' قراءة أعلى من '+settings.high+' من '+T.length+'.');
   hi.slice(0,4).forEach(function(e){
     var line=timeStr(e.d)+' ('+slotName(e)+'): '+fmt(e.glucose)+'. ';
-    if(PREMEAL.indexOf(e.slot)>=0)line+='دي قراءة قبل الوجبة.';
+    if(PREMEAL.indexOf(e.slot)>=0)line+='هذه قراءة قبل الوجبة.';
     else{
       var prev=all.filter(function(p){var dt=e.d-p.d; return dt>0&&dt<=5*36e5&&(p.apidra>0||(p.meal&&p.meal.length))});
       var m=prev.filter(function(p){return p.meal&&p.meal.length}).pop();
       if(m){
         var hrs=Math.round((e.d-m.d)/36e5*10)/10;
-        line+='قبلها بحوالي '+fmt(hrs)+' ساعة اتسجلت وجبة: '+m.meal.map(function(x){return x.n}).join('، ')+(m.carbs>0?' (حوالي '+fmt(Math.round(m.carbs))+' جم كارب)':'')+'، '+(m.apidra>0?'وأبيدرا '+fmt(m.apidra)+' وحدة.':(m.corr?'':'ومفيش أبيدرا متسجلة معاها.'));
-      }else line+='مفيش وجبة متسجلة في الـ5 ساعات قبلها.';
+        line+='قبلها بحوالي '+fmt(hrs)+' ساعة سُجّلت وجبة: '+m.meal.map(function(x){return x.n}).join('، ')+(m.carbs>0?' (حوالي '+fmt(Math.round(m.carbs))+' جم كارب)':'')+'، '+(m.apidra>0?'وأبيدرا '+fmt(m.apidra)+' وحدة.':(m.corr?'':'ولا توجد أبيدرا مسجَّلة معها.'));
+      }else line+='لا توجد وجبة مسجَّلة في الـ5 ساعات قبلها.';
     }
     obs.push(line);
   });
-  var k=T.filter(function(e){return e.ketT}); if(k.length)obs.push('اتسجل تحليل كيتون النهاردة ('+k.length+').');
-  obs.push('ده ربط زمني بين التسجيلات، مش تأكيد لسبب الارتفاع.');
+  var k=T.filter(function(e){return e.ketT}); if(k.length)obs.push('سُجّل تحليل كيتون اليوم ('+k.length+').');
+  obs.push('هذا ربط زمني بين التسجيلات، وليس تأكيدًا لسبب الارتفاع.');
   return {obs:obs,med:MED_DEF};
 }
 function ansMeal(){
   var E=sinceDays(30), P=mealPairs(E), obs=[];
-  if(!P.length)return {obs:['مفيش وجبات كفاية: محتاج وجبة متسجلة مع قراءة قبلها وقراءة بعدها (بعد نص ساعة لحد 5 ساعات).'],med:MED_DEF};
+  if(!P.length)return {obs:['لا توجد وجبات كافية: يلزم وجبة مسجَّلة مع قراءة قبلها وقراءة بعدها (بعد نصف ساعة حتى 5 ساعات).'],med:MED_DEF};
   var it={}, cb={};
   P.forEach(function(p){
     var key=p.e.meal.map(function(m){return m.n}).sort().join('، ');
@@ -2752,25 +2752,25 @@ function ansMeal(){
   });
   function rank(o){return Object.keys(o).filter(function(k){return o[k].length>=2}).map(function(k){return {k:k,n:o[k].length,r:avgOf(o[k].map(function(p){return p.rise})),a:avgOf(o[k].map(function(p){return p.f.glucose}))}}).sort(function(a,b){return b.r-a.r}).slice(0,3)}
   var rc=rank(cb), ri=rank(it);
-  if(rc.length){obs.push('الوجبات اللي اتسجلت مرتين أو أكتر (آخر 30 يوم)، مرتبة بأعلى فرق بين القراءة قبل الوجبة وبعدها:'); rc.forEach(function(x){obs.push(x.k+': فرق متوسط '+(x.r>0?'+':'')+Math.round(x.r)+' والقراءة بعدها في المتوسط '+Math.round(x.a)+' ('+x.n+' مرات).')})}
-  if(ri.length){obs.push('وبالأصناف لوحدها:'); ri.forEach(function(x){obs.push(x.k+': فرق متوسط '+(x.r>0?'+':'')+Math.round(x.r)+' ('+x.n+' وجبات).')})}
-  if(!rc.length&&!ri.length)obs.push('عندي '+P.length+' وجبة متسجلة بقراءتين، بس مفيش صنف أو وجبة اتكررت مرتين عشان أقارن.');
-  else obs.push('الأصناف بتتاكل مع بعض في الوجبة، فمش ممكن أعرف أنهي صنف بالظبط ورا الارتفاع.');
+  if(rc.length){obs.push('الوجبات المسجَّلة مرتين أو أكثر (آخر 30 يومًا)، مرتبة بأعلى فرق بين القراءة قبل الوجبة وبعدها:'); rc.forEach(function(x){obs.push(x.k+': متوسط الفرق '+(x.r>0?'+':'')+Math.round(x.r)+' والقراءة بعدها في المتوسط '+Math.round(x.a)+' ('+x.n+' مرات).')})}
+  if(ri.length){obs.push('وبالأصناف منفردة:'); ri.forEach(function(x){obs.push(x.k+': متوسط الفرق '+(x.r>0?'+':'')+Math.round(x.r)+' ('+x.n+' وجبات).')})}
+  if(!rc.length&&!ri.length)obs.push('لدينا '+P.length+' وجبة مسجَّلة بقراءتين، لكن لا يوجد صنف أو وجبة تكررت مرتين للمقارنة.');
+  else obs.push('الأصناف تُؤكل معًا في الوجبة، فلا يمكن تحديد أي صنف بالضبط وراء الارتفاع.');
   return {obs:obs,med:MED_DEF};
 }
 function ansWeek(){
   var E=sinceDays(7), S=glStats(E);
-  if(!E.length)return {obs:['مفيش تسجيلات في آخر 7 أيام.'],med:MED_DEF};
+  if(!E.length)return {obs:['لا توجد تسجيلات في آخر 7 أيام.'],med:MED_DEF};
   var obs=[], dk={}; E.forEach(function(e){dk[lk(e.d)]=1});
-  obs.push('اتسجل في '+Object.keys(dk).length+' من 7 أيام.');
+  obs.push('سُجّل في '+Object.keys(dk).length+' من 7 أيام.');
   if(S){
     obs.push('قراءات السكر: '+S.n+'، المتوسط '+Math.round(S.mean)+'.');
     obs.push('في المعدل (70–180): '+Math.round(S.c.ok/S.n*100)+'%، أقل من 70: '+(S.c.lo+S.c.vl)+' قراءة، أعلى من 180: '+(S.c.hi+S.c.vh)+' قراءة.');
     var G=E.filter(function(e){return e.glucose!=null}).sort(function(a,b){return a.glucose-b.glucose}), lo=G[0], hi=G[G.length-1];
     obs.push('أقل قراءة '+fmt(lo.glucose)+' ('+dlog(lo.d)+'، '+slotName(lo)+')، وأعلى قراءة '+fmt(hi.glucose)+' ('+dlog(hi.d)+'، '+slotName(hi)+').');
-  }else obs.push('مفيش قراءات سكر في الأسبوع ده.');
+  }else obs.push('لا توجد قراءات سكر في هذا الأسبوع.');
   var ap=E.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=E.filter(function(e){return e.tresiba>0}).length;
-  obs.push('أبيدرا: '+fmt(r1(ap/Math.max(1,Object.keys(dk).length)))+' وحدة في اليوم (على الأيام المسجلة). ترسيبا اتسجلت '+tr+' مرة.');
+  obs.push('أبيدرا: '+fmt(r1(ap/Math.max(1,Object.keys(dk).length)))+' وحدة في اليوم (على الأيام المسجَّلة). سُجّلت ترسيبا '+tr+' مرة.');
   var kt=E.filter(function(e){return e.ketT}); if(kt.length)obs.push('تحاليل الكيتون: '+kt.length+(kt.some(function(e){return ketLevel(e.ketT,e.ketV)[0]!=='ok'})?' (فيها نتيجة فوق الطبيعي)':' (كلها طبيعية)')+'.');
   var P=patterns(E); P.list.slice(0,2).forEach(function(t){obs.push(t)});
   var chart='', st7=midnight(new Date())-6*DAY, svg=chartSVG(E,st7,7,'قراءات السكر في آخر 7 أيام');
@@ -2785,33 +2785,33 @@ function ansMissing(){
   var days=[]; for(var k=1;k<=7;k++){days.push(new Date(now-k*DAY))}
   var dk={}; E.forEach(function(e){dk[lk(e.d)]=e});
   var empty=days.filter(function(d){return !dk[dayKey(d)]});
-  if(empty.length)obs.push('أيام من غير أي تسجيل: '+empty.map(function(d){return dayLong(d)}).join('، ')+'.');
+  if(empty.length)obs.push('أيام بلا أي تسجيل: '+empty.map(function(d){return dayLong(d)}).join('، ')+'.');
   var nf=days.filter(function(d){var x=E.filter(function(e){return lk(e.d)===dayKey(d)}); return x.length&&!x.some(function(e){return e.glucose!=null&&(e.slot==='fast'||e.slot==='bf_before')})});
-  if(nf.length)obs.push('أيام من غير قراءة صايم أو قبل الفطار: '+nf.map(function(d){return dayLong(d)}).join('، ')+'.');
+  if(nf.length)obs.push('أيام بلا قراءة صائم أو قبل الفطار: '+nf.map(function(d){return dayLong(d)}).join('، ')+'.');
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0}), ns=inj.filter(function(e){return !e.site}).length;
   var na2=E.filter(function(e){return e.apidra>0&&!penNeedle(e,'a')}).length, nt2=E.filter(function(e){return e.tresiba>0&&!penNeedle(e,'t')}).length;
-  if(na2)obs.push(na2+' حقنة أبيدرا من غير تسجيل سن القلم.'); if(nt2)obs.push(nt2+' حقنة ترسيبا من غير تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة من غير تسجيل مكان الحقن.');
-  var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا من غير وقت الحقن.');
-  if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return lk(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام من غير ترسيبا متسجلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
+  if(na2)obs.push(na2+' حقنة أبيدرا دون تسجيل سن القلم.'); if(nt2)obs.push(nt2+' حقنة ترسيبا دون تسجيل سن القلم.'); if(ns)obs.push(ns+' حقنة دون تسجيل مكان الحقن.');
+  var nt=E.filter(function(e){return e.tresiba>0&&!e.tresibaTime}).length; if(nt)obs.push(nt+' جرعة ترسيبا دون وقت الحقن.');
+  if(all.some(function(e){return e.tresiba>0})){var td=days.filter(function(d){return !E.some(function(e){return lk(e.d)===dayKey(d)&&e.tresiba>0})}); if(td.length)obs.push('أيام بلا ترسيبا مسجَّلة: '+td.map(function(d){return dayLong(d)}).join('، ')+'.')}
   var s=settings;
-  if(s.visitNext&&new Date(s.visitNext)<now)obs.push('تاريخ الزيارة الجاية للدكتور فات. حدّث الموعد.');
-  if(!s.a1cDate)obs.push('مفيش تاريخ لآخر تحليل تراكمي.'); else if(addMonthsISO(s.a1cDate,3)<now)obs.push('ميعاد التحليل التراكمي فات (آخر مرة '+dayFull(new Date(s.a1cDate+'T12:00:00'))+').');
-  var nd=checksList().filter(function(c){return c.n&&!c.d}).map(function(c){return c.n}); if(nd.length)obs.push('فحوصات من غير تاريخ آخر مرة: '+nd.join('، ')+'.');
-  if(!s.wt||!s.ht||!s.bps)obs.push('الوزن أو الطول أو الضغط لسه ما اتسجلوش (في صفحة التقرير).'); else if(s.bodyDate&&new Date(s.bodyDate+'T12:00:00')<now-90*DAY)obs.push('قياس الوزن والطول والضغط عدّى عليه أكتر من 3 شهور.');
-  if(s.ketExp&&new Date(s.ketExp+'T12:00:00')<now)obs.push('شرايط الكيتون منتهية الصلاحية.'); else if(!s.ketExp)obs.push('مفيش تاريخ صلاحية لشرايط الكيتون.');
-  if(!s.plan)obs.push('جرعة ترسيبا بتاعة الدكتور مش مكتوبة في الإعدادات.');
-  if(!obs.length)obs.push('مفيش بيانات ناقصة واضحة في آخر 7 أيام.');
-  return {obs:obs,med:'دي مجرد تسجيلات ناقصة في البرنامج. أي استفسار عن العلاج نفسه مع الدكتور.'};
+  if(s.visitNext&&new Date(s.visitNext)<now)obs.push('فات موعد زيارة الطبيب القادمة. حدّث الموعد.');
+  if(!s.a1cDate)obs.push('لا يوجد تاريخ لآخر تحليل تراكمي.'); else if(addMonthsISO(s.a1cDate,3)<now)obs.push('فات موعد التحليل التراكمي (آخر مرة '+dayFull(new Date(s.a1cDate+'T12:00:00'))+').');
+  var nd=checksList().filter(function(c){return c.n&&!c.d}).map(function(c){return c.n}); if(nd.length)obs.push('فحوصات بلا تاريخ آخر مرة: '+nd.join('، ')+'.');
+  if(!s.wt||!s.ht||!s.bps)obs.push('لم يُسجَّل الوزن أو الطول أو الضغط بعد (في صفحة التقرير).'); else if(s.bodyDate&&new Date(s.bodyDate+'T12:00:00')<now-90*DAY)obs.push('مضى على قياس الوزن والطول والضغط أكثر من 3 أشهر.');
+  if(s.ketExp&&new Date(s.ketExp+'T12:00:00')<now)obs.push('شرائط الكيتون منتهية الصلاحية.'); else if(!s.ketExp)obs.push('لا يوجد تاريخ صلاحية لشرائط الكيتون.');
+  if(!s.plan)obs.push('جرعة ترسيبا الخاصة بالطبيب غير مكتوبة في الإعدادات.');
+  if(!obs.length)obs.push('لا توجد بيانات ناقصة واضحة في آخر 7 أيام.');
+  return {obs:obs,med:'هذه مجرد تسجيلات ناقصة في البرنامج. أي استفسار عن العلاج نفسه يكون مع الطبيب.'};
 }
 function ansDose(){
   var tk=lk(new Date()), T=prep().filter(function(e){return lk(e.d)===tk&&(e.apidra>0||e.tresiba>0)}), obs=[];
-  obs.push(T.length?'اللي اتسجل النهاردة: '+T.map(function(e){return timeStr(e.d)+' '+(e.apidra>0?'أبيدرا '+fmt(e.apidra):'')+(e.tresiba>0?' ترسيبا '+fmt(e.tresiba):'')}).join('، ')+'.':'مفيش جرعات متسجلة النهاردة.');
-  return {obs:obs,med:'مقدرش أقترح جرعات ولا أغيّرها. الجرعات وأي تعديل فيها بيحددهم الدكتور بس، وفي الطوارئ (هبوط شديد أو الطفل مش واعي) اطلب الإسعاف.'};
+  obs.push(T.length?'المسجَّل اليوم: '+T.map(function(e){return timeStr(e.d)+' '+(e.apidra>0?'أبيدرا '+fmt(e.apidra):'')+(e.tresiba>0?' ترسيبا '+fmt(e.tresiba):'')}).join('، ')+'.':'لا توجد جرعات مسجَّلة اليوم.');
+  return {obs:obs,med:'لا أستطيع اقتراح جرعات ولا تغييرها. الجرعات وأي تعديل فيها يحددهما الطبيب فقط، وفي الطوارئ (هبوط شديد أو الطفل غير واعٍ) اطلب الإسعاف.'};
 }
 function answer(q){
   var k=askIntent(q);
   return k==='high'?ansHigh():k==='meal'?ansMeal():k==='week'?ansWeek():k==='missing'?ansMissing():k==='dose'?ansDose():
-    {obs:['مفهمتش السؤال. جرّب واحد من الأسئلة اللي فوق.'],med:null};
+    {obs:['لم أفهم السؤال. جرّب أحد الأسئلة أعلاه.'],med:null};
 }
 $('#log').addEventListener('toggle',function(ev){var d=ev.target; if(d&&d.classList&&d.classList.contains('day'))openDays[d.dataset.k]=d.open},true);
 
@@ -2828,7 +2828,7 @@ function accordion(root,openFirst){
   });
 }
 accordion($('#set'),false); accordion($('#medcard'),false);
-[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الموبايل'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر العالي'||t==='الأقلام المفتوحة')d.hidden=true});
+[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الهاتف'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر المرتفع'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
 function render(){try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
@@ -2856,15 +2856,15 @@ document.addEventListener('click',function(ev){
   }
   if(t.id==='showt'){tAsked=true; renderHint(prep()); return}
   if('useplan' in t.dataset){$('#t').value=String(settings.plan); syncInj(); return}
-  if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; syncInj(); toast('اتكتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
+  if(t.dataset.usecalc){$('#a').value=t.dataset.usecalc; syncInj(); toast('كُتبت في خانة أبيدرا، راجعها قبل الحقن'); $('#a').scrollIntoView({behavior:'smooth',block:'center'}); return}
   if(t.id==='more'){weeksShown++; renderLog(prep()); return}
   if(t.classList.contains('edt')){startEdit(t.dataset.id); return}
   if(t.classList.contains('del')){
     if(t.dataset.armed){
       var id=t.dataset.id; t.disabled=true;
-      removeEntry(id).then(function(){toast('اتحذف'); render()}).catch(function(){toast('تعذّر الحذف'); t.disabled=false});
+      removeEntry(id).then(function(){toast('تم الحذف'); render()}).catch(function(){toast('تعذّر الحذف'); t.disabled=false});
     }else{
-      t.dataset.armed='1'; t.textContent='اضغط تاني للتأكيد';
+      t.dataset.armed='1'; t.textContent='اضغط مرة أخرى للتأكيد';
       setTimeout(function(){if(t.isConnected){delete t.dataset.armed; t.textContent='حذف'}},3000);
     }
     return;
@@ -2944,7 +2944,7 @@ async function buildDoctorPdf(E,r){
   T('تاريخ الإنشاء: '+dayFull(new Date()),M+14,y+47,10.5,400,'#DDF1F3','left');
   y+=80;
   /* summary tiles */
-  var tiles=[['أيام فيها تسجيل',String(ord.length)],['عدد القراءات',String(G.length)],['A1c تقديري'+(rangeStats(E)&&!rangeStats(E).ok?' (مش موثوق)':''),rangeStats(E)?'~'+fmt(rangeStats(E).a1c)+'%':'—']];
+  var tiles=[['أيام فيها تسجيل',String(ord.length)],['عدد القراءات',String(G.length)],['A1c تقديري'+(rangeStats(E)&&!rangeStats(E).ok?' (غير موثوق)':''),rangeStats(E)?'~'+fmt(rangeStats(E).a1c)+'%':'—']];
   var tw=(CW-2*8)/3;
   tiles.forEach(function(t,i){var x=R-(i+1)*tw-i*8; rr(x,y,tw,52,8,'#F1F6F8','#D5E0E5'); T(t[1],x+tw/2,y+19,18,700,'#0D7480','center'); T(t[0],x+tw/2,y+40,10.5,400,'#3F505A','center')});
   y+=64;
@@ -2996,8 +2996,8 @@ async function buildDoctorPdf(E,r){
 }
 $('#report').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-sk]'); if(!b)return; siteKind=b.dataset.sk; buildReport()});
 $('#pdfview').addEventListener('click',async function(){
-  var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
-  var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+  var r=rangeInputs(); if(!r){toast('اختر فترة صحيحة'); return}
+  var E=periodEntries(r); if(!E.length){toast('لا توجد تسجيلات في هذه الفترة'); return}
   var btn=this, tl=btn.querySelector('b'), old=tl.textContent; btn.disabled=true; tl.textContent='بجهّز الملف…';
   var w=null; try{w=window.open('','_blank')}catch(e){}
   try{
@@ -3005,7 +3005,7 @@ $('#pdfview').addEventListener('click',async function(){
     if(w&&!w.closed){w.location.href=url}
     else{var a=document.createElement('a'); a.href=url; a.target='_blank'; a.download='sugar-report-'+$('#rfrom').value+'_'+$('#rto').value+'.pdf'; document.body.appendChild(a); a.click(); a.remove()}
     setTimeout(function(){URL.revokeObjectURL(url)},60000);
-  }catch(e){if(w)try{w.close()}catch(x){} toast('معرفتش أجهّز الملف. جرب تاني.')}
+  }catch(e){if(w)try{w.close()}catch(x){} toast('تعذّر تجهيز الملف. حاول مرة أخرى.')}
   btn.disabled=false; tl.textContent=old;
 });
 var shareBlob=null;
@@ -3019,21 +3019,21 @@ $('#pdfshare').addEventListener('click',async function(){
   }
   try{
     if(shareBlob){var b0=shareBlob; shareBlob=null; tl.textContent=old; await doShare(b0); return}
-    var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
-    var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+    var r=rangeInputs(); if(!r){toast('اختر فترة صحيحة'); return}
+    var E=periodEntries(r); if(!E.length){toast('لا توجد تسجيلات في هذه الفترة'); return}
     btn.disabled=true; tl.textContent='بجهّز الملف…';
     var blob=await buildDoctorPdf(E,r); name='sugar-report-'+$('#rfrom').value+'_'+$('#rto').value+'.pdf';
     btn.disabled=false;
     try{
-      if(!(await doShare(blob))){toast('المشاركة مش متاحة هنا. استخدم زرار PDF'); tl.textContent=old}
+      if(!(await doShare(blob))){toast('المشاركة غير متاحة هنا. استخدم زر PDF'); tl.textContent=old}
       else tl.textContent=old;
     }catch(e){
       if(e&&e.name==='AbortError'){tl.textContent=old; return}
-      shareBlob=blob; tl.textContent='الملف جاهز. دوس هنا للمشاركة';
+      shareBlob=blob; tl.textContent='الملف جاهز. اضغط هنا للمشاركة';
     }
   }catch(e){
     btn.disabled=false; tl.textContent=old;
-    if(!(e&&e.name==='AbortError'))toast('معرفتش أجهّز الملف. جرب تاني.');
+    if(!(e&&e.name==='AbortError'))toast('تعذّر تجهيز الملف. حاول مرة أخرى.');
   }
 });
 /* ---------- Excel export (real .xlsx, built in the browser) ---------- */
@@ -3106,8 +3106,8 @@ function buildXlsx(E,r){
   ]);
 }
 $('#csv').addEventListener('click',function(){
-  var r=rangeInputs(); if(!r){toast('اختار فترة صحيحة'); return}
-  var E=periodEntries(r); if(!E.length){toast('مفيش تسجيلات في الفترة دي'); return}
+  var r=rangeInputs(); if(!r){toast('اختر فترة صحيحة'); return}
+  var E=periodEntries(r); if(!E.length){toast('لا توجد تسجيلات في هذه الفترة'); return}
   var a=document.createElement('a'); a.href=URL.createObjectURL(buildXlsx(E,r));
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.xlsx'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
@@ -3152,36 +3152,36 @@ $('#f').addEventListener('submit',async function(ev){
   var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
   if(!editingId)setNow();
   var d=new Date($('#dt').value);
-  if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='في خانة فيها رقم مش مفهوم. اكتب أرقام بس.'; return}
-  if(g!=null&&(g<20||g>600)){err.textContent='قراءة السكر لازم تكون بين 20 و600. راجع الرقم.'; return}
-  if(a!=null&&(a<0||a>50)){err.textContent='جرعة أبيدرا غريبة. راجع الرقم.'; return}
+  if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
+  if(g!=null&&(g<20||g>600)){err.textContent='يجب أن تكون قراءة السكر بين 20 و600. راجع الرقم.'; return}
+  if(a!=null&&(a<0||a>50)){err.textContent='جرعة أبيدرا غير معتادة. راجع الرقم.'; return}
   if(t!=null&&(t<0||t>100)){err.textContent='جرعة ترسيبا غريبة. راجع الرقم.'; return}
-  if(isNaN(d)){err.textContent='التاريخ والوقت مش صحيحين.'; return}
+  if(isNaN(d)){err.textContent='التاريخ والوقت غير صحيحين.'; return}
   var items=allMeal().filter(function(m){return (m.name&&m.name.trim())||m.fruit}).map(function(m){
     var nm=m.fruit?('فاكهة'+(m.name.trim()?': '+m.name.trim():'')):m.name.trim();
     if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
     return {n:nm,q:m.q,c:m.c};
   });
   var supp=getSupp().filter(function(k){return !suppDoneToday(k)}), ket=readKet();
-  if(!ket.ok){err.textContent='نتيجة الكيتون (دم) لازم تكون رقم بين 0 و15.'; $('#kv').focus(); return}
+  if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
-  if(imode==='nofood'&&!items.length){err.textContent='اختار السناك اللي أكلته.'; return}
+  if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length&&!$('#corr').checked)miss.push('الأكل');
     if(!(a>0)&&!$('#corr').checked&&!editingId)miss.push('جرعة أبيدرا');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
-    if(miss.length){err.textContent='قبل الوجبة لازم تسجّل: '+miss.join('، ')+'.'; return}
+    if(miss.length){err.textContent='قبل الوجبة يجب أن تسجّل: '+miss.join('، ')+'.'; return}
   }
-  if(a>0&&!$('#needle').value){err.textContent='اختار سن قلم أبيدرا (جديد ولا نفس السن).'; $('#needle').focus(); return}
-  if(t>0&&!$('#needleT').value){err.textContent='اختار سن قلم ترسيبا (جديد ولا نفس السن).'; $('#needleT').focus(); return}
-  if((a>0||t>0)&&!$('#site').value){err.textContent='اختار مكان الحقن علشان التسجيل يتحفظ كامل.'; $('#site').focus(); return}
-  if($('#corr').checked&&!(a>0)){err.textContent='جرعة التصحيح لازم تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
-  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل لازم تختار الأكل. لو جرعة تصحيح من غير أكل اختار "تصحيح" من فوق.'; $('#modebar').scrollIntoView({block:'center'}); return}
+  if(a>0&&!$('#needle').value){err.textContent='اختر سن قلم أبيدرا (جديد أم نفس السن).'; $('#needle').focus(); return}
+  if(t>0&&!$('#needleT').value){err.textContent='اختر سن قلم ترسيبا (جديد أم نفس السن).'; $('#needleT').focus(); return}
+  if((a>0||t>0)&&!$('#site').value){err.textContent='اختر مكان الحقن ليُحفظ التسجيل كاملًا.'; $('#site').focus(); return}
+  if($('#corr').checked&&!(a>0)){err.textContent='في جرعة التصحيح يجب أن تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
+  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل تستلزم اختيار الأكل. وإن كانت جرعة تصحيح دون أكل فاختر "تصحيح" من الأعلى.'; $('#modebar').scrollIntoView({block:'center'}); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   if(!editingId&&!forceDup){
     var dup=entries.filter(function(e){var x=new Date(e.ts); return Math.abs(x-d)<=20*60000&&e.slot===slot&&((g!=null&&e.glucose===g)||(a>0&&e.apidra===a)||(t>0&&e.tresiba===t))})[0];
-    if(dup){err.innerHTML='في تسجيل شبه ده اتسجّل الساعة '+timeStr(new Date(dup.ts))+'. ممكن حد تاني سجّله. <button type="button" class="link" id="dupok">سجّل برضه</button>'; return}
+    if(dup){err.innerHTML='يوجد تسجيل مشابه سُجّل الساعة '+timeStr(new Date(dup.ts))+'. ربما سجّله شخص آخر. <button type="button" class="link" id="dupok">سجّل على أي حال</button>'; return}
   }
   var btn=$('#save'); btn.disabled=true;
   try{
@@ -3189,10 +3189,10 @@ $('#f').addEventListener('submit',async function(ev){
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
     var wasEdit=!!editingId; setEditing(null); $('#needle').value=''; $('#needleT').value=''; $('#site').value=''; $('#ttime').value=''; imode=defMode(); lastMode=null; keepSlot=null; clearKet(); setSupp([]); syncInj();
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
-    setNow(); if(undoId)showUndo(undoId,lastQueued); else toast(lastQueued?'اتحفظ على الموبايل وهيتبعت لما النت يرجع':'اتعدّل'); render(); if(wasEdit)go('log');
+    setNow(); if(undoId)showUndo(undoId,lastQueued); else toast(lastQueued?'حُفظ على الهاتف وسيُرسل عند عودة الإنترنت':'تم التعديل'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
   }catch(e){
-    err.textContent=e&&e.code==='auth'?'الرقم السري اتغيّر. اقفل الصفحة وافتحها تاني.':'مقدرتش أحفظ. اتأكد من النت وجرب تاني.';
+    err.textContent=e&&e.code==='auth'?'تغيّر الرقم السري. أغلق الصفحة وافتحها من جديد.':'تعذّر الحفظ. تأكّد من الإنترنت وحاول مرة أخرى.';
   }finally{btn.disabled=false}
 });
 
@@ -3202,7 +3202,7 @@ function b64uToU8(b){var p=(b+'===').slice(0,b.length+(4-b.length%4)%4).replace(
 function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
 async function pushState(){
   var st=$('#pushst'), sw=$('#pushsw'), te=$('#pushtest'); if(!st)return;
-  if(!pushSupported()){st.textContent='مش متاحة هنا. افتح التطبيق من الأيقونة على الشاشة الرئيسية.'; sw.checked=false; sw.disabled=true; te.hidden=true; return}
+  if(!pushSupported()){st.textContent='غير متاحة هنا. افتح التطبيق من الأيقونة على الشاشة الرئيسية.'; sw.checked=false; sw.disabled=true; te.hidden=true; return}
   var sub=null; try{var reg=await navigator.serviceWorker.getRegistration(); sub=reg&&await reg.pushManager.getSubscription()}catch(_){}
   var perm=Notification.permission;
   sw.checked=!!sub&&perm==='granted'; sw.disabled=perm==='denied';
@@ -3216,11 +3216,11 @@ async function pushEnable(){
     var reg=await navigator.serviceWorker.ready, k=(await api({action:'vapid'})).key;
     var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(k)});
     await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint); toast('الإشعارات اتفعّلت');
-  }catch(e){toast('مقدرتش أفعّل الإشعارات. اتأكد من النت وجرب تاني.')}
+  }catch(e){toast('تعذّر تفعيل الإشعارات. تأكّد من الإنترنت وحاول مرة أخرى.')}
   sw.disabled=false; pushState();
 }
 async function pushTest(){
-  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); var r=await api({action:'testpush',endpoint:sub.endpoint}); toast(r.ok?'بعتنالك إشعار تجريبي':'السيرفر ما قدرش يبعت. جرب تفعّلها من الأول.')}catch(e){toast('مقدرتش أجرّب الإشعار')}
+  try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); var r=await api({action:'testpush',endpoint:sub.endpoint}); toast(r.ok?'أُرسل إليك إشعار تجريبي':'تعذّر على الخادم الإرسال. جرّب تفعيلها من البداية.')}catch(e){toast('مقدرتش أجرّب الإشعار')}
 }
 async function pushOff(){
   $('#pushsw').disabled=true;
