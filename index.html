@@ -985,6 +985,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 .row .val .tag{justify-self:start;white-space:nowrap}
 .row .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:150px;justify-self:end}
 .row .acts .edt,.row .acts .del{width:100%;text-align:center;padding:5px 4px}
+.dtab .dtm{display:block;font-size:11px;font-weight:400;opacity:.75;line-height:1.3;margin-top:1px}
 </style>
 </head>
 <body>
@@ -2494,7 +2495,7 @@ function buildReport(){
       G2.forEach(function(e){
         var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
         var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (دون طعام)':'',e.note||''].filter(Boolean).join(' · ');
-        h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(SLOT_LABEL[e.slot]||'')+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra):'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba):'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
+        h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(SLOT_LABEL[e.slot]||'')+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra)+'<small class="dtm">'+timeStr(e.d)+'</small>':'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+'<small class="dtm">'+(e.tresibaTime?hm(e.tresibaTime):timeStr(e.d))+'</small>':'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
       });
       h+='</tbody></table></div></div>';
     });
@@ -2974,7 +2975,7 @@ async function buildDoctorPdf(E,r){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
     var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
-    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, h=Math.max(58,hR);
+    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, h=Math.max(58,hR,nCR*27+6);
     if(y+h>PH-M-18){newPage(); header()}
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
