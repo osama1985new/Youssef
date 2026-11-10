@@ -3155,7 +3155,7 @@ function startEdit(id){
   renderMeal();
   $('#dt').value=toLocalInput(new Date(e.ts));
   var det=$('#dt').closest('details'); if(det)det.open=true;
-  go('add'); render(); toast('عدّل وبعدين اضغط حفظ التعديل');
+  go('add'); render(); setSupp((e.supp||[]).reduce(function(r,x){return r.concat(x==='vit'?['calmag','d3']:[x])},[])); toast('عدّل وبعدين اضغط حفظ التعديل');
 }
 $('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
