@@ -3179,8 +3179,10 @@ $('#f').addEventListener('submit',async function(ev){
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
-    var miss=[]; if(g==null)miss.push('قراءة السكر'); if(!items.length&&!$('#corr').checked)miss.push('الأكل');
-    if(!(a>0)&&!$('#corr').checked&&!editingId)miss.push('جرعة أبيدرا');
+    var miss=[], isC=$('#corr').checked;
+    if(isC){if(g==null)miss.push('قراءة السكر')}
+    else if(g==null&&!items.length)miss.push('قراءة السكر أو الأكل');
+    if(items.length&&!(a>0)&&!isC&&!editingId)miss.push('جرعة أبيدرا');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة يجب أن تسجّل: '+miss.join('، ')+'.'; return}
   }
