@@ -1128,8 +1128,8 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <div class="rsec">
       <div class="rlbl">الفترة</div>
       <div class="presets" id="presets" role="group" aria-label="الفترة">
-        <button type="button" class="ghost" data-days="7">7 أيام</button>
-        <button type="button" class="ghost" data-days="14" aria-pressed="true">14 يوم</button>
+        <button type="button" class="ghost" data-days="7" aria-pressed="true">7 أيام</button>
+        <button type="button" class="ghost" data-days="14">14 يوم</button>
         <button type="button" class="ghost" data-days="30">30 يوم</button>
         <button type="button" class="ghost" data-days="90">3 شهور</button>
       </div>
@@ -3246,7 +3246,7 @@ async function pushSync(){
 $('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); else pushOff()}); $('#pushtest').addEventListener('click',pushTest);
 
 /* ---------- start ---------- */
-setPreset(14); renderMeal(); applyTab();
+setPreset(7); renderMeal(); applyTab();
 syncSettingsInputs(); render();
 start(true);
 /* Arabic display for native date / time inputs (the picker itself stays native) */
