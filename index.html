@@ -2938,7 +2938,7 @@ function makePdf(jpegs,W,H){
 async function buildDoctorPdf(E,r){
   var FF="'IBM Plex Sans Arabic','Readex Pro','Noto Naskh Arabic','Noto Sans Arabic',system-ui,sans-serif";
   try{await Promise.all([document.fonts.load("700 20px 'IBM Plex Sans Arabic'"),document.fonts.load("400 20px 'IBM Plex Sans Arabic'"),document.fonts.load("700 20px 'Readex Pro'")])}catch(e){}
-  var SC=2, PW=595, PH=842, M=28, CW=PW-2*M, C1=100, CA=84, CT=0, C3=CA+CT, C2=CW-C1-C3, R=PW-M;
+  var SC=2, PW=595, PH=842, M=28, CW=PW-2*M, C1=100, CA=68, CT=0, C3=CA+CT, C2=CW-C1-C3, R=PW-M;
   var pages=[], cv, cx, y;
   function newPage(){
     cv=document.createElement('canvas'); cv.width=PW*SC; cv.height=PH*SC; cx=cv.getContext('2d'); cx.scale(SC,SC); cx.direction='rtl'; cx.textBaseline='middle';
@@ -2966,16 +2966,16 @@ async function buildDoctorPdf(E,r){
   function header(){
     rr(M,y,CW,28,6,'#E3EEF3');
     T('اليوم والتاريخ',R-8,y+14,11.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+14,11.5,700,'#17303B');
-    T('الجرعات',M+CA/2,y+10,11.5,700,'#17303B','center'); T('وحدات ووقتها',M+CA/2,y+22,8,400,'#55656f','center');
+    T('تصحيح',M+CA/2,y+10,11.5,700,'#C2410C','center'); T('وحدات',M+CA/2,y+22,8,400,'#55656f','center');
     y+=33;
   }
   header();
-  var CH_W=48, CH_H=44, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
+  var CH_W=48, CH_H=56, GAP=3, PER=Math.max(1,Math.floor((C2-8+GAP)/(CH_W+GAP)));
   ord.forEach(function(k){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
     var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
-    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, DS=[], h; D.forEach(function(e){if(e.apidra>0)DS.push({v:e.apidra,t:timeStr(e.d),k:e.corr?'تصحيح':'أبيدرا',c:e.corr?'#C2410C':'#2F6FD0'}); if(e.tresiba>0)DS.push({v:e.tresiba,t:e.tresibaTime?hm(e.tresibaTime):timeStr(e.d),k:'ترسيبا',c:'#7B3FD1'})}); h=Math.max(58,hR,DS.length*30+6);
+    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, h=Math.max(58,hR,nCR*27+6);
     if(y+h>PH-M-18){newPage(); header()}
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
@@ -2988,15 +2988,16 @@ async function buildDoctorPdf(E,r){
       var bg=st==='low'?'#FBE3E1':st==='high'?'#FCEBD3':'#E6F4EC', fg=st==='low'?'#B3261E':st==='high'?'#A85A00':'#1E7F47';
       rr(x,yy,CH_W,CH_H,6,bg);
       var vt=String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''), vf=19; cx.font='700 '+vf+'px '+FF; while(vf>12&&cx.measureText(vt).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(vt,x+CH_W/2,yy+16,vf,700,fg,'center');
-      var sl=SLOT_LABEL[e.slot]||'', fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+34,fs,500,'#3F505A','center');
+      var sl=SLOT_LABEL[e.slot]||'', fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
     });
     if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
-    /* every dose with its time */
-    if(DS.length){
-      var lh=Math.min(30,(h-4)/DS.length);
-      DS.forEach(function(d,i){var cy=y+h/2-(DS.length-1)*lh/2+i*lh;
-        T(fmt(d.v),M+CA/2,cy-6,15,700,d.c,'center');
-        T(d.k+' · '+d.t,M+CA/2,cy+8,8,400,'#55656f','center')});
+    /* only correction doses (the fixed doses are in the top tiles) */
+    var CR=D.filter(function(e){return e.corr&&e.apidra>0});
+    if(CR.length){
+      var lh=Math.min(28,(h-4)/CR.length), two=lh>=24;
+      CR.forEach(function(e,i){var cy=y+h/2-(CR.length-1)*lh/2+i*lh;
+        T(fmt(e.apidra),M+CA/2,cy-(two?5:0),Math.min(17,lh*.8),700,'#C2410C','center');
+        if(two)T(timeStr(e.d),M+CA/2,cy+9,8.5,400,'#55656f','center')});
     }
     y+=h+8;
   });
