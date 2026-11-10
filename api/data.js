@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const PIN = process.env.FAMILY_PIN;
-const SUPP_KEYS = ['omega', 'vit'];
+const SUPP_KEYS = ['omega', 'milga', 'calmag', 'd3', 'vit'];
 const SITE_KEYS = ['ab_r', 'ab_l', 'th_r', 'th_l', 'ar_r', 'ar_l'];
 const SLOTS = ['fast','bf_before','bf_after','ln_before','ln_after','dn_before','dn_after','sn','bed','other'];
 
@@ -338,14 +338,15 @@ async function runCron(host, force) {
       due.push(['apd:' + t, 'قراءة بعد الأكل', 'مضت ساعتان على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قِس السكر وسجّله']);
   });
   /* omega after breakfast / vitamins after lunch: 1h after the meal's Apidra dose, or a fixed time when no dose was logged; once a day, only if not logged yet */
-  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, 'الأوميجا', 'وقت الأوميجا بعد الفطور'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, 'الفيتامينات', 'وقت الفيتامينات بعد الغداء']].forEach(([k, on, at, h1, h2, nm, msg]) => {
+  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, [['omega', 'الأوميجا', ['omega']], ['milga', 'ميلجا أدفانس', ['milga']]], 'بعد الفطور'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, [['calmag', 'الكال ماج', ['calmag', 'vit']], ['d3', 'فيتامين D3', ['d3', 'vit']]], 'بعد الغداء']].forEach(([k, on, at, h1, h2, items, when]) => {
     if (!on) return;
-    if (recentAll.some(e => (e.supp || []).includes(k) && sday(Date.parse(e.ts)) === today)) return;
+    const miss = items.filter(([, , keys]) => !recentAll.some(e => (e.supp || []).some(x => keys.includes(x)) && sday(Date.parse(e.ts)) === today)).map(x => x[1]);
+    if (!miss.length) return;
     const meal = E.filter(e => e.apidra > 0).map(e => Date.parse(e.ts)).filter(t => { const h = cairo(t).h; return h >= h1 && h < h2; }).sort((a, b) => a - b)[0];
     let ok;
     if (meal) ok = now - meal >= 3600e3 && now - meal < 5 * 3600e3;
     else { const [hh, mm] = at.split(':').map(Number), mins = c.h * 60 + c.m, tgt = hh * 60 + mm; ok = mins >= tgt && mins < tgt + 180; }
-    if (ok) due.push(['sp_' + k, nm, msg + '. لم يُسجَّل اليوم بعد']);
+    if (ok) due.push(['sp_' + k, 'المكملات', 'حان وقت ' + miss.join(' و') + ' ' + when + '. لم يُسجَّل اليوم بعد']);
   });
   /* yesterday's Tresiba missing */
   if (c.h >= 8 && c.h < 11) {
