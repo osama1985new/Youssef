@@ -1962,7 +1962,7 @@ function careNotes(E){
   }else if(hasOld)out.push('سجّل تاريخ آخر تحليل تراكمي في الإعدادات لنُذكّرك بالموعد القادم.');
   if(hasOld){
     var vitDays={}, lastVit=null;
-    E.forEach(function(e){if((e.supp||[]).indexOf('vit')>=0){vitDays[lk(e.d)]=1; lastVit=e}});
+    E.forEach(function(e){if((e.supp||[]).some(function(x){return x==='vit'||x==='calmag'||x==='d3'||x==='milga'})){vitDays[lk(e.d)]=1; lastVit=e}});
     if(!vitDays[tk]&&!vitDays[yk])out.push(lastVit?'لم تُسجَّل الفيتامينات منذ '+relDay(lastVit.d)+'. إن لم يتناولها فليتناولها اليوم.':'لم تُسجَّل الفيتامينات بعد.');
   }
   return out;
