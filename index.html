@@ -1217,9 +1217,9 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
     <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطور وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>المكملات</h3>
-    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span>تنبيه الأوميجا بعد الفطور</span></label>
+    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span>تنبيه الأوميجا وميلجا أدفانس بعد الفطور</span></label>
     <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطور</label><input id="somegat" type="time"></div>
-    <label class="cgmrow"><input type="checkbox" id="ssuppv"><span>تنبيه الفيتامينات بعد الغداء</span></label>
+    <label class="cgmrow"><input type="checkbox" id="ssuppv"><span>تنبيه الكال ماج وفيتامين D3 بعد الغداء</span></label>
     <div class="field"><label for="svitat">وقت بديل إن لم يُسجَّل الغداء</label><input id="svitat" type="time"></div>
     <p class="hint">يصل التنبيه بعد الوجبة بساعة (من جرعة أبيدرا المسجَّلة)، ومرة واحدة في اليوم، ولا يصل إن سجّلتها. وإن لم تُسجَّل جرعة، يصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
     <h3>الأقلام المفتوحة</h3>
@@ -1333,8 +1333,8 @@ function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','رجل يمين'],['th_l','رجل شمال'],['ar_r','ذراع يمين'],['ar_l','ذراع شمال']];
 var SITE_LABEL={}; SITES.forEach(function(x){SITE_LABEL[x[0]]=x[1]});
-var SUPPS=[['omega','أوميجا'],['vit','فيتامينات']];
-var SUPP_LABEL={}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
+var SUPPS=[['omega','أوميجا'],['milga','ميلجا أدفانس'],['calmag','كال ماج'],['d3','فيتامين D3']];
+var SUPP_LABEL={vit:'فيتامينات'}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
 var PREMEAL=['bf_before','ln_before','dn_before'];
 var KET_U={neg:'سالب أو أثر',small:'قليل',mod:'متوسط',large:'كبير'};
 var DEFAULT_CHECKS=[{n:'عيون',d:null,m:12},{n:'كلى',d:null,m:12},{n:'غدة درقية',d:null,m:12},{n:'فحص القدم',d:null,m:12}];
@@ -1733,7 +1733,7 @@ function curSlot(){return $('#slot').value}
 $('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
 $('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('');
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
-function suppDoneToday(k){var td=lk(new Date()); return (typeof entries!=='undefined'?entries:[]).some(function(e){return e.id!==editingId&&(e.supp||[]).indexOf(k)>=0&&lk(new Date(e.ts))===td})}
+function suppDoneToday(k){var td=lk(new Date()), ks=(k==='calmag'||k==='d3')?[k,'vit']:[k]; return (typeof entries!=='undefined'?entries:[]).some(function(e){return e.id!==editingId&&(e.supp||[]).some(function(x){return ks.indexOf(x)>=0})&&lk(new Date(e.ts))===td})}
 function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; b.textContent=done?base+' ✓ سُجّلت':base})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
