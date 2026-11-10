@@ -262,8 +262,11 @@ async function entryAlerts(e, existed, srcEp, host) {
   let st = {}; try { st = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (x) {}
   const c = cairo(Date.parse(e.ts)), tm = t12(String(c.h).padStart(2, '0') + ':' + String(c.m).padStart(2, '0')), msgs = [];
   const fm = n => (Number.isInteger(n) ? String(n) : String(n).replace(/\.0+$/, ''));
-  if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: 'سكر منخفض', b: e.glucose + ' سُجِّل الساعة ' + tm, tag: 'g-low' });
-  if (e.glucose != null && e.glucose > Math.min(st.high || 200, 200)) msgs.push({ t: 'سكر مرتفع', b: e.glucose + ' سُجِّل الساعة ' + tm, tag: 'g-high' });
+  if (e.glucose != null && e.glucose < (st.low || 90)) msgs.push({ t: (e.glucose < 70 ? 'عاجل: ' : '') + 'سكر منخفض', b: e.glucose + ' سُجِّل الساعة ' + tm + '. اتبع خطة الطبيب للهبوط وأعد القياس بعد 15 دقيقة', tag: 'g-low' });
+  if (e.glucose != null && e.glucose > Math.min(st.high || 200, 200)) {
+    const dose = 'قد يلزم جرعة تصحيح بعد الرجوع لخطة الطبيب';
+    msgs.push({ t: 'سكر مرتفع', b: e.glucose + ' سُجِّل الساعة ' + tm + '. ' + dose + (e.glucose > 300 ? '، وقِس الكيتونات حسب الخطة' : ''), tag: 'g-high' });
+  }
   if (msgs.length) await notifyOthers(msgs, null, host);
 }
 const zlib = require('zlib');
