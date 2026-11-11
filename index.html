@@ -1768,13 +1768,18 @@ function renderReadRem(E){
   var T=(E||prep()).filter(function(e){return lk(e.d)===tk&&e.glucose!=null}), rows=[];
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
   if(settings.cgm){el.hidden=true; el.innerHTML=''; return}
+  var dis=lsGet('ysg:rrdis',{}); if(dis.k!==tk)dis={k:tk,s:[]}; var isDis=function(sl){return (dis.s||[]).indexOf(sl)>=0};
   var TA=(E||prep()).filter(function(e){return lk(e.d)===tk});
-  if(h>=6&&!has('fast'))rows.push(['لم تُسجَّل قراءة الصائم اليوم بعد','fast']);
+  if(h>=6&&!has('fast')&&!isDis('fast'))rows.push(['لم تُسجَّل قراءة الصائم اليوم بعد','fast']);
   var bb=TA.filter(function(e){return e.slot==='bf_before'}).pop();
-  if(bb&&!has('bf_after')&&now-bb.d>=2*36e5&&now-bb.d<7*36e5)rows.push(['مضت ساعتان على الفطار. لم تُسجَّل قراءة ما بعد الفطار بعد','bf_after']);
-  if((h>=22||h<4)&&!has('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
+  var lunchStarted=TA.some(function(e){return e.slot==='ln_before'});
+  if(bb&&!has('bf_after')&&!isDis('bf_after')&&!lunchStarted&&h<14&&now-bb.d>=2*36e5)rows.push(['مضت ساعتان على الفطار. لم تُسجَّل قراءة ما بعد الفطار بعد','bf_after']);
+  var lb=TA.filter(function(e){return e.slot==='ln_before'}).pop(), db=TA.filter(function(e){return e.slot==='dn_before'}).pop();
+  if(lb&&!has('ln_after')&&!isDis('ln_after')&&!TA.some(function(e){return e.slot==='dn_before'})&&h<20&&now-lb.d>=2*36e5)rows.push(['مضت ساعتان على الغداء. لم تُسجَّل قراءة ما بعد الغداء','ln_after']);
+  if(db&&!has('dn_after')&&!isDis('dn_after')&&h<23&&now-db.d>=2*36e5)rows.push(['مضت ساعتان على العشاء. لم تُسجَّل قراءة ما بعد العشاء','dn_after']);
+  if((h>=22||h<4)&&!has('bed')&&!isDis('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
   el.hidden=!rows.length;
-  el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button></div>'}).join('');
+  el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button><button type="button" class="link" data-remdis="'+r[1]+'" style="color:var(--muted)">تجاهل</button></span></div>'}).join('');
 }
 function monthKey(){var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)}
 function renderMedRem(){
@@ -1851,6 +1856,7 @@ document.addEventListener('click',function(e){
     return;
   }
   var uf=e.target.closest&&e.target.closest('[data-usefix]'); if(uf){$('#a').value=uf.dataset.usefix; syncInj(); return}
+  var rd=e.target.closest&&e.target.closest('[data-remdis]'); if(rd){var dd=lsGet('ysg:rrdis',{}),tk0=lk(new Date()); if(dd.k!==tk0)dd={k:tk0,s:[]}; dd.s=(dd.s||[]).concat(rd.dataset.remdis); lsSet('ysg:rrdis',dd); renderReadRem(); return}
   var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
