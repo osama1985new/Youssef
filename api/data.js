@@ -291,6 +291,8 @@ async function backupNow(now) {
   return { key, n: entries.length };
 }
 async function runCron(host, force) {
+  /* deep night 00:00-06:00 Cairo: check every 10 minutes instead of 5 (saves commands; every alert window is wider than 10 min) */
+  if (!force) { const qc = cairo(Date.now()); if (qc.h < 6 && Math.floor(qc.m / 5) % 2 === 1) return { sent: [], note: 'quiet_hours' }; }
   try { await backupNow(force && force.now ? force.now : Date.now()); } catch (e) {}
   const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
   for (let i = 1; i < (subsFlat || []).length; i += 2) { try { const sb = JSON.parse(subsFlat[i]); if (sb && sb.role === 'edit') subs.push(sb); } catch (e) {} }
