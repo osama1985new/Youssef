@@ -3148,7 +3148,7 @@ function startEdit(id){
   $('#t').value=e.tresiba>0?String(e.tresiba):'';
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
-  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
+  $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':PREMEAL.indexOf(e.slot)>=0?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
   clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){return {k:'ed'+i,name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:true}});
@@ -3190,7 +3190,7 @@ $('#f').addEventListener('submit',async function(ev){
   if(t>0&&!$('#needleT').value){err.textContent='اختر سن قلم ترسيبا (جديد أم نفس السن).'; $('#needleT').focus(); return}
   if((a>0||t>0)&&!$('#site').value){err.textContent='اختر مكان الحقن ليُحفظ التسجيل كاملًا.'; $('#site').focus(); return}
   if($('#corr').checked&&!(a>0)){err.textContent='في جرعة التصحيح يجب أن تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
-  if(a>0&&!items.length&&!$('#corr').checked){err.textContent='الأبيدرا مع الأكل تستلزم اختيار الأكل. وإن كانت جرعة تصحيح دون أكل فاختر "تصحيح" من الأعلى.'; $('#modebar').scrollIntoView({block:'center'}); return}
+  if(a>0&&!items.length&&!$('#corr').checked&&!editingId){err.textContent='الأبيدرا مع الأكل تستلزم اختيار الأكل. وإن كانت جرعة تصحيح دون أكل فاختر "تصحيح" من الأعلى.'; $('#modebar').scrollIntoView({block:'center'}); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var carbs=r1(items.reduce(function(s,m){return s+m.q*m.c},0));
   if(!editingId&&!forceDup){
