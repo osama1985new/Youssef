@@ -1776,8 +1776,8 @@ function renderReadRem(E){
   if(bb&&!has('bf_after')&&!isDis('bf_after')&&!lunchStarted&&h<14&&now-bb.d>=2*36e5)rows.push(['مضت ساعتان على الفطار. لم تُسجَّل قراءة ما بعد الفطار بعد','bf_after']);
   var lb=TA.filter(function(e){return e.slot==='ln_before'}).pop(), db=TA.filter(function(e){return e.slot==='dn_before'}).pop();
   if(lb&&!has('ln_after')&&!isDis('ln_after')&&!TA.some(function(e){return e.slot==='dn_before'})&&h<20&&now-lb.d>=2*36e5)rows.push(['مضت ساعتان على الغداء. لم تُسجَّل قراءة ما بعد الغداء','ln_after']);
-  if(db&&!has('dn_after')&&!isDis('dn_after')&&h<23&&now-db.d>=2*36e5)rows.push(['مضت ساعتان على العشاء. لم تُسجَّل قراءة ما بعد العشاء','dn_after']);
-  if((h>=22||h<4)&&!has('bed')&&!isDis('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
+  if(db&&!has('dn_after')&&!has('bed')&&!isDis('dn_after')&&h<23&&now-db.d>=2*36e5)rows.push(['مضت ساعتان على العشاء. لم تُسجَّل قراءة ما بعد العشاء','dn_after']);
+  if((h>=22||h<4)&&!has('bed')&&!has('dn_after')&&!isDis('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button><button type="button" class="link" data-remdis="'+r[1]+'" style="color:var(--muted)">تجاهل</button></span></div>'}).join('');
 }
