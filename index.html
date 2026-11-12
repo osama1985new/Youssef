@@ -1281,7 +1281,6 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <div class="swtxt"><b>تذكيرات على هذا الهاتف</b><span id="pushst" class="small"></span></div>
       <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الهاتف"><i></i></label>
     </div>
-    <button type="button" class="link" id="pushtest" hidden>جرّب إشعارًا</button>
 
     <h3>الحساب</h3>
     <p class="small">اخرج من البرنامج على هذا الهاتف، وسيطلب الرقم السري مجددًا عند الدخول القادم.</p>
@@ -3230,12 +3229,12 @@ if('serviceWorker' in navigator){window.addEventListener('load',function(){navig
 function b64uToU8(b){var p=(b+'===').slice(0,b.length+(4-b.length%4)%4).replace(/-/g,'+').replace(/_/g,'/'), r=atob(p), u=new Uint8Array(r.length); for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i); return u}
 function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
 async function pushState(){
-  var st=$('#pushst'), sw=$('#pushsw'), te=$('#pushtest'); if(!st)return;
+  var st=$('#pushst'), sw=$('#pushsw'), te={}; if(!st)return;
   if(!pushSupported()){st.textContent='غير متاحة هنا. افتح التطبيق من الأيقونة على الشاشة الرئيسية.'; sw.checked=false; sw.disabled=true; te.hidden=true; return}
   var sub=null; try{var reg=await navigator.serviceWorker.getRegistration(); sub=reg&&await reg.pushManager.getSubscription()}catch(_){}
   var perm=Notification.permission;
   sw.checked=!!sub&&perm==='granted'; sw.disabled=perm==='denied';
-  st.textContent=perm==='denied'?'مقفولة من إعدادات الآيفون (الإعدادات ← متابعة السكر ← الإشعارات).':sw.checked?'شغّالة':'مقفولة';
+  st.textContent=perm==='denied'?'مقفولة من إعدادات الآيفون (الإعدادات ← متابعة السكر ← الإشعارات).':'';
   te.hidden=!sw.checked;
 }
 async function pushEnable(){
@@ -3260,7 +3259,7 @@ async function pushSync(){
   if(!pushSupported()||Notification.permission!=='granted'||role!=='edit'||mode!=='cloud')return;
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint)}}catch(_){}
 }
-$('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); else pushOff()}); $('#pushtest').addEventListener('click',pushTest);
+$('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); else pushOff()}); 
 
 /* ---------- start ---------- */
 setPreset(7); renderMeal(); applyTab();
