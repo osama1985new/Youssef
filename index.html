@@ -1477,6 +1477,7 @@ function penStock(kind,E){
 }
 function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var p=[];
+  if(authed&&role!=='view'&&(mode!=='cloud'||settingsLoaded)){var ch=false,nl=toLocalInput(new Date()); ['A','T'].forEach(function(k){if(settings['stock'+k]>0&&!settings['stockAt'+k]){settings['stockAt'+k]=nl; ch=true}}); if(ch)persistSettings()}
   [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i){var pn=Math.round(i.left/30)/10; p.push(x[1]+': المتبقي حوالي '+pn+' قلم ('+Math.round(i.left)+' وحدة)'+(i.days!==null?'، تكفي حوالي '+i.days+' يومًا':''))}});
   el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام ليعمل الحساب.'; el.style.whiteSpace='pre-line';
 }
@@ -2570,7 +2571,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null))at.stockAtT=s.stockT>0?nowL:null;
+  var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
