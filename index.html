@@ -1239,7 +1239,7 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
       <div class="field"><label for="sstockt">عدد أقلام ترسيبا</label><input id="sstockt" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
     <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل نفاده بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
-    <p class="small" id="stocktxt"></p>
+    <div class="small" id="stocktxt"></div>
     <h3>الجرعات الثابتة</h3>
     <p class="hint">جرعات الطبيب الثابتة. يمكنك تغييرها في أي وقت، وتظهر في تقرير الطبيب وتُحسب بها أيام المخزون.</p>
     <div class="two cen">
@@ -1479,10 +1479,13 @@ function penStock(kind,E){
   return {left:left,days:daily>0?Math.floor(left/daily):null};
 }
 function stockTxt(){
-  var el=$('#stocktxt'); if(!el)return; var p=[];
+  var el=$('#stocktxt'); if(!el)return; var h='';
   if(authed&&role!=='view'&&(mode!=='cloud'||settingsLoaded)){var ch=false,nl=toLocalInput(new Date()); ['A','T'].forEach(function(k){if(settings['stock'+k]>0&&!settings['stockAt'+k]){settings['stockAt'+k]=nl; ch=true}}); if(ch)persistSettings()}
-  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i){var pn=Math.round(i.left/30)/10; p.push(x[1]+': المتبقي حوالي '+pn+' قلم ('+Math.round(i.left)+' وحدة)'+(i.days!==null?'، تكفي حوالي '+i.days+' يومًا':''))}});
-  el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام ليعمل الحساب.'; el.style.whiteSpace='pre-line';
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(!i)return;
+    var total=settings['stock'+x[0]]*300, used=Math.max(0,total-i.left), pct=Math.max(0,Math.min(100,Math.round(used/total*100))), pn=Math.round(i.left/30)/10, lim=settings.stockDays||14, low=i.days!==null?i.days<=lim:i.left<=300;
+    h+='<div class="stripline"><b>'+x[1]+': '+pn+' قلم</b><span>'+Math.round(i.left)+' وحدة'+(i.days!==null?' · تكفي '+i.days+' يومًا':'')+'</span></div><div class="stripbar'+(low?' low':'')+'"><i style="width:'+pct+'%"></i></div>';
+  });
+  el.innerHTML=h||'اكتب عدد الأقلام ليعمل الحساب.';
 }
 function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'انتهى موعده':'المتبقي '+a+' يومًا')); if(t!==null)p.push('ترسيبا: '+(t<0?'انتهى موعده':'المتبقي '+t+' يومًا')); el.textContent=p.join(' · ')}
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
