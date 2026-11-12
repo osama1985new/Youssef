@@ -1477,7 +1477,7 @@ function penStock(kind,E){
 }
 function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var p=[];
-  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)p.push(x[1]+': المتبقي حوالي '+Math.round(i.left)+' وحدة'+(i.days!==null?'، تكفي حوالي '+i.days+' يومًا':''))});
+  [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(i)var pn=Math.round(i.left/30)/10; p.push(x[1]+': المتبقي حوالي '+pn+' قلم ('+Math.round(i.left)+' وحدة)'+(i.days!==null?'، تكفي حوالي '+i.days+' يومًا':''))});
   el.textContent=p.length?p.join('\n'):'اكتب عدد الأقلام ليعمل الحساب.'; el.style.whiteSpace='pre-line';
 }
 function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(settings.penAStart), t=penLeft(settings.penTStart), p=[]; if(a!==null)p.push('أبيدرا: '+(a<0?'انتهى موعده':'المتبقي '+a+' يومًا')); if(t!==null)p.push('ترسيبا: '+(t<0?'انتهى موعده':'المتبقي '+t+' يومًا')); el.textContent=p.join(' · ')}
