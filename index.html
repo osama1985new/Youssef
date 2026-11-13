@@ -1180,6 +1180,12 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
   body[data-t=report] .wrap>#medcard{grid-column:2; grid-row:4}
   body[data-t=report] .wrap>#report{grid-column:1; grid-row:3 / span 3}
 }
+
+@media (min-width:760px){
+  body[data-t=log] .wrap>#hero{grid-column:1; grid-row:3}
+  body[data-t=log] .wrap>#chartcard{grid-column:1; grid-row:4}
+  body[data-t=log] .wrap>#logsec{grid-column:2; grid-row:3 / span 4}
+}
 </style>
 </head>
 <body>
@@ -1900,6 +1906,16 @@ function persistSettings(){
 }
 
 /* ---------- tabs ---------- */
+var exportAcc=null;
+function placeExport(){
+  var rc=$('#rcard'), rp=$('#report'); if(!rc||!rp)return;
+  if(!exportAcc){[].some.call(rc.querySelectorAll(':scope>details.acc'),function(d){var m=d.querySelector('summary'); if(m&&m.textContent.indexOf('تصدير')>-1){exportAcc=d;return true}})}
+  if(!exportAcc)return;
+  var wide=window.matchMedia('(min-width:760px)').matches;
+  if(wide&&exportAcc.parentNode!==rp)rp.insertBefore(exportAcc,rp.firstChild);
+  else if(!wide&&exportAcc.parentNode===rp){var k=rc.querySelectorAll(':scope>details.acc'); rc.insertBefore(exportAcc,k[1]||null)}
+}
+try{new MutationObserver(function(){placeExport()}).observe($('#report'),{childList:true})}catch(x){}
 function applyTab(){
   document.querySelectorAll('[data-tab]').forEach(function(el){
     var t=el.dataset.tab;
@@ -1909,6 +1925,7 @@ function applyTab(){
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false);
+  placeExport();
 }
 function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport()}
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
