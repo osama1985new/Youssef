@@ -1186,6 +1186,15 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
   body[data-t=log] .wrap>#chartcard{grid-column:1; grid-row:4}
   body[data-t=log] .wrap>#logsec{grid-column:2; grid-row:3 / span 4}
 }
+
+@media (min-width:760px){
+  body:not(.ro)[data-t=log] .wrap>#chartcard{grid-column:1/-1; grid-row:3}
+  body:not(.ro)[data-t=log] .wrap>#logsec{grid-column:1/-1; grid-row:4}
+  body:not(.ro)[data-t=log] #chart svg{max-height:260px; width:100%}
+  body:not(.ro)[data-t=report] .wrap>#rcard{grid-column:1/-1; grid-row:3}
+  body:not(.ro)[data-t=report] .wrap>#report{grid-column:1/-1; grid-row:4}
+  body:not(.ro)[data-t=report] .wrap>#medcard{grid-column:1/-1; grid-row:5}
+}
 </style>
 </head>
 <body>
@@ -1911,7 +1920,7 @@ function placeExport(){
   var rc=$('#rcard'), rp=$('#report'); if(!rc||!rp)return;
   if(!exportAcc){[].some.call(rc.querySelectorAll(':scope>details.acc'),function(d){var m=d.querySelector('summary'); if(m&&m.textContent.indexOf('تصدير')>-1){exportAcc=d;return true}})}
   if(!exportAcc)return;
-  var wide=window.matchMedia('(min-width:760px)').matches;
+  var wide=window.matchMedia('(min-width:760px)').matches&&document.body.classList.contains('ro');
   if(wide&&exportAcc.parentNode!==rp)rp.insertBefore(exportAcc,rp.firstChild);
   else if(!wide&&exportAcc.parentNode===rp){var k=rc.querySelectorAll(':scope>details.acc'); rc.insertBefore(exportAcc,k[1]||null)}
 }
