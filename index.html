@@ -1098,6 +1098,13 @@ html{scroll-behavior:smooth}
 @media (prefers-color-scheme: dark){.act.main::after{border-color:rgba(0,0,0,.6)}}
 .act{border-radius:14px; box-shadow:0 1px 2px rgba(25,45,55,.05)}
 .act:active{transform:scale(.985)}
+/* report: identical tiles */
+#report .rsum,#report .kpis{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0 0}
+#report .rsum>div,#report .kpis>div{grid-column:auto!important; min-height:74px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between; gap:4px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:color-mix(in srgb,var(--ink) 3.5%,var(--surface))!important; color:var(--ink)}
+#report .rsum dt,#report .kpis dt,#report .kpis div>small:first-child{font-size:12px; line-height:1.4; color:var(--muted); margin:0}
+#report .rsum dd,#report .kpis dd{margin:0; font-size:18px; font-weight:650; line-height:1.25}
+#report .rsum dd small,#report .kpis dd small,#report .kpis small{font-size:11.5px; font-weight:400; color:var(--muted)}
+#report .rsum .mb{margin-top:2px}
 </style>
 </head>
 <body>
@@ -2622,13 +2629,13 @@ function buildReport(){
   var dosesH='<dl class="rsum">'+
     '<div><dt>أبيدرا قبل الفطار</dt><dd>'+dz(fd.bf)+'</dd></div>'+'<div><dt>أبيدرا قبل الغداء</dt><dd>'+dz(fd.ln)+'</dd></div>'+'<div><dt>أبيدرا قبل العشاء</dt><dd>'+dz(fd.dn)+'</dd></div>'+'<div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div></dl>';
   h+='<dl class="rsum">'+
-    '<div><dt>عدد قراءات السكر</dt><dd>'+vals.length+' <small>في '+nd+' يوم</small></dd></div>'+
+    '<div><dt>عدد القراءات</dt><dd>'+vals.length+' <small>قراءة</small></dd></div>'+'<div><dt>أيام مسجّلة</dt><dd>'+nd+' <small>من '+r.days+' يوم</small></dd></div>'+
     '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
-    '<div><dt>أقل / أعلى قراءة</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
+    '<div><dt>أقل / أعلى</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
     '<div class="tir"><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd>'+(vals.length?'<i class="mb"><u style="width:'+Math.round(okc/vals.length*100)+'%"></u></i>':'')+'</div>'+
     '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
-    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · غير موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
+    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري</dt><dd>'+fmt(rs.a1c)+' <small>%'+(rs.ok?'':' · تقريبي')+'</small></dd></div>':''})()+
   '</dl>';
   h+=grp('مؤشر التحكم في السكر','الوقت في المعدل · الهبوط · التذبذب',controlPanel(E),false,'target');
   h+=grp('الجرعات الثابتة','أبيدرا لكل وجبة · ترسيبا',dosesH,false,'syr');
