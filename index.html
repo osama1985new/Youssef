@@ -1032,6 +1032,45 @@ button{transition:transform .12s ease, background-color .15s ease, border-color 
 ::selection{background:color-mix(in srgb,var(--pt,var(--ac)) 28%,transparent)}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important; scroll-behavior:auto!important}}
+.gz .ex{opacity:.9; background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 2px,transparent 2px 5px)}
+.gm{inset-inline-start:auto}
+.gl{font-size:10.5px}
+.gl{position:relative; height:16px; display:block}
+.gl span{position:absolute; top:0; transform:translateX(-50%)}
+/* report: calmer tiles */
+#report .rsum>div{background:color-mix(in srgb,var(--ink) 3.5%,var(--surface))!important; border:1px solid var(--line)}
+#report .rsum{gap:8px}
+#report details.wk{margin-top:10px}
+/* report polish */
+#report .rhead{padding:2px 0 12px; border-bottom:1px solid var(--line); margin-bottom:12px}
+#report .rey{display:inline-flex; align-items:center; font-size:12px; font-weight:600; letter-spacing:.02em; color:var(--pt,var(--muted)); background:color-mix(in srgb,var(--pt,var(--ac)) 10%,transparent); padding:4px 10px; border-radius:99px}
+#report .rey .ic{width:14px;height:14px;margin-inline-end:5px;stroke:currentColor}
+#report .rhead h2{margin:10px 0 8px; font-size:22px}
+#report .rper{display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:13.5px; color:var(--ink)}
+#report .rper .ic{width:15px;height:15px;margin-inline-end:6px;opacity:.7}
+#report .rpd{font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:99px; padding:2px 9px}
+#report .rhead .sub{margin:8px 0 0; font-size:12px; color:var(--muted)}
+#report .rsum>div{border-radius:14px}
+#report .rsum dt{font-size:12.5px; color:var(--muted)}
+#report .rsum dd{font-weight:650}
+#report .tir{grid-column:1/-1}
+#report .mb{display:block; height:6px; border-radius:99px; background:color-mix(in srgb,var(--ink) 9%,transparent); margin-top:8px; overflow:hidden}
+#report .mb u{display:block; height:100%; border-radius:99px; background:var(--ok); text-decoration:none}
+#report details.wk{border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden}
+#report details.wk>summary{display:flex; flex-direction:row; align-items:center; gap:12px; padding:13px 14px; list-style:none; cursor:pointer}
+#report details.wk>summary::-webkit-details-marker{display:none}
+#report details.wk>summary::after{display:block; position:static; content:""; width:8px; height:8px; margin-inline-start:auto; border-inline-end:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); transition:transform .2s; flex:none}
+#report details.wk[open]>summary::after{transform:rotate(-135deg)}
+#report .wki{display:grid; place-items:center; width:36px; height:36px; border-radius:11px; background:color-mix(in srgb,var(--pt,var(--ac)) 12%,var(--surface)); flex:none}
+#report .wki .ic{margin:0; width:19px; height:19px; stroke:var(--pt,var(--ac))}
+#report .wkt{display:flex; flex-direction:column; gap:2px; min-width:0}
+#report .wkt b{font-size:15px}
+#report .wkt .wks{font-size:12px; color:var(--muted); line-height:1.5}
+#report details.wk>.wkin{padding:4px 14px 14px}
+#report .rsum>div:nth-child(3),#report .rsum>div:last-child{grid-column:1/-1}
+#report .rsum:not(:has(.tir))>div:nth-child(3){grid-column:auto}
+#report .rsum small{line-height:1.6}
+#report .rper>span:first-child{display:inline-flex; align-items:center; white-space:nowrap; font-size:13px}
 </style>
 </head>
 <body>
@@ -2080,9 +2119,10 @@ function doctorNotes(E){
   return h;
 }
 function heroGauge(g){
-  var lo=40, hi=300, c=function(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100))}, a=c(settings.low), b=c(settings.high), m=c(g);
-  return '<div class="gauge" aria-hidden="true"><div class="gz"><i class="l" style="width:'+a+'%"></i><i class="o" style="width:'+(b-a)+'%"></i><i class="h" style="width:'+(100-b)+'%"></i></div><b class="gm" style="inset-inline-start:'+m+'%"></b></div>'+
-    '<div class="gl"><span>'+settings.low+'</span><span>'+settings.high+'</span></div>';
+  var lo=40, hi=300, cw=9, iw=100-2*cw, c=function(v){return cw+Math.max(0,Math.min(1,(v-lo)/(hi-lo)))*iw},
+      a=c(settings.low), b=c(settings.high), m=g<lo?cw/2:g>hi?100-cw/2:c(g);
+  return '<div class="gauge" aria-hidden="true"><div class="gz"><i class="ex l" style="width:'+cw+'%"></i><i class="l" style="width:'+(a-cw)+'%"></i><i class="o" style="width:'+(b-a)+'%"></i><i class="h" style="width:'+(100-cw-b)+'%"></i><i class="ex h" style="width:'+cw+'%"></i></div><b class="gm" style="left:'+m+'%"></b></div>'+
+    '<div class="gl"><span style="left:'+cw+'%">'+lo+'</span><span style="left:'+a+'%">'+settings.low+'</span><span style="left:'+b+'%">'+settings.high+'</span><span style="left:'+(100-cw)+'%">'+hi+'</span></div>';
 }
 function heroSpark(E){
   var now=Date.now(), t0=now-DAY, pts=E.filter(function(e){var t=e.d.getTime(); return e.glucose!=null&&t>=t0&&t<=now}).sort(function(a,b){return a.d-b.d});
@@ -2547,25 +2587,29 @@ function buildReport(){
   var trTimes=trE.filter(function(e){return e.tresibaTime}).map(function(e){var p=e.tresibaTime.split(':'); return (Number(p[0])*60+Number(p[1]))/1440*2*Math.PI});
   var trAt=null; if(trTimes.length){var sx=0,sy=0; trTimes.forEach(function(a){sx+=Math.cos(a); sy+=Math.sin(a)}); var am=Math.atan2(sy,sx); if(am<0)am+=2*Math.PI; var mm=Math.round(am/(2*Math.PI)*1440)%1440; trAt=hm(pad(Math.floor(mm/60))+':'+pad(mm%60))}
   var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
-  var h='<h2>تقرير متابعة السكر</h2><p class="sub">الفترة: من '+dayFull(r.a)+' إلى '+dayFull(r.b)+' ('+r.days+' يوم) · تاريخ التقرير: '+dayFull(new Date())+'</p>';
-  h+=reportInfo();
-  if(!E.length){el.innerHTML=h+'<p class="empty" style="color:#55656f">لا توجد تسجيلات في هذه الفترة.</p>'; el.hidden=false; return true}
-  h+=controlPanel(E);
+  var h='<div class="rhead"><span class="rey">'+ico('clip')+'تقرير للطبيب</span><h2>تقرير متابعة السكر</h2><div class="rper"><span>'+ico('cal')+dayFull(r.a)+' ← '+dayFull(r.b)+'</span><span class="rpd">'+r.days+' يوم</span></div><p class="sub">تاريخ التقرير: '+dayFull(new Date())+'</p></div>';
+  var grp=function(t,sub,body,open,ic){return '<details class="wk"'+(open?' open':'')+'><summary>'+(ic?'<span class="wki">'+ico(ic)+'</span>':'')+'<div class="wkt"><b>'+t+'</b><span class="wks">'+sub+'</span></div></summary><div class="wkin">'+body+'</div></details>'};
+  var infoH=reportInfo();
+  if(!E.length){el.innerHTML=h+infoH+'<p class="empty" style="color:#55656f">لا توجد تسجيلات في هذه الفترة.</p>'; el.hidden=false; return true}
   var fd=fixedDoses(E), dz=function(v){return v!=null?fmt(v)+' <small>وحدة</small>':'—'};
+  var dosesH='<dl class="rsum">'+
+    '<div><dt>أبيدرا قبل الفطار</dt><dd>'+dz(fd.bf)+'</dd></div>'+'<div><dt>أبيدرا قبل الغداء</dt><dd>'+dz(fd.ln)+'</dd></div>'+'<div><dt>أبيدرا قبل العشاء</dt><dd>'+dz(fd.dn)+'</dd></div>'+'<div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div></dl>';
   h+='<dl class="rsum">'+
-    '<div><dt>أبيدرا قبل الفطار</dt><dd>'+dz(fd.bf)+'</dd></div>'+'<div><dt>أبيدرا قبل الغداء</dt><dd>'+dz(fd.ln)+'</dd></div>'+'<div><dt>أبيدرا قبل العشاء</dt><dd>'+dz(fd.dn)+'</dd></div>'+'<div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div>'+
     '<div><dt>عدد قراءات السكر</dt><dd>'+vals.length+' <small>في '+nd+' يوم</small></dd></div>'+
     '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
     '<div><dt>أقل / أعلى قراءة</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
-    '<div><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd></div>'+
+    '<div class="tir"><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd>'+(vals.length?'<i class="mb"><u style="width:'+Math.round(okc/vals.length*100)+'%"></u></i>':'')+'</div>'+
     '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
     (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري (تقريبي)</dt><dd>'+fmt(rs.a1c)+' <small>% · من '+rs.n+' قراءة'+(rs.ok?'':' · غير موثوق (القراءات قليلة)')+'</small></dd></div>':''})()+
   '</dl>';
-  h+=siteMapHTML(E);
+  h+=grp('مؤشر التحكم في السكر','الوقت في المعدل · الهبوط · التذبذب',controlPanel(E),false,'target');
+  h+=grp('الجرعات الثابتة','أبيدرا لكل وجبة · ترسيبا',dosesH,false,'syr');
+  h+=grp('بيانات أساسية','الوزن · التحاليل · الفحوصات الدورية',infoH,false,'user');
+  h+=grp('أماكن الحقن','توزيع الحقن في الفترة',siteMapHTML(E),false,'pin');
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
-  h+='<details class="wk"><summary><b>الرسومات والتحليل</b><span class="wks">رسم القراءات · الأنماط · الملاحظات · متوسط كل وقت</span></summary><div class="wkin">'+dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
+  h+='<details class="wk"><summary><span class="wki">'+ico('chart')+'</span><div class="wkt"><b>الرسومات والتحليل</b><span class="wks">رسم القراءات · الأنماط · الملاحظات · متوسط كل وقت</span></div></summary><div class="wkin">'+dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
     var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
