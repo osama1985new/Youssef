@@ -239,7 +239,7 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
 .toast.show{opacity:1; transform:none}
 
 /* report */
-.report{background:#fff; color:#111; border:1px solid var(--line); border-radius:14px; padding:18px 16px; --r-line:#cfd8dd; --r-muted:#55656f; --r-low:#B3261E; --r-ok:#1E7F47; --r-high:#A85A00}
+.report{background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:14px; padding:18px 16px; --r-line:var(--line); --r-muted:var(--muted); --r-low:var(--low); --r-ok:var(--ok); --r-high:var(--high)}
 .report h2{font-size:20px; margin-bottom:2px}
 .report .sub{color:var(--r-muted); font-size:14px}
 .report h3{font-size:15px; margin:18px 0 8px}
@@ -279,8 +279,8 @@ details.sub summary{cursor:pointer; font-weight:600; color:var(--accent)}
 }
 
 
-/* report dashboard (report is always light) */
-.report{--muted:#55656f; --line:#cfd8dd; --surface:#fff; --ok:#1E7F47; --low:#B3261E; --high:#A85A00; --ink:#111}
+/* report dashboard: follows the app theme; print stays light */
+@media print{.report{--muted:#55656f; --line:#cfd8dd; --surface:#fff; --ok:#1E7F47; --low:#B3261E; --high:#A85A00; --ink:#111; --r-line:#cfd8dd; --r-muted:#55656f; --r-low:#B3261E; --r-ok:#1E7F47; --r-high:#A85A00; background:#fff; color:#111}}
 .report h3{margin:18px 0 6px}
 .dcard{border:1px solid var(--r-line); border-radius:12px; padding:12px; margin:10px 0}
 .ctl{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
@@ -1155,6 +1155,14 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
   .wrap{max-width:1180px!important}
   body{font-size:16.5px}
 }
+#report{background:transparent!important; border:0!important; box-shadow:none!important; padding:0!important; display:flex; flex-direction:column; gap:12px}
+#report>.acc>.accb{display:block}
+#report .rhead{padding-top:0}
+@media print{
+  .wrap{display:block!important; max-width:none!important}
+  body{padding:0!important}
+  #report{display:block!important}
+}
 </style>
 </head>
 <body>
@@ -1313,9 +1321,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
         <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يومًا بيوم</small></span></button>
       </div>
   </div>
-  <section class="card stack" id="medcard" data-tab="report">
-    <h2>بيانات للتقرير</h2>
-    <p class="small">تظهر في أول التقرير المرسَل إلى الطبيب.</p>
+  <div class="stack" id="medcard" data-tab="report">
     <h3>الوزن والطول والضغط</h3>
     <div class="two">
       <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
@@ -1343,7 +1349,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     <div id="ckwrap" class="stack"></div>
     <button type="button" class="ghost" id="ckadd">+ أضف فحص</button>
 
-  </section>
+  </div>
   <section class="report" id="report" data-tab="report" hidden></section>
 
   <!-- ===== screen 4: settings ===== -->
@@ -2321,7 +2327,7 @@ var ICONS={
  note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
 };
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var H3ICON=[['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
   var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
   for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
@@ -2526,7 +2532,7 @@ function updateCalc(){
   $('#icrbox').hidden=!(has&&!icr);
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
-  if(!before&&!hiG){el.innerHTML=''; return}
+  if(!(before&&has)&&!hiG){el.innerHTML=''; return}
   var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>';
   if(g!=null&&g>0&&g<settings.low){
     h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>اتبع خطة الطبيب للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li></ul></div></div>';
@@ -2534,9 +2540,10 @@ function updateCalc(){
   }
   if(hiG)h+='<div class="guide high"><p>اشرب ماءً، وأعد القياس حسب خطة الطبيب.</p></div>';
   var total=null;
-  if(before){
-    var fx={bf:settings.fixBf,ln:settings.fixLn,dn:settings.fixDn}[grp]||0, c=(g!=null&&g>0)?corrUnits(g):null, cu=(c&&!c.above)?c.u:0;
-    if(fx>0||cu>0)total=r5(fx+cu);
+  if(before&&has){
+    var mealU=icr?carbs/icr:(({bf:settings.fixBf,ln:settings.fixLn,dn:settings.fixDn}[grp])||0),
+        c=(g!=null&&g>0)?corrUnits(g):null, cu=(c&&!c.above)?c.u:0;
+    if(mealU>0||cu>0)total=r5(mealU+cu);
   }
   if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
   else if(!hiG){el.innerHTML=''; return}
@@ -2646,7 +2653,7 @@ function buildReport(){
   var RO=document.body.classList.contains('ro');
   var grp=function(t,sub,body,open){return '<details class="acc"'+(open?' open':'')+'><summary>'+t+'</summary><div class="accb">'+body+'</div></details>'};
   var infoH=reportInfo();
-  if(!E.length){el.innerHTML=h+infoH+'<p class="empty" style="color:#55656f">لا توجد تسجيلات في هذه الفترة.</p>'; el.hidden=false; return true}
+  if(!E.length){el.innerHTML=grp('تقرير متابعة السكر','',h+'<p class="empty">لا توجد تسجيلات في هذه الفترة.</p>',false)+grp('بيانات أساسية','',infoH,false); el.hidden=false; return true}
   var fd=fixedDoses(E), dz=function(v){return v!=null?fmt(v)+' <small>وحدة</small>':'—'};
   var dosesH='<dl class="rsum">'+
     '<div><dt>أبيدرا قبل الفطار</dt><dd>'+dz(fd.bf)+'</dd></div>'+'<div><dt>أبيدرا قبل الغداء</dt><dd>'+dz(fd.ln)+'</dd></div>'+'<div><dt>أبيدرا قبل العشاء</dt><dd>'+dz(fd.dn)+'</dd></div>'+'<div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div></dl>';
@@ -2659,6 +2666,7 @@ function buildReport(){
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
     (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري</dt><dd>'+fmt(rs.a1c)+' <small>%'+(rs.ok?'':' · تقريبي')+'</small></dd></div>':''})()+
   '</dl>';
+  h=grp('تقرير متابعة السكر','',h,false);
   h+=grp('مؤشر التحكم في السكر','',controlPanel(E),false);
   h+=grp('الجرعات الثابتة','',dosesH,false);
   h+=grp('بيانات أساسية','',infoH,false);
