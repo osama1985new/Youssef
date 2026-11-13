@@ -1105,6 +1105,56 @@ html{scroll-behavior:smooth}
 #report .rsum dd,#report .kpis dd{margin:0; font-size:18px; font-weight:650; line-height:1.25}
 #report .rsum dd small,#report .kpis dd small,#report .kpis small{font-size:11.5px; font-weight:400; color:var(--muted)}
 #report .rsum .mb{margin-top:2px}
+/* supplements */
+.supp{display:block; border:1px solid var(--line); border-radius:14px; padding:12px; background:color-mix(in srgb,var(--ink) 2.5%,var(--surface))}
+.supp .suphead{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:10px}
+.supp .suphead .lbl{margin:0; font-weight:700; font-size:15px; color:var(--ink)}
+.supp .suphead small{font-size:12px; color:var(--muted)}
+.suplist{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+.suplist .chip{display:flex; align-items:center; gap:10px; min-height:48px; padding:8px 12px; border-radius:12px; text-align:start; font-size:14px; line-height:1.35; background:var(--surface)}
+.suplist .sk{flex:none; width:20px; height:20px; border-radius:50%; border:1.8px solid var(--muted); display:grid; place-items:center; opacity:.7; transition:all .15s}
+.suplist .chip[aria-pressed=true] .sk{background:var(--accent); border-color:var(--accent); opacity:1}
+.suplist .chip[aria-pressed=true] .sk::after{content:""; width:5px; height:9px; border:solid var(--surface); border-width:0 2px 2px 0; transform:rotate(45deg) translate(-1px,-1px)}
+.suplist .chip.done{opacity:.65}
+.suplist .chip.done .sk{background:var(--ok); border-color:var(--ok); opacity:1}
+.suplist .chip.done .sk::after{content:""; width:5px; height:9px; border:solid var(--surface); border-width:0 2px 2px 0; transform:rotate(45deg) translate(-1px,-1px)}
+.calc .guide p{margin:0; font-size:14.5px}
+body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{display:none!important}
+#rcard{display:flex; flex-direction:column; gap:12px}
+/* ===== wide screens: landscape phone, tablet, desktop ===== */
+@media (min-width:760px){
+  body{padding-block:calc(18px + env(safe-area-inset-top,0px)) 28px!important; padding-right:calc(104px + env(safe-area-inset-right,0px))!important; padding-left:max(20px,env(safe-area-inset-left,0px))!important}
+  .tabs{inset-inline:auto!important; right:0!important; left:auto!important; top:0!important; bottom:0!important; width:88px; padding:14px 8px!important; border-top:0!important; border-inline-start:1px solid var(--line); border-left:1px solid var(--line); display:flex; align-items:center; box-shadow:-4px 0 18px rgba(23,48,59,.06)!important}
+  .tabs div{display:flex!important; flex-direction:column; gap:8px!important; width:100%; max-width:none!important; margin:0!important}
+  .tabs button{min-height:64px; width:100%}
+  .wrap{max-width:1080px!important; display:grid!important; grid-template-columns:minmax(0,1fr) minmax(0,1.12fr); gap:14px 20px!important; align-items:start}
+  .wrap>*{grid-column:1/-1}
+  .wrap>header#top{grid-row:1}
+  .wrap>#medrem{grid-row:2}
+  body[data-t=add] .wrap>#hero{grid-column:1; grid-row:3}
+  body[data-t=add] .wrap>#carebar{grid-column:1; grid-row:4}
+  body[data-t=add] .wrap>#readrem{grid-column:1; grid-row:5}
+  body[data-t=add] .wrap>#f{grid-column:2; grid-row:3 / span 6}
+  body[data-t=log] .wrap>#chartcard{grid-column:1; grid-row:3}
+  body[data-t=log] .wrap>#logsec{grid-column:2; grid-row:3 / span 3}
+  body[data-t=report] .wrap>#rcard{grid-column:1; grid-row:3}
+  body[data-t=report] .wrap>#medcard{grid-column:1; grid-row:4}
+  body[data-t=report] .wrap>#report{grid-column:2; grid-row:3 / span 3}
+  body[data-t=set] .wrap>#set{max-width:780px; width:100%; margin-inline:auto}
+}
+@media (min-width:760px) and (max-height:520px){
+  body{padding-block:10px 16px!important}
+  .top{padding-bottom:0}
+  h1{font-size:20px}
+  .hero{padding:14px 16px}
+  .hero .num{font-size:44px}
+  .tabs{width:76px} .tabs button{min-height:54px; font-size:11.5px}
+  body{padding-right:calc(92px + env(safe-area-inset-right,0px))!important}
+}
+@media (min-width:1200px){
+  .wrap{max-width:1180px!important}
+  body{font-size:16.5px}
+}
 </style>
 </head>
 <body>
@@ -1210,13 +1260,7 @@ html{scroll-behavior:smooth}
 
     <div class="panel p-extra">
       <h3>إضافات</h3>
-    <details class="more">
-      <summary>ملاحظة</summary>
-      <div class="stack" style="margin-top:8px">
-        <div class="field" id="dtf" hidden><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
-        <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
-      </div>
-    </details>
+    <div class="supp" id="supp"><div class="suphead"><span class="lbl">المكملات</span><small>اضغط على ما أخذته اليوم</small></div></div>
     <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0">+ سجّل كيتون</button>
     <div class="injrow" id="kbox" hidden>
       <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="b">دم (mmol/L)</option><option value="u">بول</option></select></div>
@@ -1224,7 +1268,13 @@ html{scroll-behavior:smooth}
       <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
     </div>
     <p class="msg" id="khint" hidden></p>
-    <div class="supp" id="supp"><span class="lbl">المكملات</span></div>
+    <details class="more">
+      <summary>ملاحظة</summary>
+      <div class="stack" style="margin-top:8px">
+        <div class="field" id="dtf" hidden><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
+        <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
+      </div>
+    </details>
     </div>
     <div class="editbar" id="editbar" hidden><span>تعدّل تسجيلًا قديمًا</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
@@ -1242,10 +1292,8 @@ html{scroll-behavior:smooth}
   </section>
 
   <!-- ===== screen 3: report ===== -->
-  <section class="card stack" id="rcard" aria-labelledby="rh" data-tab="report">
-    <h2 id="rh">تقرير للطبيب</h2>
-    <div class="rsec">
-      <div class="rlbl">الفترة</div>
+  <div class="stack" id="rcard" data-tab="report">
+    <h3>الفترة والملخص</h3>
       <div class="presets" id="presets" role="group" aria-label="الفترة">
         <button type="button" class="ghost" data-days="7" aria-pressed="true">7 أيام</button>
         <button type="button" class="ghost" data-days="14">14 يوم</button>
@@ -1258,17 +1306,13 @@ html{scroll-behavior:smooth}
       </div>
       <p class="small" id="rangenote" role="status"></p>
       <div class="rstats" id="rstats"></div>
-    </div>
-    <div class="rsec">
-      <div class="rlbl">التقرير</div>
+    <h3>تصدير التقرير</h3>
       <div class="acts">
         <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للطبيب</b><small>كل يوم بتاريخه وقراءاته والأنسولين، يُفتح على الهاتف</small></span></button>
         <button type="button" class="act" id="pdfshare"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="at"><b>مشاركة التقرير (واتساب)</b><small>يرسل ملف PDF للطبيب من قائمة المشاركة</small></span></button>
         <button type="button" class="act" id="csv"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></span><span class="at"><b>ملف Excel</b><small>جدول بكل التسجيلات يومًا بيوم</small></span></button>
-        <button type="button" class="act" id="rshow"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></svg></span><span class="at"><b>التقرير الكامل على الشاشة</b><small>رسومات وأنماط وتفاصيل الفترة</small></span></button>
       </div>
-    </div>
-  </section>
+  </div>
   <section class="card stack" id="medcard" data-tab="report">
     <h2>بيانات للتقرير</h2>
     <p class="small">تظهر في أول التقرير المرسَل إلى الطبيب.</p>
@@ -1426,7 +1470,6 @@ html{scroll-behavior:smooth}
 
 
 
-  <p class="ro-note" id="ronote" data-tab="all" hidden>وضع المتابعة فقط: لا تسجيل ولا تعديل</p>
 </main>
 
 <div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">حسنًا</button></div></div>
@@ -1705,7 +1748,7 @@ function showGate(msg){
 function renderSecurity(){
   var el=$('#secstat'); if(!el)return;
   $('#authEdit').placeholder=prot?'اتركه فارغًا إن لم ترد تغييره':'4 أرقام على الأقل';
-  $('#logout').hidden=!prot; $('#ronote').hidden=role!=='view';
+  $('#logout').hidden=!prot;
   el.textContent=mode==='local'?'الحماية بالأرقام متاحة عند اتصال البرنامج بالخادم.':prot?'الحماية مفعّلة. أي هاتف جديد يجب أن يكتب الرقم.':'لا يوجد رقم سري بعد، أي شخص لديه الرابط يستطيع أن يرى ويعدّل. حدّد رقمًا الآن.';
 }
 async function saveAuth(){
@@ -1853,10 +1896,10 @@ $('#slot').innerHTML=SLOTS.map(function(s){return '<option value="'+s[0]+'">'+s[
 $('#slot').value=defaultSlot();
 function curSlot(){return $('#slot').value}
 $('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
-$('#supp').innerHTML+=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('');
+$('#supp').insertAdjacentHTML('beforeend','<div class="suplist">'+SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false"><i class="sk"></i><span>'+x[1]+'</span></button>'}).join('')+'</div>');
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
 function suppDoneToday(k){var td=lk(new Date()), ks=(k==='calmag'||k==='d3')?[k,'vit']:[k]; return (typeof entries!=='undefined'?entries:[]).some(function(e){return e.id!==editingId&&(e.supp||[]).some(function(x){return ks.indexOf(x)>=0})&&lk(new Date(e.ts))===td})}
-function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; b.textContent=done?base+' ✓ سُجّلت':base})}
+function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; var sp=b.querySelector('span'); if(sp)sp.textContent=done?base+' · سُجّلت اليوم':base})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
@@ -2278,7 +2321,7 @@ var ICONS={
  note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
 };
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var H3ICON=[['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+var H3ICON=[['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
   var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
   for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
@@ -2482,44 +2525,22 @@ function updateCalc(){
   $('#mtotal').innerHTML=has?'كارب الوجبة: <b>'+fmt(r1(carbs))+' جم</b>':'';
   $('#icrbox').hidden=!(has&&!icr);
   var afterSlot=slot.indexOf('_after')>0;
-  if(!has&&!(g>0&&(before||g>settings.high))){el.innerHTML=''; return}
-  var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>', notes=[], warns=[];
+  var hiG=g!=null&&g>settings.high;
+  if(!before&&!hiG){el.innerHTML=''; return}
+  var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>';
   if(g!=null&&g>0&&g<settings.low){
-    h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>لا توجد جرعة تصحيح للهبوط؛ يكون التصحيح بكارب سريع لا بالأنسولين.</li><li>اتبع خطة الطبيب للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li><li>جرعة الأكل بعد أن تستقر القراءة، وتُحدَّد حسب خطة الطبيب، وقد تُخفَّض أو تتأخر.</li></ul></div></div>';
+    h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>اتبع خطة الطبيب للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li></ul></div></div>';
     el.innerHTML=h; return;
   }
-  var meal=null, corr=null;
-  if(has&&afterSlot){notes.push('تُحسب الجرعة قبل الأكل. اختر "قبل" في وقت القياس إن كنت ستأخذ الجرعة بعد.')}
-  else if(has){
-    if(icr){meal=carbs/icr; notes.push('الأكل: '+fmt(r1(carbs))+' جم ÷ '+fmt(icr)+' = '+fmt(r1(meal))+' وحدة')}
-    if(items.some(function(m){return m.missing}))warns.push('يوجد صنف بلا رقم كارب، اكتب كارب الصنف ليصح الحساب.');
-    if(items.some(function(m){return m.fruit&&!m.name}))notes.push('اكتب اسم الفاكهة.');
-  }
-  if(g!=null&&g>0){
-    if(before){
-      var c=corrUnits(g);
-      if(c){
-        if(c.above)warns.push('القراءة أعلى من آخر خانة في جدول التصحيح. تواصل مع الطبيب قبل أي جرعة.');
-        else{corr=c.u; notes.push('التصحيح: '+c.how)}
-      }else if(g>settings.high)notes.push('اكتب جدول التصحيح أو الهدف في الإعدادات ليُحسب التصحيح.');
-    }else if(g>settings.high)notes.push('يحدد الطبيب التصحيح في هذه الأوقات، ولا يُحسب هنا.');
-  }
+  if(hiG)h+='<div class="guide high"><p>اشرب ماءً، وأعد القياس حسب خطة الطبيب.</p></div>';
   var total=null;
-  if(meal!=null||corr!=null)total=r5((meal||0)+(corr||0));
-  if(g!=null&&g>settings.high){
-    h+='<div class="guide high"><b>السكر عالي ('+fmt(g)+')</b><ul><li>يُحسب التصحيح من جدول الطبيب، والصفحة لا تضع رقمًا من عندها.</li>'+(g>=300?'<li>فوق 300: قِس الكيتونات حسب خطة الطبيب وتواصل معه إن كانت موجودة، أو عند وجود قيء أو ألم بطن أو تعب.</li>':'')+'<li>اشرب ماءً، وأعد القياس حسب خطة الطبيب.</li></ul></div>';
+  if(before){
+    var fx={bf:settings.fixBf,ln:settings.fixLn,dn:settings.fixDn}[grp]||0, c=(g!=null&&g>0)?corrUnits(g):null, cu=(c&&!c.above)?c.u:0;
+    if(fx>0||cu>0)total=r5(fx+cu);
   }
-  if(total!=null){
-    h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
-    if(settings.maxd&&total>settings.maxd)warns.push('الجرعة أعلى من أقصى جرعة كتبتها ('+fmt(settings.maxd)+'). راجعها مع الطبيب.');
-  }
-  var when=new Date($('#dt').value), recent=prep().filter(function(e){var dt=when-e.d; return e.apidra>0&&dt>=0&&dt<=3*36e5});
-  if(recent.length)warns.push('سُجّلت أبيدرا قبل أقل من 3 ساعات ('+fmt(recent[recent.length-1].apidra)+' وحدة الساعة '+timeStr(recent[recent.length-1].d)+'). قد يكون لا يزال مفعوله مستمرًا، اسأل الطبيب قبل التصحيح.');
-  if(notes.length||warns.length){
-    h+='<ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+warns.map(function(w){return '<li class="bad">'+esc(w)+'</li>'}).join('')+'</ul>';
-  }
-  if(total!=null)h+='<button type="button" class="primary" data-usecalc="'+total+'">اكتب '+fmt(total)+' وحدة في خانة أبيدرا</button>';
-  h+='<p class="small">حساب بأرقام الطبيب المكتوبة في الإعدادات. راجعه قبل الحقن، والطبيب هو من يحدد الجرعة.</p></div>';
+  if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
+  else if(!hiG){el.innerHTML=''; return}
+  h+='</div>';
   el.innerHTML=h;
 }
 
@@ -2622,7 +2643,8 @@ function buildReport(){
   var trAt=null; if(trTimes.length){var sx=0,sy=0; trTimes.forEach(function(a){sx+=Math.cos(a); sy+=Math.sin(a)}); var am=Math.atan2(sy,sx); if(am<0)am+=2*Math.PI; var mm=Math.round(am/(2*Math.PI)*1440)%1440; trAt=hm(pad(Math.floor(mm/60))+':'+pad(mm%60))}
   var trAvg=trE.length?trE.reduce(function(s,e){return s+e.tresiba},0)/trE.length:null;
   var h='<div class="rhead"><span class="rey">'+ico('clip')+'تقرير للطبيب</span><h2>تقرير متابعة السكر</h2><div class="rper"><span>'+ico('cal')+dayFull(r.a)+' ← '+dayFull(r.b)+'</span><span class="rpd">'+r.days+' يوم</span></div><p class="sub">تاريخ التقرير: '+dayFull(new Date())+'</p></div>';
-  var grp=function(t,sub,body,open,ic){return '<details class="wk"'+(open?' open':'')+'><summary>'+(ic?'<span class="wki">'+ico(ic)+'</span>':'')+'<div class="wkt"><b>'+t+'</b><span class="wks">'+sub+'</span></div></summary><div class="wkin">'+body+'</div></details>'};
+  var RO=document.body.classList.contains('ro');
+  var grp=function(t,sub,body,open){return '<details class="acc"'+(open?' open':'')+'><summary>'+t+'</summary><div class="accb">'+body+'</div></details>'};
   var infoH=reportInfo();
   if(!E.length){el.innerHTML=h+infoH+'<p class="empty" style="color:#55656f">لا توجد تسجيلات في هذه الفترة.</p>'; el.hidden=false; return true}
   var fd=fixedDoses(E), dz=function(v){return v!=null?fmt(v)+' <small>وحدة</small>':'—'};
@@ -2637,13 +2659,13 @@ function buildReport(){
     '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
     (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري</dt><dd>'+fmt(rs.a1c)+' <small>%'+(rs.ok?'':' · تقريبي')+'</small></dd></div>':''})()+
   '</dl>';
-  h+=grp('مؤشر التحكم في السكر','الوقت في المعدل · الهبوط · التذبذب',controlPanel(E),false,'target');
-  h+=grp('الجرعات الثابتة','أبيدرا لكل وجبة · ترسيبا',dosesH,false,'syr');
-  h+=grp('بيانات أساسية','الوزن · التحاليل · الفحوصات الدورية',infoH,false,'user');
-  h+=grp('أماكن الحقن','توزيع الحقن في الفترة',siteMapHTML(E),false,'pin');
+  h+=grp('مؤشر التحكم في السكر','',controlPanel(E),false);
+  h+=grp('الجرعات الثابتة','',dosesH,false);
+  h+=grp('بيانات أساسية','',infoH,false);
+  if(!RO)h+=grp('أماكن الحقن','',siteMapHTML(E),false);
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
-  h+='<details class="wk"><summary><span class="wki">'+ico('chart')+'</span><div class="wkt"><b>الرسومات والتحليل</b><span class="wks">رسم القراءات · الأنماط · الملاحظات · متوسط كل وقت</span></div></summary><div class="wkin">'+dashCharts(E,r)+patternsHTML(E)+doctorNotes(E);
+  h+='<details class="acc"><summary>الرسومات والتحليل</summary><div class="accb">'+dashCharts(E,r)+patternsHTML(E)+(RO?'':doctorNotes(E));
   h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
     var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
@@ -3014,7 +3036,7 @@ function accordion(root,openFirst){
     while(n&&!(n.nodeType===1&&n.tagName==='H3')){var nx=n.nextSibling; if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))body.appendChild(n); else if(n.parentNode)n.parentNode.removeChild(n); n=nx}
   });
 }
-accordion($('#set'),false); accordion($('#medcard'),false);
+accordion($('#set'),false); accordion($('#medcard'),false); accordion($('#rcard'),true);
 [].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الهاتف'){d.classList.add('acct')} if(t==='أبيدرا للأكل'||t==='تصحيح السكر المرتفع'||t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
@@ -3088,7 +3110,6 @@ $('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&e
 $('#smclose').addEventListener('click',closeSiteMap);
 $('#sitemodal').addEventListener('click',function(ev){if(ev.target===this)closeSiteMap()});
 $('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
-$('#rshow').addEventListener('click',function(){if(buildReport())$('#report').scrollIntoView({behavior:'smooth',block:'start'})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
 function makePdf(jpegs,W,H){
