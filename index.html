@@ -1071,6 +1071,33 @@ html{scroll-behavior:smooth}
 #report .rsum:not(:has(.tir))>div:nth-child(3){grid-column:auto}
 #report .rsum small{line-height:1.6}
 #report .rper>span:first-child{display:inline-flex; align-items:center; white-space:nowrap; font-size:13px}
+/* report: one calm type scale */
+#report h2{font-size:22px}
+#report .sub{font-size:13px}
+#report h3{font-size:16.5px}
+#report p,#report li{font-size:14.5px}
+#report .cap{font-size:13px}
+#report table{font-size:14px} #report th,#report td{padding:7px 8px}
+#report .rsum dt{font-size:12.5px} #report .rsum dd{font-size:20px} #report .rsum dd small{font-size:12px}
+#report .dtab td,#report .dtab th{font-size:14px!important}
+#report .dtab td small{font-size:12px} #report .dtab tr.xr td{font-size:12.5px!important}
+#report .wkt b{font-size:15px} #report .wk .wks{font-size:12px}
+#report .ctl-n b{font-size:28px}
+#report .ctl-n span{font-size:12px}
+/* report top polish */
+#rcard .presets{background:color-mix(in srgb,var(--ink) 5%,var(--surface)); border:1px solid var(--line); border-radius:14px; padding:4px; gap:2px!important}
+#rcard .presets button{border-color:transparent!important; background:transparent; min-height:40px; border-radius:11px; color:var(--muted); font-weight:500}
+#rcard .presets button[aria-pressed=true]{background:var(--pt)!important; color:#fff!important; font-weight:600; box-shadow:0 2px 8px color-mix(in srgb,var(--pt) 35%,transparent)}
+#rcard .rlbl{font-size:12px; letter-spacing:.04em; text-transform:none; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:8px}
+#rcard .rlbl::after{content:""; flex:1; height:1px; background:var(--line)}
+#rcard .rsec{border:0!important; background:transparent!important; padding:0!important; box-shadow:none!important}
+#rcard .rstats>*{border:1px solid var(--line); background:color-mix(in srgb,var(--ink) 3%,var(--surface))!important; border-radius:14px}
+#rcard .rstats b{font-size:19px}
+.act::after{content:""; width:8px; height:8px; border-left:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); margin-inline-start:auto; margin-inline-end:2px; flex:none; opacity:.55}
+.act.main::after{border-color:rgba(255,255,255,.85); opacity:1}
+@media (prefers-color-scheme: dark){.act.main::after{border-color:rgba(0,0,0,.6)}}
+.act{border-radius:14px; box-shadow:0 1px 2px rgba(25,45,55,.05)}
+.act:active{transform:scale(.985)}
 </style>
 </head>
 <body>
@@ -2644,7 +2671,6 @@ function buildReport(){
     h+='</details>';
   });
   }
-  h+='<p class="rfoot">↓ أقل من حد التنبيه، ↑ أعلى من حد التنبيه. الكارب تقدير تقريبي. التقرير مبني على تسجيلات الأهل، ولا يغني عن رأي الطبيب.</p>';
   el.innerHTML=h; el.hidden=false; return true;
 }
 
