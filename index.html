@@ -991,6 +991,47 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:center;direct
 @media (prefers-color-scheme: dark){.top .date,.top .date .clk,#today,#today .clk{color:var(--pt)!important}}
 #stocktxt .stripline{flex-direction:column; align-items:flex-start; gap:2px; margin-top:12px}
 #stocktxt .stripline span{font-size:13px}
+/* icons */
+.ic{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-inline-end:7px;opacity:.9}
+h3>.ic,summary>.ic{stroke:var(--pt,var(--accent,currentColor));width:18px;height:18px;opacity:1}
+.val .ic{width:15px;height:15px;margin-inline-end:4px;opacity:.7;vertical-align:-2px}
+.dose .ic{width:14px;height:14px;margin-inline-end:5px;vertical-align:-2px}
+.mealtxt .ic,.note .ic{width:14px;height:14px;margin-inline-end:5px;vertical-align:-2px;opacity:.7}
+.acc>summary:has(>.ic)::before{display:none}
+.acc>summary>.ic{margin-inline-end:2px}
+/* beauty pass */
+.gauge,.gl{direction:ltr}
+.gauge{position:relative; height:8px; margin:14px 2px 4px}
+.gz{display:flex; height:100%; border-radius:99px; overflow:hidden; gap:2px}
+.gz i{display:block; height:100%; opacity:.55}
+.gz .l{background:var(--low)} .gz .o{background:var(--ok)} .gz .h{background:var(--high)}
+.gm{position:absolute; top:50%; width:16px; height:16px; margin-inline-start:-8px; transform:translateY(-50%); border-radius:50%; background:var(--st); border:3px solid var(--surface); box-shadow:0 1px 4px rgba(0,0,0,.28)}
+.gl{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin:0 2px 2px; font-variant-numeric:tabular-nums}
+.spark{margin-top:10px; padding-top:8px; border-top:1px solid color-mix(in srgb,var(--st) 18%,var(--line))}
+.spark .spl{display:block; font-size:11.5px; color:var(--muted); margin-bottom:2px}
+.spark svg{display:block; width:100%; height:56px; overflow:visible}
+.spark .sb{fill:var(--ok); opacity:.12}
+.spark .sl{fill:none; stroke:var(--st); stroke-width:1.8; stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke}
+.spark .sd{fill:var(--st); stroke:var(--surface); stroke-width:2; vector-effect:non-scaling-stroke}
+/* cards: soft depth */
+.card,.hero,.acc,.dcard,.day{box-shadow:0 1px 2px rgba(25,45,55,.05),0 6px 18px rgba(25,45,55,.04)}
+@media (prefers-color-scheme: dark){.card,.hero,.acc,.dcard,.day{box-shadow:0 1px 2px rgba(0,0,0,.25)}}
+/* log numbers */
+.row .val b{font-size:24px; font-weight:600; letter-spacing:-.01em}
+/* empty state */
+.empty{display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; color:var(--muted); padding:18px 10px}
+.empty .ic{width:28px; height:28px; margin:0; opacity:.55; stroke-width:1.4}
+/* motion */
+@keyframes rise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+.panel:not([hidden]){animation:rise .22s ease-out}
+.hero{animation:rise .3s ease-out}
+button,.tabs button,.ghost,.link{-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.97)}
+button{transition:transform .12s ease, background-color .15s ease, border-color .15s ease}
+.tabs{-webkit-backdrop-filter:saturate(1.4) blur(12px); backdrop-filter:saturate(1.4) blur(12px)}
+::selection{background:color-mix(in srgb,var(--pt,var(--ac)) 28%,transparent)}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important; scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -2038,6 +2079,18 @@ function doctorNotes(E){
   if(notes.length)h+='<h3>ملاحظات من التسجيلات</h3><p class="cap">ملاحظات حسابية من التسجيلات فقط، وليست تعليمات علاجية.</p><ul>'+notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
   return h;
 }
+function heroGauge(g){
+  var lo=40, hi=300, c=function(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100))}, a=c(settings.low), b=c(settings.high), m=c(g);
+  return '<div class="gauge" aria-hidden="true"><div class="gz"><i class="l" style="width:'+a+'%"></i><i class="o" style="width:'+(b-a)+'%"></i><i class="h" style="width:'+(100-b)+'%"></i></div><b class="gm" style="inset-inline-start:'+m+'%"></b></div>'+
+    '<div class="gl"><span>'+settings.low+'</span><span>'+settings.high+'</span></div>';
+}
+function heroSpark(E){
+  var now=Date.now(), t0=now-DAY, pts=E.filter(function(e){var t=e.d.getTime(); return e.glucose!=null&&t>=t0&&t<=now}).sort(function(a,b){return a.d-b.d});
+  if(pts.length<2)return '';
+  var W=300,H=64,pad=6, vs=pts.map(function(e){return e.glucose}), lo=Math.min(Math.min.apply(null,vs),settings.low)-15, hi=Math.max(Math.max.apply(null,vs),settings.high)+15, y=function(v){return H-pad-(v-lo)/(hi-lo)*(H-2*pad)}, x=function(t){return pad+(t-t0)/DAY*(W-2*pad)};
+  var d=pts.map(function(e,i){return (i?'L':'M')+x(e.d.getTime()).toFixed(1)+' '+y(e.glucose).toFixed(1)}).join(' '), lp=pts[pts.length-1];
+  return '<div class="spark"><span class="spl">آخر 24 ساعة</span><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="اتجاه السكر خلال آخر 24 ساعة"><rect x="0" y="'+y(settings.high).toFixed(1)+'" width="'+W+'" height="'+(y(settings.low)-y(settings.high)).toFixed(1)+'" class="sb"/><path d="'+d+'" class="sl"/><circle cx="'+x(lp.d.getTime()).toFixed(1)+'" cy="'+y(lp.glucose).toFixed(1)+'" r="3.4" class="sd"/></svg></div>';
+}
 function renderHero(E){
   var tk=lk(new Date());
   var T=E.filter(function(e){return lk(e.d)===tk});
@@ -2049,7 +2102,7 @@ function renderHero(E){
   h.innerHTML=
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
-    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+
+    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+(last?heroGauge(last.glucose)+heroSpark(E):'')+
     '<div class="tiles"><div class="a"><span>وحدات أبيدرا اليوم</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا اليوم</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات اليوم</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
 }
 
@@ -2129,11 +2182,42 @@ function mealText(e){
   return t+(e.carbs>0?' ('+fmt(e.carbs)+' جم كارب)':'');
 }
 
+/* ---------- icons ---------- */
+var ICONS={
+ drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+ syr:'<path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/>',
+ ut:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+ pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ box:'<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16ZM3.3 7 12 12l8.7-5M12 22V12"/>',
+ moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+ chart:'<path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/>',
+ clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+ act:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+ user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+ shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+ down:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
+};
+function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
+var H3ICON=[['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+function decorateIcons(){
+  var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
+  for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
+    for(var j=0;j<H3ICON.length;j++){if(t.indexOf(H3ICON[j][0])===0||t.indexOf(H3ICON[j][0])>=0&&H3ICON[j][0].length>6){hit=H3ICON[j][1]; break}}
+    if(hit)h.insertAdjacentHTML('afterbegin',ico(hit))}
+}
+(function(){var tm=null; try{new MutationObserver(function(){clearTimeout(tm); tm=setTimeout(decorateIcons,60)}).observe(document.body,{childList:true,subtree:true})}catch(_){} decorateIcons()})();
+
 /* ---------- log ---------- */
 var openDays={};
 function renderLog(E){
   var el=$('#log');
-  if(!E.length){el.innerHTML='<div class="card"><p class="empty">لا توجد تسجيلات بعد. ستظهر أول قراءة أو جرعة هنا بعد حفظها.</p></div>'; return}
+  if(!E.length){el.innerHTML='<div class="card"><p class="empty">'+ico('note')+'لا توجد تسجيلات بعد. ستظهر أول قراءة أو جرعة هنا بعد حفظها.</p></div>'; return}
   var groups={}, order=[];
   E.slice().sort(dayOrder).forEach(function(e){var k=lk(e.d); if(!groups[k]){groups[k]=[]; order.push(k)} groups[k].push(e)});
   order.sort().reverse();
@@ -2152,10 +2236,10 @@ function renderLog(E){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico('moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
-        (mt?'<p class="mealtxt">الأكل: '+mt+'</p>':'')+
-        ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
+        (mt?'<p class="mealtxt">'+ico('ut')+'الأكل: '+mt+'</p>':'')+
+        ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+(e.site?ico('pin'):'')+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
     });
     html+='</ul></details>';
   }
