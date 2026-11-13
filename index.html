@@ -163,6 +163,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .setup .ghost{min-height:48px}
 .calc{border:1.5px solid color-mix(in srgb, var(--apidra) 45%, var(--line)); border-radius:12px; padding:12px 14px; background:color-mix(in srgb, var(--apidra) 7%, var(--surface)); display:flex; flex-direction:column; gap:8px}
 .calcbig{font-family:var(--f-display); font-size:38px; font-weight:600; color:var(--apidra); line-height:1.1}
+.calcdis{margin:4px 0 0; font-size:12.5px; color:var(--muted)}
 .calcbig small{font-size:14px; font-weight:400; color:var(--muted); margin-inline-start:6px}
 .calc ul{margin:0; padding-inline-start:20px; display:flex; flex-direction:column; gap:3px; font-size:14.5px}
 .calc .bad{color:var(--low); font-weight:600}
@@ -1163,6 +1164,22 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
   body{padding:0!important}
   #report{display:block!important}
 }
+
+/* dedupe + clear icons */
+@media screen{#report .dupt,.printonly,#report .rhead,#rangenote,#rstats{display:none!important}}
+#report .acc>summary>.ic,#rcard .acc>summary>.ic,.acc>summary>.ic{stroke:color-mix(in srgb,var(--pt,var(--accent)) 62%,var(--ink))!important; stroke-width:2!important; opacity:1!important; width:20px; height:20px}
+#report .acc>summary>.ic *,#report .ic *{stroke:inherit!important}
+#report .ic [stroke="#fff"],#report .ic [stroke="white"],#report .ic [fill="#fff"],#report .ic [fill="white"]{stroke:none!important;fill:none!important}
+
+/* unified level + cards */
+#logsec{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow)}
+#logsec>h2{margin:-18px -18px 14px!important; padding:12px 16px!important; border-radius:17px 17px 0 0!important}
+@media (min-width:760px){
+  .wrap>*{align-self:start; min-width:0}
+  body[data-t=report] .wrap>#rcard{grid-column:2; grid-row:3}
+  body[data-t=report] .wrap>#medcard{grid-column:2; grid-row:4}
+  body[data-t=report] .wrap>#report{grid-column:1; grid-row:3 / span 3}
+}
 </style>
 </head>
 <body>
@@ -1994,6 +2011,7 @@ function syncCorr(){
   document.querySelector('.p-ins').hidden=!showIns;
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
+  var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId);
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
   if(imode==='tres'&&lastMode!=='tres'&&!editingId){
     if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
@@ -2114,7 +2132,7 @@ function careNotes(E){
       if(a.site===b.site&&now-a.d.getTime()<2*DAY)out.push('آخر حقنتين في نفس المكان ('+SITE_LABEL[a.site]+'). غيّر مكان الحقن.');
     }
   }
-  if(settings.visitNext){var vt=new Date(settings.visitNext).getTime(), vh=(vt-now)/36e5; if(vh>0&&dayKey(new Date(vt))<=dayKey(new Date(now+DAY)))out.push('زيارة الطبيب '+(dayKey(new Date(vt))===dayKey(new Date(now))?'اليوم':'غدًا')+' الساعة '+timeStr(new Date(vt))+' ('+dayLong(new Date(vt))+'). جهّز التقرير.')}
+  /* visit reminder shown by its own bar */
   var hasOld=E.some(function(e){return lk(e.d)<tk});
   var R=E.filter(function(e){return e.glucose!=null}), lastR=R[R.length-1], kHi=settings.ketHigh||300, kHr=settings.ketHours||3;
   if(lastR&&lastR.glucose>kHi&&now-lastR.d.getTime()<6*36e5){
@@ -2546,6 +2564,7 @@ function updateCalc(){
     if(mealU>0||cu>0)total=r5(mealU+cu);
   }
   if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
+  if(total!=null)h+='<p class="calcdis">الرقم تقديري، ارجع للطبيب لتحديد الرقم الفعلي</p>';
   else if(!hiG){el.innerHTML=''; return}
   h+='</div>';
   el.innerHTML=h;
@@ -2607,7 +2626,7 @@ function siteSvg(cnt,ring){
 function siteMapHTML(E){
   var cnt=siteCounts(E,siteKind), tot=0; SITES.forEach(function(x){tot+=cnt[x[0]]});
   var chips=[['all','الكل'],['a','أبيدرا'],['t','ترسيبا']].map(function(k){return '<button type="button" class="chip" data-sk="'+k[0]+'" aria-pressed="'+(siteKind===k[0])+'">'+k[1]+'</button>'}).join('');
-  return '<h3 style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
+  return '<h3 class="dupt" style="margin:14px 0 6px">أماكن الحقن في الفترة</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'+chips+'</div>'+
     (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكثر · الإجمالي '+tot+' حقنة</p>':'<p class="small">لا توجد حقن مسجَّلة بمكان في هذه الفترة.</p>');
 }
 var siteNativeUntil=0, siteShieldT=0;
@@ -2661,26 +2680,22 @@ function buildReport(){
     '<div><dt>عدد القراءات</dt><dd>'+vals.length+' <small>قراءة</small></dd></div>'+'<div><dt>أيام مسجّلة</dt><dd>'+nd+' <small>من '+r.days+' يوم</small></dd></div>'+
     '<div><dt>المتوسط</dt><dd>'+(avg!=null?avg:'—')+' <small>mg/dL</small></dd></div>'+
     '<div><dt>أقل / أعلى</dt><dd>'+(mn!=null?mn+' / '+mx:'—')+' <small>mg/dL</small></dd></div>'+
-    '<div class="tir"><dt>في المعدل ('+settings.low+'–'+settings.high+')</dt><dd>'+pc(okc)+' <small>'+okc+' قراءة</small></dd>'+(vals.length?'<i class="mb"><u style="width:'+Math.round(okc/vals.length*100)+'%"></u></i>':'')+'</div>'+
-    '<div><dt>أقل من '+settings.low+'</dt><dd>'+pc(lo)+' <small>'+lo+' قراءة</small></dd></div>'+
-    '<div><dt>أعلى من '+settings.high+'</dt><dd>'+pc(hi)+' <small>'+hi+' قراءة</small></dd></div>'+
-    (function(){var rs=rangeStats(E); return rs?'<div><dt>A1c تقديري</dt><dd>'+fmt(rs.a1c)+' <small>%'+(rs.ok?'':' · تقريبي')+'</small></dd></div>':''})()+
   '</dl>';
   h=grp('تقرير متابعة السكر','',h,false);
   h+=grp('مؤشر التحكم في السكر','',controlPanel(E),false);
   h+=grp('الجرعات الثابتة','',dosesH,false);
-  h+=grp('بيانات أساسية','',infoH,false);
+  h+='<div class="printonly">'+grp('بيانات أساسية','',infoH,false)+'</div>';
   if(!RO)h+=grp('أماكن الحقن','',siteMapHTML(E),false);
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
   var sd={}; E.forEach(function(e){if(e.supp&&e.supp.length)sd[lk(e.d)]=1});
   h+='<details class="acc"><summary>الرسومات والتحليل</summary><div class="accb">'+dashCharts(E,r)+patternsHTML(E)+(RO?'':doctorNotes(E));
-  h+='<h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
+  h+='<div class="printonly"><h3>متوسط القراءات حسب وقت القياس</h3><div class="tw"><table><thead><tr><th>وقت القياس</th><th>العدد</th><th>المتوسط</th><th>أقل</th><th>أعلى</th></tr></thead><tbody>';
   SLOTS.forEach(function(s){
     var v=G.filter(function(e){return e.slot===s[0]}).map(function(e){return e.glucose});
     if(!v.length)return;
     h+='<tr><td>'+s[1]+'</td><td>'+v.length+'</td><td>'+Math.round(v.reduce(function(a,b){return a+b},0)/v.length)+'</td><td>'+Math.min.apply(null,v)+'</td><td>'+Math.max.apply(null,v)+'</td></tr>';
   });
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
   h+='</div></details>';
   var SHOW_DAYS=false;
   if(SHOW_DAYS){
@@ -2833,11 +2848,11 @@ function controlPanel(E){
   var tir=pc('ok'), below=pc('vl')+pc('lo'), vlow=pc('vl');
   var goals=[['الوقت في المعدل (70–180)','المستهدف: أكثر من 70%',tir>=70,r1p(tir)],['الوقت تحت 70','المستهدف: أقل من 4%',below<4,r1p(below)],['الوقت تحت 54','المستهدف: أقل من 1%',vlow<1,r1p(vlow)],['تذبذب القراءات (CV)','المستهدف: 36% أو أقل',S.cv<=36,Math.round(S.cv)+'%']];
   var met=goals.filter(function(g){return g[2]}).length;
-  var h='<div class="dcard"><h3 style="margin-top:0">مؤشر التحكم في السكر</h3><div class="ctl"><div class="ctl-n"><b>'+met+' من 4</b><span>أهداف متحققة</span></div><ul class="goals">'+
+  var h='<div class="dcard"><h3 class="dupt" style="margin-top:0">مؤشر التحكم في السكر</h3><div class="ctl"><div class="ctl-n"><b>'+met+' من 4</b><span>أهداف متحققة</span></div><ul class="goals">'+
     goals.map(function(g){return '<li><span>'+g[0]+': <b>'+g[3]+'</b> <small style="color:var(--r-muted)">'+g[1]+'</small></span><span class="tag '+(g[2]?'y':'n')+'">'+(g[2]?'متحقق':'لم يتحقق بعد')+'</span></li>'}).join('')+'</ul></div>';
   h+='<div class="tirbar" role="img" aria-label="توزيع القراءات حسب المدى">'+BAND.map(function(b){var p=pc(b[0]); return p>0?'<span style="flex:'+p+';background:'+b[2]+'"></span>':''}).join('')+'</div>';
   h+='<ul class="tirleg">'+BAND.map(function(b){return '<li><i style="background:'+b[2]+'"></i>'+b[1]+': <b>'+Math.round(pc(b[0]))+'%</b> <small style="color:var(--r-muted)">('+S.c[b[0]]+')</small></li>'}).join('')+'</ul>';
-  h+='<dl class="kpis"><div><dt>المتوسط</dt><dd>'+Math.round(S.mean)+' <small>mg/dL</small></dd></div><div><dt>GMI تقريبي</dt><dd>'+fmt(r1(S.gmi))+' <small>%</small></dd></div><div><dt>CV</dt><dd>'+Math.round(S.cv)+' <small>%</small></dd></div><div><dt>عدد القراءات</dt><dd>'+n+'</dd></div></dl>';
+  h+='<dl class="kpis"><div><dt>GMI تقريبي</dt><dd>'+fmt(r1(S.gmi))+' <small>%</small></dd></div><div><dt>CV</dt><dd>'+Math.round(S.cv)+' <small>%</small></dd></div></dl>';
   h+='<p class="cap">هذه الأهداف هي المعايير الدولية للمقارنة، والطبيب هو من يحدد الهدف المناسب ليوسف. الحساب من قراءات الإصبع لا من حساس مستمر، فالنسب و GMI تقريبية'+(n<14?'، والقراءات قليلة ('+n+') فالمؤشر غير دقيق':'')+'.</p></div>';
   return h;
 }
@@ -3365,7 +3380,7 @@ $('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
-  var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=$('#n').value.trim();
+  var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=($('#n').value||'').trim();
   if(!editingId)setNow();
   var d=new Date($('#dt').value);
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
@@ -3378,7 +3393,9 @@ $('#f').addEventListener('submit',async function(ev){
     if(m.mode==='g')return {n:nm+' ('+fmt(m.gr)+' جم)',q:1,c:r1(itemQ(m)*m.c)};
     return {n:nm,q:m.q,c:m.c};
   });
-  var supp=getSupp().filter(function(k){return !suppDoneToday(k)}), ket=readKet();
+  var noExtra=imode==='corr'&&!editingId;
+  if(noExtra)note='';
+  var supp=noExtra?[]:getSupp().filter(function(k){return !suppDoneToday(k)}), ket=noExtra?{ok:true}:readKet();
   if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
@@ -3386,7 +3403,7 @@ $('#f').addEventListener('submit',async function(ev){
     var miss=[], isC=$('#corr').checked;
     if(isC){if(g==null)miss.push('قراءة السكر')}
     else if(g==null&&!items.length)miss.push('قراءة السكر أو الأكل');
-    if(items.length&&!(a>0)&&!isC&&!editingId)miss.push('جرعة أبيدرا');
+    if(!(a>0)&&!isC)miss.push('جرعة أبيدرا');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة يجب أن تسجّل: '+miss.join('، ')+'.'; return}
   }
@@ -3446,7 +3463,7 @@ async function pushOff(){
   $('#pushsw').disabled=false; pushState();
 }
 async function pushSync(){
-  if(!pushSupported()||Notification.permission!=='granted'||role!=='edit'||mode!=='cloud')return;
+  if(!pushSupported()||Notification.permission!=='granted'||!role||mode!=='cloud')return;
   try{var reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){await api({action:'subscribe',sub:sub.toJSON()}); lsSet('ysg-pushep',sub.endpoint)}}catch(_){}
 }
 $('#pushsw').addEventListener('change',function(){if(this.checked)pushEnable(); else pushOff()}); 
