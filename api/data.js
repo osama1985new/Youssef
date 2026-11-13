@@ -533,7 +533,8 @@ module.exports = async (req, res) => {
       if (b.action === 'add') {
         const e = cleanEntry(b.entry);
         if (!e) return res.status(400).json({ error: 'bad_entry' });
-        const existed = !!(await redis(['HGET', 'ysg:entries', e.id]));
+        const prevRaw = await redis(['HGET', 'ysg:entries', e.id]); let prevG = null; try { prevG = prevRaw ? JSON.parse(prevRaw).glucose : null; } catch (x) {}
+        const existed = !!prevRaw && prevG === e.glucose;
         await redis(['HSET', 'ysg:entries', e.id, JSON.stringify(e)]);
         try { await redis(['HSET', 'ysg:recent', e.id, JSON.stringify(e)]); } catch (x) {}
         try { await entryAlerts(e, existed, String(b.src || ''), req.headers.host || 'localhost'); } catch (x) {}
