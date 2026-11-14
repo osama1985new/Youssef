@@ -1228,6 +1228,10 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .sgrow{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
 .sgl{font-size:12.5px; color:var(--muted); width:100%}
 .sg.chipf{padding:8px 12px; border-radius:999px; font-size:14px}
+
+.pkphoto{display:block}
+.pkphoto .ghost{display:block; text-align:center; padding:12px; border:1.5px dashed var(--line); border-radius:12px; cursor:pointer; color:var(--ink)}
+.pkimg img{width:100%; max-height:60vh; object-fit:contain; border-radius:12px; border:1px solid var(--line); background:#000; -webkit-user-select:auto; user-select:auto; touch-action:pinch-zoom}
 </style>
 </head>
 <body>
@@ -1288,6 +1292,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
       <details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
         <div class="pk">
+          <label class="pkphoto"><input type="file" id="pkfile" accept="image/*" capture="environment" hidden><span class="ghost">📷 صوّر الملصق</span></label>
+          <div class="pkimg" id="pkimg" hidden><img id="pkpic" alt="صورة الملصق"><p class="small">اضغط مطوّلًا على الرقم داخل الصورة (النص الحي) ثم انسخه والصقه في الخانة. راجع الرقم دائمًا قبل الإضافة.</p><button type="button" class="link" id="pkclose">إخفاء الصورة</button></div>
           <input id="pkn" type="text" placeholder="اسم المنتج" autocomplete="off">
           <div class="two cen">
             <div class="field"><label for="pkc">كارب لكل 100 جم</label><input id="pkc" type="text" inputmode="decimal" placeholder="من الملصق"></div>
@@ -2587,6 +2593,16 @@ function rebuildFoodPick(){
 }
 function pkPreview(){var c=num($('#pkc').value), g=num($('#pkg').value), el=$('#pkr'); el.textContent=(c>=0&&g>0&&c!=null)?('الكارب = '+fmt(r1(c*g/100))+' جم'):''}
 $('#pkc').addEventListener('input',pkPreview); $('#pkg').addEventListener('input',pkPreview);
+
+$('#pkfile').addEventListener('change',function(){
+  var f=this.files&&this.files[0]; if(!f)return;
+  var u=URL.createObjectURL(f), im=$('#pkpic'); if(im.dataset.u)try{URL.revokeObjectURL(im.dataset.u)}catch(_){}
+  im.dataset.u=u; im.src=u; $('#pkimg').hidden=false; this.value='';
+});
+$('#pkclose').addEventListener('click',function(){$('#pkimg').hidden=true; $('#pkpic').removeAttribute('src')});
+function cleanNum(v){return String(v||'').replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/٫|،|,/g,'.').replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1')}
+['pkc','pkg'].forEach(function(i){$('#'+i).addEventListener('input',function(){var c=cleanNum(this.value); if(c!==this.value)this.value=c; pkPreview()})});
+
 $('#pkadd').addEventListener('click',function(){
   var n=$('#pkn').value.trim(), c=num($('#pkc').value), g=num($('#pkg').value);
   if(!n||c==null||isNaN(c)||c<0||!(g>0)){toast('اكتب الاسم وكارب 100 جم والكمية'); return}
