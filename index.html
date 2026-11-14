@@ -163,7 +163,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .setup .ghost{min-height:48px}
 .calc{border:1.5px solid color-mix(in srgb, var(--apidra) 45%, var(--line)); border-radius:12px; padding:12px 14px; background:color-mix(in srgb, var(--apidra) 7%, var(--surface)); display:flex; flex-direction:column; gap:8px}
 .calcbig{font-family:var(--f-display); font-size:38px; font-weight:600; color:var(--apidra); line-height:1.1}
-.carbonly[hidden]{display:none!important}
+.carbonly[hidden],.fixonly[hidden]{display:none!important}
 .calc.corr{margin-top:10px}
 .calcdis{margin:4px 0 0; font-size:12.5px; color:var(--muted)}
 .calcbig small{font-size:14px; font-weight:400; color:var(--muted); margin-inline-start:6px}
@@ -1405,6 +1405,16 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     <h3>نظام الجرعات</h3>
     <div class="field"><label>نظام الجرعة</label><div class="presets" id="dosemode" role="radiogroup"><button type="button" class="ghost" data-dm="fixed" aria-pressed="true">الجرعة الثابتة</button><button type="button" class="ghost" data-dm="carb" aria-pressed="false">حساب الكارب</button></div><input type="checkbox" id="scarb" hidden></div>
     <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)"></p>
+    <div class="fixonly">
+      <p class="hint">جرعات الطبيب الثابتة. يمكنك تغييرها في أي وقت، وتظهر في تقرير الطبيب وتُحسب بها أيام المخزون.</p>
+      <div class="two cen">
+        <div class="field"><label for="sfixbf">أبيدرا الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
+        <div class="field"><label for="sfixln">أبيدرا الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
+      </div>
+      <div class="two cen one">
+        <div class="field"><label for="sfixdn">أبيدرا العشاء</label><input id="sfixdn" type="text" inputmode="decimal" placeholder="10"></div>
+      </div>
+    </div>
     <div class="field carbonly"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
     <details class="sub carbonly">
       <summary>نسبة مختلفة لكل وجبة</summary>
@@ -1414,6 +1424,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
         <div class="field"><label for="sicrdn">عشاء</label><input id="sicrdn" type="text" inputmode="decimal"></div>
       </div>
     </details>
+    <div class="two cen one"><div class="field"><label for="splan">ترسيبا (الجرعة القاعدية)</label><input id="splan" type="text" inputmode="decimal" placeholder="28"></div></div>
 
     <h3>تصحيح السكر المرتفع</h3>
     <p class="small">اكتب جدول الطبيب (من كذا إلى كذا = كم وحدة)، أو الهدف وكم mg/dL تخفضها الوحدة. إذا كتبت الجدول فهو الذي يُستخدم.</p>
@@ -1448,17 +1459,6 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     </div>
     <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل نفاده بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
     <div class="small" id="stocktxt"></div>
-    <h3>الجرعات الثابتة</h3>
-    <p class="hint">جرعات الطبيب الثابتة. يمكنك تغييرها في أي وقت، وتظهر في تقرير الطبيب وتُحسب بها أيام المخزون.</p>
-    <div class="two cen">
-      <div class="field"><label for="sfixbf">أبيدرا الفطار</label><input id="sfixbf" type="text" inputmode="decimal" placeholder="12"></div>
-      <div class="field"><label for="sfixln">أبيدرا الغداء</label><input id="sfixln" type="text" inputmode="decimal" placeholder="20"></div>
-    </div>
-    <div class="two cen">
-      <div class="field"><label for="sfixdn">أبيدرا العشاء</label><input id="sfixdn" type="text" inputmode="decimal" placeholder="10"></div>
-      <div class="field"><label for="splan">ترسيبا</label><input id="splan" type="text" inputmode="decimal" placeholder="28"></div>
-    </div>
-
     <h3>شرائط قياس السكر</h3>
     <p class="small">كل قراءة سكر تُحتسب شريطًا. يحسب البرنامج المتبقي وينبّهك عند بقاء 5 شرائط.</p>
     <div class="two cen one"><div class="field"><label for="sstripn">عدد شرائط العلبة</label><input id="sstripn" type="text" inputmode="numeric" placeholder="50"></div></div>
@@ -2849,6 +2849,7 @@ $('#needlenew').addEventListener('click',function(){
 function paintDoseMode(c){
   $('#scarb').checked=c;
   [].forEach.call(document.querySelectorAll('#set .carbonly'),function(x){x.hidden=!c});
+  [].forEach.call(document.querySelectorAll('#set .fixonly'),function(x){x.hidden=c});
   [].forEach.call(document.querySelectorAll('#dosemode button'),function(b){b.setAttribute('aria-pressed',String((b.dataset.dm==='carb')===c))});
   $('#carbhint').textContent=c?'الأبيدرا المقترحة تُحسب من كارب الوجبة والنسبة التي حدّدها الطبيب.':'الأبيدرا المقترحة هي الجرعة الثابتة التي حدّدها الطبيب لكل وجبة.';
 }
