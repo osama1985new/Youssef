@@ -163,6 +163,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .setup .ghost{min-height:48px}
 .calc{border:1.5px solid color-mix(in srgb, var(--apidra) 45%, var(--line)); border-radius:12px; padding:12px 14px; background:color-mix(in srgb, var(--apidra) 7%, var(--surface)); display:flex; flex-direction:column; gap:8px}
 .calcbig{font-family:var(--f-display); font-size:38px; font-weight:600; color:var(--apidra); line-height:1.1}
+.calc.corr{margin-top:10px}
 .calcdis{margin:4px 0 0; font-size:12.5px; color:var(--muted)}
 .calcbig small{font-size:14px; font-weight:400; color:var(--muted); margin-inline-start:6px}
 .calc ul{margin:0; padding-inline-start:20px; display:flex; flex-direction:column; gap:3px; font-size:14.5px}
@@ -1395,8 +1396,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     </div>
 
     <h3>أبيدرا للأكل</h3>
-    <label class="cgmrow"><input type="checkbox" id="scarb"><span>أعتمد على الكارب في هذه الفترة (بدل الجرعة الثابتة)</span></label>
-    <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)">الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.</p>
+    <div class="field"><label>نظام الجرعة</label><div class="presets" id="dosemode" role="radiogroup"><button type="button" class="ghost" data-dm="fixed" aria-pressed="true">الجرعة الثابتة</button><button type="button" class="ghost" data-dm="carb" aria-pressed="false">حساب الكارب</button></div><input type="checkbox" id="scarb" hidden></div>
+    <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)"></p>
     <div class="field"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
     <details class="sub">
       <summary>نسبة مختلفة لكل وجبة</summary>
@@ -2579,23 +2580,28 @@ function updateCalc(){
   $('#icrbox').hidden=!(has&&settings.carbMode&&!icr);
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
-  if(!(before&&has)&&!hiG){el.innerHTML=''; return}
-  var h='<div class="calc"><p class="eyebrow">أبيدرا المقترحة</p>';
+  var fixedM=!settings.carbMode;
+  if(!(before&&(has||fixedM))&&!hiG){el.innerHTML=''; return}
+  var h='<div class="calc"><p class="eyebrow">'+(fixedM?'الجرعة الثابتة المحدّدة من الطبيب':'أبيدرا المقترحة')+'</p>';
   if(g!=null&&g>0&&g<settings.low){
     h+='<div class="guide low"><b>القراءة منخفضة ('+fmt(g)+')</b><ul><li>اتبع خطة الطبيب للهبوط وأعد القياس بعد حوالي 15 دقيقة.</li></ul></div></div>';
     el.innerHTML=h; return;
   }
   if(hiG)h+='<div class="guide high"><p>اشرب ماءً، وأعد القياس حسب خطة الطبيب.</p></div>';
   var total=null;
-  if(before&&has){
+  if(before&&fixedM){var fx=({bf:settings.fixBf,ln:settings.fixLn,dn:settings.fixDn}[grp])||0; if(fx>0)total=r5(fx); else h+='<p class="calcdis">لم تُدخل الجرعة الثابتة لهذه الوجبة في الإعدادات.</p>'}
+  else if(before&&has){
     var mealU=icr?carbs/icr:(({bf:settings.fixBf,ln:settings.fixLn,dn:settings.fixDn}[grp])||0),
-        c=(g!=null&&g>0)?corrUnits(g):null, cu=(c&&!c.above)?c.u:0;
-    if(mealU>0||cu>0)total=r5(mealU+cu);
+        cu=0;
+    if(mealU>0)total=r5(mealU);
   }
   if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
-  if(total!=null)h+='<p class="calcdis">الرقم تقديري، ارجع للطبيب لتحديد الرقم الفعلي</p>';
-  else if(!hiG){el.innerHTML=''; return}
-  h+='</div>';
+  if(total!=null&&!fixedM)h+='<p class="calcdis">الرقم تقديري، ارجع للطبيب لتحديد الرقم الفعلي</p>';
+  var cc=(g!=null&&g>0&&(before||hiG))?corrUnits(g):null, corrH='';
+  if(cc&&cc.above)corrH='<div class="calc corr"><p class="eyebrow">جرعة التصحيح</p><p class="calcdis">القراءة أعلى من آخر خانة في جدول الطبيب، راجع الطبيب.</p></div>';
+  else if(cc&&cc.u>0)corrH='<div class="calc corr"><p class="eyebrow">جرعة التصحيح (جدول الطبيب)</p><p class="calcbig">'+fmt(cc.u)+'<small>وحدة أبيدرا</small></p></div>';
+  if(total==null&&!corrH&&!hiG&&!(fixedM&&before)){el.innerHTML=''; return}
+  h+='</div>'+corrH;
   el.innerHTML=h;
 }
 
@@ -2772,7 +2778,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#scarb').checked=!!settings.carbMode; $('#carbhint').textContent=settings.carbMode?'الوضع الحالي: حسب الكارب بالنسبة التي حدّدها الطبيب.':'الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.'; $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; paintDoseMode(!!settings.carbMode); $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2826,7 +2832,13 @@ $('#needlenew').addEventListener('click',function(){
   var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedd').value=toLocalInput(new Date());
   onSetChange();
 });
-$('#scarb').addEventListener('change',function(){$('#carbhint').textContent=this.checked?'الوضع الحالي: حسب الكارب بالنسبة التي حدّدها الطبيب.':'الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.'}); $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
+function paintDoseMode(c){
+  $('#scarb').checked=c;
+  [].forEach.call(document.querySelectorAll('#dosemode button'),function(b){b.setAttribute('aria-pressed',String((b.dataset.dm==='carb')===c))});
+  $('#carbhint').textContent=c?'الأبيدرا المقترحة تُحسب من كارب الوجبة والنسبة التي حدّدها الطبيب.':'الأبيدرا المقترحة هي الجرعة الثابتة التي حدّدها الطبيب لكل وجبة.';
+}
+$('#dosemode').addEventListener('click',function(e){var b=e.target.closest('button[data-dm]'); if(!b)return; paintDoseMode(b.dataset.dm==='carb'); $('#scarb').dispatchEvent(new Event('change',{bubbles:true}))});
+$('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
   if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
@@ -3089,7 +3101,7 @@ function accordion(root,openFirst){
   });
 }
 accordion($('#set'),false); accordion($('#medcard'),false); accordion($('#rcard'),true);
-[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الهاتف'){d.classList.add('acct')} if(t==='تصحيح السكر المرتفع'||t==='الأقلام المفتوحة')d.hidden=true});
+[].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الهاتف'){d.classList.add('acct')} if(t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
 function render(){try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
