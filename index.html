@@ -2124,11 +2124,15 @@ function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
 $('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
+function foodLabel(f){
+  var d=f.d||''; if(f.w>0&&d.indexOf('جم')<0&&d.indexOf('مل')<0)d=(d?d+' · ':'')+f.w+' جم';
+  return f.n+(d?' — '+d:'')+' — '+fmt(f.c)+' جم كارب';
+}
 (function(){
   var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
   DB.forEach(function(f){
     if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
-    h+='<option value="'+f.i+'">'+esc(f.n)+'</option>';
+    h+='<option value="'+f.i+'">'+esc(foodLabel(f))+'</option>';
   });
   $('#foodpick').innerHTML=h+'</optgroup>';
 })();
@@ -2553,7 +2557,7 @@ function nrm(t){return String(t||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/
     DB.forEach(function(f){var hay=nrm(f.n+' '+(f.g||'')); if(parts.every(function(p){return hay.indexOf(p)>=0}))hits.push(f)});
     hits.sort(function(a,b){var sa=nrm(a.n).indexOf(parts[0])===0?0:1, sb=nrm(b.n).indexOf(parts[0])===0?0:1; return sa-sb});
     hits=hits.slice(0,8);
-    box.innerHTML=hits.length?hits.map(function(f){return '<li><button type="button" data-fi="'+f.i+'"><b>'+esc(f.n)+'</b><span>'+esc(f.d||'')+' · '+fmt(f.c)+' جم كارب</span></button></li>'}).join(''):'<li class="none">لا يوجد. جرّب كلمة أخرى أو أضفه كمنتج معلّب.</li>';
+    box.innerHTML=hits.length?hits.map(function(f){return '<li><button type="button" data-fi="'+f.i+'"><b>'+esc(f.n)+'</b><span>'+esc(foodLabel(f).slice(f.n.length+3))+'</span></button></li>'}).join(''):'<li class="none">لا يوجد. جرّب كلمة أخرى أو أضفه كمنتج معلّب.</li>';
     box.hidden=false;
   }
   inp.addEventListener('input',show);
@@ -2567,7 +2571,7 @@ function rebuildFoodPick(){
   var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
   DB.forEach(function(f,i){f.i=i;
     if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
-    h+='<option value="'+i+'">'+esc(f.n)+'</option>';
+    h+='<option value="'+i+'">'+esc(foodLabel(f))+'</option>';
   });
   $('#foodpick').innerHTML=h+'</optgroup>';
 }
