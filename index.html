@@ -2726,7 +2726,9 @@ function buildReport(){
   '</dl>';
   h=grp('تقرير متابعة السكر','',h,false);
   h+=grp('مؤشر التحكم في السكر','',controlPanel(E),false);
-  h+=grp('الجرعات الثابتة','',dosesH,false);
+  if(settings.carbMode){
+    h+=(fd.tr!=null?grp('جرعة ترسيبا','','<dl class="rsum"><div><dt>ترسيبا</dt><dd>'+dz(fd.tr)+'</dd></div></dl>',false):'');
+  } else h+=grp('الجرعات الثابتة','',dosesH,false);
   h+='<div class="printonly">'+grp('بيانات أساسية','',infoH,false)+'</div>';
   if(!RO)h+=grp('أماكن الحقن','',siteMapHTML(E),false);
   var inj=E.filter(function(e){return e.apidra>0||e.tresiba>0});
