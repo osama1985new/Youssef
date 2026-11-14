@@ -119,6 +119,7 @@ function cleanSettings(s) {
   const dOk = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
   if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
+  out.myFoods = Array.isArray(s.myFoods) ? s.myFoods.slice(-60).map(m => ({ n: String((m && m.n) || '').slice(0, 40), c: Number(m && m.c) })).filter(m => m.n && Number.isFinite(m.c) && m.c >= 0 && m.c <= 100) : [];
   out.cgm = s.cgm === true;
   out.carbMode = s.carbMode === true;
   out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
