@@ -1217,7 +1217,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .fres button{display:flex; flex-direction:column; align-items:flex-start; width:100%; padding:10px 12px; border:0; background:transparent; text-align:start; cursor:pointer; color:var(--ink); font:inherit}
 .fres button span{font-size:12.5px; color:var(--muted)}
 .fres .none{padding:10px 12px; color:var(--muted); font-size:13px}
-#fsearch{width:100%; min-height:48px; padding:0 14px; border:1.5px solid var(--line); border-radius:10px; background:var(--field); color:var(--ink); font:inherit; font-size:16px; -webkit-appearance:none; appearance:none}
+#fsearch{width:100%; min-height:60px; padding:0 16px; border:1.5px solid var(--line); border-radius:10px; background:var(--field); color:var(--ink); font:inherit; font-size:19px; -webkit-appearance:none; appearance:none}
 #fsearch:focus{outline:none; border-color:var(--accent)}
 .pk{display:grid; gap:10px; padding-top:8px}
 
@@ -1282,8 +1282,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
       <h3>الأكل</h3>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
       <div class="field"><label for="fsearch">ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
-      <div class="fsug" id="fsug" hidden></div>
-      <details class="more" id="browsebox"><summary>تصفّح كل الأصناف</summary><div class="field"><select id="foodpick" aria-label="اختر صنفًا"></select></div></details>
+      <div class="fsug" id="fsug" hidden style="display:none!important"></div>
+      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
       <ul class="mlist" id="mlist"></ul>
       <details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
@@ -2616,7 +2616,6 @@ function foodSuggest(){
   var h='';
   if(last){var cs=r1(last.meal.reduce(function(a,m){return a+(Number(m.q)||1)*(Number(m.c)||0)},0)); h+='<button type="button" class="sg main" data-sglast="'+esc(last.id)+'"><b>كرّر آخر '+esc(lab)+'</b><span>'+esc(last.meal.slice(0,3).map(function(m){return m.n}).join('، '))+(last.meal.length>3?'…':'')+' · '+fmt(cs)+' جم</span></button>'}
   if(top.length){h+='<div class="sgrow"><span class="sgl">الأكثر استخدامًا</span>'+top.map(function(n){return '<button type="button" class="sg chipf" data-sgf="'+esc(n)+'">'+esc(n)+'</button>'}).join('')+'</div>'}
-  el.innerHTML=h; el.hidden=!h;
   el._data={last:last,q:lastQ,c:lastC};
 }
 $('#fsug').addEventListener('click',function(e){
