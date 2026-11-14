@@ -120,6 +120,7 @@ function cleanSettings(s) {
   if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
   out.cgm = s.cgm === true;
+  out.carbMode = s.carbMode === true;
   out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
   out.omegaAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.omegaAt || '')) ? String(s.omegaAt) : null;
   out.vitAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.vitAt || '')) ? String(s.vitAt) : null;
