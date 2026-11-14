@@ -1395,6 +1395,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     </div>
 
     <h3>أبيدرا للأكل</h3>
+    <label class="cgmrow"><input type="checkbox" id="scarb"><span>أعتمد على الكارب في هذه الفترة (بدل الجرعة الثابتة)</span></label>
+    <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)">الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.</p>
     <div class="field"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
     <details class="sub">
       <summary>نسبة مختلفة لكل وجبة</summary>
@@ -1714,7 +1716,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],suppOmega:false,suppVit:false,omegaAt:null,vitAt:null,a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],suppOmega:false,suppVit:false,omegaAt:null,vitAt:null,a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,carbMode:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -2456,7 +2458,7 @@ function slotGroup(slot){
   if(slot){ if(slot.indexOf('bf')===0)return 'bf'; if(slot.indexOf('ln')===0)return 'ln'; if(slot.indexOf('dn')===0)return 'dn'; return 'sn' }
   return 'sn';
 }
-function icrForGroup(g){var o={bf:settings.icrBf,ln:settings.icrLn,dn:settings.icrDn}[g]; return o||settings.icr||null}
+function icrForGroup(g){if(!settings.carbMode)return null; var o={bf:settings.icrBf,ln:settings.icrLn,dn:settings.icrDn}[g]; return o||settings.icr||null}
 function manualItems(){
   var out=[];
   [['m1n','m1c'],['m2n','m2c']].forEach(function(p){
@@ -2573,7 +2575,7 @@ function updateCalc(){
   var items=allMeal(), carbs=mealCarbs(items), has=items.length>0, before=BEFORE.indexOf(slot)>=0;
   var grp=slotGroup(slot), icr=icrForGroup(grp);
   $('#mtotal').innerHTML=has?'كارب الوجبة: <b>'+fmt(r1(carbs))+' جم</b>':'';
-  $('#icrbox').hidden=!(has&&!icr);
+  $('#icrbox').hidden=!(has&&settings.carbMode&&!icr);
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
   if(!(before&&has)&&!hiG){el.innerHTML=''; return}
@@ -2769,7 +2771,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; $('#scarb').checked=!!settings.carbMode; $('#carbhint').textContent=settings.carbMode?'الوضع الحالي: حسب الكارب بالنسبة التي حدّدها الطبيب.':'الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.'; $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -2789,7 +2791,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.suppOmega=!!$('#ssuppo').checked; out.suppVit=!!$('#ssuppv').checked; out.omegaAt=$('#somegat').value||null; out.vitAt=$('#svitat').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.carbMode=!!$('#scarb').checked; out.suppOmega=!!$('#ssuppo').checked; out.suppVit=!!$('#ssuppv').checked; out.omegaAt=$('#somegat').value||null; out.vitAt=$('#svitat').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
@@ -2823,7 +2825,7 @@ $('#needlenew').addEventListener('click',function(){
   var n=num($('#sneedn').value); $('#sneedn').value=n>0?String(n):'100'; $('#sneedd').value=toLocalInput(new Date());
   onSetChange();
 });
-$('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
+$('#scarb').addEventListener('change',function(){$('#carbhint').textContent=this.checked?'الوضع الحالي: حسب الكارب بالنسبة التي حدّدها الطبيب.':'الوضع الحالي: الجرعة الثابتة. تفعيل الكارب يستخدم النسبة التي حدّدها الطبيب.'}); $('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
   if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
