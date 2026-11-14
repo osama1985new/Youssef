@@ -3233,12 +3233,13 @@ async function buildDoctorPdf(E,r){
   y+=80;
   /* summary tiles */
   var tiles=[['أيام فيها تسجيل',String(ord.length)],['عدد القراءات',String(G.length)],['A1c تقديري'+(rangeStats(E)&&!rangeStats(E).ok?' (غير موثوق)':''),rangeStats(E)?'~'+fmt(rangeStats(E).a1c)+'%':'—']];
-  var tw=(CW-2*8)/3;
+  if(settings.carbMode){var fd0=fixedDoses(E); tiles.push(['ترسيبا',fd0.tr!=null?fmt(fd0.tr)+' وحدة':'—'])}
+  var tw=(CW-(tiles.length-1)*8)/tiles.length;
   tiles.forEach(function(t,i){var x=R-(i+1)*tw-i*8; rr(x,y,tw,52,8,'#F1F6F8','#D5E0E5'); T(t[1],x+tw/2,y+19,18,700,'#0D7480','center'); T(t[0],x+tw/2,y+40,10.5,400,'#3F505A','center')});
   y+=64;
-  var fd=fixedDoses(E), dt4=[['أبيدرا قبل الفطار',fd.bf,'#2F6FD0'],['أبيدرا قبل الغداء',fd.ln,'#2F6FD0'],['أبيدرا قبل العشاء',fd.dn,'#2F6FD0'],['ترسيبا',fd.tr,'#7B3FD1']], dw=(CW-3*6)/4; if(settings.carbMode)dt4=[dt4[3]];
+  var fd=fixedDoses(E), dt4=[['أبيدرا قبل الفطار',fd.bf,'#2F6FD0'],['أبيدرا قبل الغداء',fd.ln,'#2F6FD0'],['أبيدرا قبل العشاء',fd.dn,'#2F6FD0'],['ترسيبا',fd.tr,'#7B3FD1']], dw=(CW-3*6)/4; if(settings.carbMode)dt4=[];
   dt4.forEach(function(t,i){var x=R-(i+1)*dw-i*6; rr(x,y,dw,52,8,'#F7F9FB','#D5E0E5'); T(t[1]!=null?fmt(t[1])+' وحدة':'—',x+dw/2,y+19,16.5,700,t[2],'center'); T(t[0],x+dw/2,y+40,10,400,'#3F505A','center')});
-  y+=64;
+  if(dt4.length)y+=64;
   function header(){
     rr(M,y,CW,28,6,'#E3EEF3');
     T('اليوم والتاريخ',R-8,y+14,11.5,700,'#17303B'); T('قراءات السكر (النوع والرقم)',R-C1-8,y+14,11.5,700,'#17303B');
