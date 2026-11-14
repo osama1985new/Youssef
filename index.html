@@ -1217,8 +1217,17 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .fres button{display:flex; flex-direction:column; align-items:flex-start; width:100%; padding:10px 12px; border:0; background:transparent; text-align:start; cursor:pointer; color:var(--ink); font:inherit}
 .fres button span{font-size:12.5px; color:var(--muted)}
 .fres .none{padding:10px 12px; color:var(--muted); font-size:13px}
-#fsearch{width:100%}
+#fsearch{width:100%; min-height:48px; padding:0 14px; border:1.5px solid var(--line); border-radius:10px; background:var(--field); color:var(--ink); font:inherit; font-size:16px; -webkit-appearance:none; appearance:none}
+#fsearch:focus{outline:none; border-color:var(--accent)}
 .pk{display:grid; gap:10px; padding-top:8px}
+
+.fsug{display:grid; gap:10px; margin:2px 0 12px}
+.sg{border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit; cursor:pointer; border-radius:12px}
+.sg.main{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:12px 14px; text-align:start; border-color:color-mix(in srgb,var(--pt,var(--accent)) 45%,var(--line))}
+.sg.main span{font-size:12.5px; color:var(--muted)}
+.sgrow{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.sgl{font-size:12.5px; color:var(--muted); width:100%}
+.sg.chipf{padding:8px 12px; border-radius:999px; font-size:14px}
 </style>
 </head>
 <body>
@@ -1273,7 +1282,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
       <h3>الأكل</h3>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
       <div class="field"><label for="fsearch">ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
-      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
+      <div class="fsug" id="fsug" hidden></div>
+      <details class="more" id="browsebox"><summary>تصفّح كل الأصناف</summary><div class="field"><select id="foodpick" aria-label="اختر صنفًا"></select></div></details>
       <ul class="mlist" id="mlist"></ul>
       <details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
@@ -2589,6 +2599,32 @@ $('#pkadd').addEventListener('click',function(){
   renderMeal(); updateCalc(); toast('أُضيف '+n);
 });
 
+/* ====== smart suggestions: last meal for this slot + most used foods ====== */
+function savedItem(m){
+  var f=DB.filter(function(x){return x.n===m.n&&!x.fruit})[0];
+  if(f&&f.k!=='fruit')return newItem(f,Number(m.q)||1);
+  return {k:'sv'+Math.random().toString(36).slice(2,7),name:m.n,disp:m.n,d:'',w:0,c:Number(m.c)||0,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:false};
+}
+function foodSuggest(){
+  var el=$('#fsug'); if(!el)return;
+  var G=slotGroup(curSlot()), lab=(GROUPS.filter(function(x){return x[0]===G})[0]||[0,''])[1];
+  var withMeal=(typeof entries!=='undefined'?entries:[]).filter(function(e){return e.meal&&e.meal.length}).sort(function(a,b){return new Date(b.ts)-new Date(a.ts)});
+  var last=withMeal.filter(function(e){return slotGroup(e.slot)===G&&e.id!==editingId})[0];
+  var cnt={}, lastQ={}, lastC={};
+  withMeal.slice(0,80).forEach(function(e){e.meal.forEach(function(m){if(!m.n)return; cnt[m.n]=(cnt[m.n]||0)+1; if(lastQ[m.n]==null){lastQ[m.n]=m.q; lastC[m.n]=m.c}})});
+  var top=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}).slice(0,6);
+  var h='';
+  if(last){var cs=r1(last.meal.reduce(function(a,m){return a+(Number(m.q)||1)*(Number(m.c)||0)},0)); h+='<button type="button" class="sg main" data-sglast="'+esc(last.id)+'"><b>كرّر آخر '+esc(lab)+'</b><span>'+esc(last.meal.slice(0,3).map(function(m){return m.n}).join('، '))+(last.meal.length>3?'…':'')+' · '+fmt(cs)+' جم</span></button>'}
+  if(top.length){h+='<div class="sgrow"><span class="sgl">الأكثر استخدامًا</span>'+top.map(function(n){return '<button type="button" class="sg chipf" data-sgf="'+esc(n)+'">'+esc(n)+'</button>'}).join('')+'</div>'}
+  el.innerHTML=h; el.hidden=!h;
+  el._data={last:last,q:lastQ,c:lastC};
+}
+$('#fsug').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b)return; var d=this._data||{};
+  if(b.dataset.sglast!==undefined&&d.last){mealItems=d.last.meal.map(savedItem); renderMeal(); updateCalc(); toast('تم تحميل آخر وجبة. عدّل الكميات لو اختلفت'); return}
+  if(b.dataset.sgf!==undefined){var n=b.dataset.sgf; var ex=mealItems.filter(function(m){return m.disp===n})[0]; if(ex){ex.q+=1} else mealItems.push(savedItem({n:n,q:d.q[n],c:d.c[n]})); renderMeal(); updateCalc()}
+});
+
 $('#foodpick').addEventListener('change',function(){var v=this.value; this.value=''; if(v!=='')addFood(DB[Number(v)])});
 $('#presetpick').addEventListener('change',function(){
   var v=this.value; this.value=''; if(v==='')return;
@@ -2637,6 +2673,7 @@ function renderPresets(){
     h+='<optgroup label="'+label+'">'+rows+'</optgroup>';
   });
   var sel=$('#presetpick'); sel.innerHTML=h; sel.value='';
+  try{foodSuggest()}catch(_){}
 }
 
 /* ---------- dose calculator ---------- */
