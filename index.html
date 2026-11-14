@@ -1402,7 +1402,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
       <div class="field"><label for="shigh">نبّهني إذا كان أعلى من</label><input id="shigh" type="text" inputmode="numeric"></div>
     </div>
 
-    <h3>أبيدرا للأكل</h3>
+    <h3>نظام الجرعات</h3>
     <div class="field"><label>نظام الجرعة</label><div class="presets" id="dosemode" role="radiogroup"><button type="button" class="ghost" data-dm="fixed" aria-pressed="true">الجرعة الثابتة</button><button type="button" class="ghost" data-dm="carb" aria-pressed="false">حساب الكارب</button></div><input type="checkbox" id="scarb" hidden></div>
     <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)"></p>
     <div class="field carbonly"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
@@ -2383,7 +2383,7 @@ var ICONS={
  note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
 };
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['أبيدرا للأكل','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
   var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
   for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
