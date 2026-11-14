@@ -1203,6 +1203,22 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 #savebar .primary{min-height:48px; font-size:16px}
 #savenote{font-size:12.5px; color:var(--muted)}
 @media (min-width:760px){#savebar{bottom:18px; inset-inline-start:auto; inset-inline-end:120px; margin:0; width:300px}}
+
+/* steppers: + on the right, - on the left, bigger */
+.stepper,.qty{direction:ltr}
+.stepper{grid-template-columns:60px minmax(0,1fr) 60px!important}
+.stepper button{min-height:58px!important; font-size:28px!important}
+.stepper input{font-size:26px!important; min-height:58px!important}
+.two:has(>#tbox[hidden]){grid-template-columns:1fr!important}
+.qty button{min-width:44px; min-height:44px; font-size:22px}
+
+.fres{list-style:none; margin:6px 0 0; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface)}
+.fres li+li{border-top:1px solid var(--line)}
+.fres button{display:flex; flex-direction:column; align-items:flex-start; width:100%; padding:10px 12px; border:0; background:transparent; text-align:start; cursor:pointer; color:var(--ink); font:inherit}
+.fres button span{font-size:12.5px; color:var(--muted)}
+.fres .none{padding:10px 12px; color:var(--muted); font-size:13px}
+#fsearch{width:100%}
+.pk{display:grid; gap:10px; padding-top:8px}
 </style>
 </head>
 <body>
@@ -1256,8 +1272,22 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     <div class="sect panel p-food">
       <h3>الأكل</h3>
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
-      <div class="field"><label for="foodpick">أو أضف صنفًا</label><select id="foodpick"></select></div>
+      <div class="field"><label for="fsearch">ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
+      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
       <ul class="mlist" id="mlist"></ul>
+      <details class="more" id="pkbox">
+        <summary>منتج معلّب (الكارب من الملصق)</summary>
+        <div class="pk">
+          <input id="pkn" type="text" placeholder="اسم المنتج" autocomplete="off">
+          <div class="two cen">
+            <div class="field"><label for="pkc">كارب لكل 100 جم</label><input id="pkc" type="text" inputmode="decimal" placeholder="من الملصق"></div>
+            <div class="field"><label for="pkg">الكمية التي أكلها (جم)</label><input id="pkg" type="text" inputmode="decimal" placeholder="مثلاً 40"></div>
+          </div>
+          <label class="cgmrow"><input type="checkbox" id="pks" checked><span>احفظه في أصنافي لأستخدمه لاحقًا</span></label>
+          <p class="small" id="pkr"></p>
+          <button type="button" class="ghost" id="pkadd">أضف إلى الوجبة</button>
+        </div>
+      </details>
       <details class="more" id="manualbox">
         <summary>صنف آخر غير موجود في القائمة</summary>
         <div class="manual"><input id="m1n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m1c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
@@ -1277,14 +1307,13 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 
     <div class="two">
       <div class="field a">
-        <label for="a">أبيدرا التي أخذتها <em>(وحدات)</em></label>
+        <label for="a">الجرعة <em>(الوحدات)</em></label>
         <div class="stepper">
           <button type="button" data-step="a" data-d="-0.5" aria-label="أقل">−</button>
           <input id="a" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
           <button type="button" data-step="a" data-d="0.5" aria-label="أكثر">+</button>
         </div>
-        <div class="tplan" id="aplan"></div>
-      </div>
+              </div>
       <div class="field t" id="tbox" hidden>
         <label for="t">ترسيبا <em>(وحدات)</em></label>
         <div class="stepper">
@@ -1311,7 +1340,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     <div class="supp" id="supp"><div class="suphead"><span class="lbl">المكملات</span><small>اضغط على ما أخذته اليوم</small></div></div>
     <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0">+ سجّل كيتون</button>
     <div class="injrow" id="kbox" hidden>
-      <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="b">دم (mmol/L)</option><option value="u">بول</option></select></div>
+      <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="u" selected>بول</option><option value="b">دم (mmol/L)</option></select></div>
       <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
       <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
     </div>
@@ -1354,7 +1383,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
       </div>
       <p class="small" id="rangenote" role="status"></p>
       <div class="rstats" id="rstats"></div>
-    <h3>تصدير التقرير</h3>
+    <h3>تقرير الطبيب</h3>
       <div class="acts">
         <button type="button" class="act main" id="pdfview"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="at"><b>ملف PDF للطبيب</b><small>كل يوم بتاريخه وقراءاته والأنسولين، يُفتح على الهاتف</small></span></button>
         <button type="button" class="act" id="pdfshare"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="at"><b>مشاركة التقرير (واتساب)</b><small>يرسل ملف PDF للطبيب من قائمة المشاركة</small></span></button>
@@ -1726,7 +1755,7 @@ var LS_E='ysg-entries-v1', LS_S='ysg-settings-v1', LS_P='ysg-pin-v1', LS_D='ysg-
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],suppOmega:false,suppVit:false,omegaAt:null,vitAt:null,a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,carbMode:false,medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
+var DEFAULTS={low:90,high:250,plan:null,icr:null,icrBf:null,icrLn:null,icrDn:null,isf:null,target:null,maxd:null,scale:[],suppOmega:false,suppVit:false,omegaAt:null,vitAt:null,a1cDate:null,a1cVal:null,ketHigh:null,ketHours:null,ketExp:null,stripN:null,stripStart:null,needleN:null,needleUsed:null,needleStart:null,cgm:false,carbMode:false,myFoods:[],medGot:null,stockAtA:null,stockAtT:null,stockA:null,stockT:null,primeU:null,stockDays:null,penAStart:null,penTStart:null,fixBf:null,fixLn:null,fixDn:null,birth:null,wt:null,ht:null,bps:null,bpd:null,bodyDate:null,visitLast:null,visitNext:null,visitNote:null};
 var entries=[], settings=Object.assign({},DEFAULTS);
 var mode='local', pin=lsGet(LS_P,''), weeksShown=1, loaded=false, netErr=false, started=false, authed=false, tab='add', tAsked=false;
 function normPin(x){return String(x||'').replace(/[\u0660-\u0669]/g,function(c){return String(c.charCodeAt(0)-0x660)}).replace(/[\u06F0-\u06F9]/g,function(c){return String(c.charCodeAt(0)-0x6F0)}).trim()}
@@ -1930,7 +1959,7 @@ function persistSettings(){
 var exportAcc=null;
 function placeExport(){
   var rc=$('#rcard'), rp=$('#report'); if(!rc||!rp)return;
-  if(!exportAcc){[].some.call(rc.querySelectorAll(':scope>details.acc'),function(d){var m=d.querySelector('summary'); if(m&&m.textContent.indexOf('تصدير')>-1){exportAcc=d;return true}})}
+  if(!exportAcc){[].some.call(rc.querySelectorAll(':scope>details.acc'),function(d){var m=d.querySelector('summary'); if(m&&m.textContent.indexOf('تقرير الطبيب')>-1){exportAcc=d;return true}})}
   if(!exportAcc)return;
   var wide=window.matchMedia('(min-width:760px)').matches&&document.body.classList.contains('ro');
   if(wide&&exportAcc.parentNode!==rp)rp.insertBefore(exportAcc,rp.firstChild);
@@ -2090,7 +2119,7 @@ $('#modebar').addEventListener('click',function(e){var b=e.target.closest('butto
   if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='تُسجَّل ترسيبا بعد الساعة 10 مساءً فقط.'; mh.hidden=false; toast('تُسجَّل ترسيبا بعد الساعة 10 مساءً'); return}
   setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
-function updateAplan(){var el=$('#aplan'); if(!el)return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
+function updateAplan(){var el=$('#aplan'); if(!el)return; el.innerHTML=''; return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
 function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
@@ -2334,7 +2363,7 @@ function ketUI(){
   if(!v||(!u&&isNaN(Number(v.replace(',','.'))))){h.hidden=true; return}
   var l=ketLevel(u?'u':'b',u?v:Number(v.replace(',','.'))); h.hidden=false; h.className='msg ket-'+l[0]; h.textContent=l[1];
 }
-function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#kt').value='b'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
+function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#kt').value='u'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
 function readKet(){
   if($('#kbox').hidden)return {ok:true,t:null,v:null};
   if($('#kt').value==='u')return {ok:true,t:'u',v:$('#ku').value};
@@ -2383,7 +2412,7 @@ var ICONS={
  note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
 };
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تصدير','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تقرير الطبيب','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
   var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
   for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
@@ -2513,6 +2542,49 @@ function renderMeal(){ setTimeout(syncCorr,0);
       '<div class="mi-opts">'+opts+'</div></li>';
   }).join('');
 }
+
+/* ====== smart search + packaged products ====== */
+function nrm(t){return String(t||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,' ').trim().toLowerCase()}
+(function(){
+  var inp=$('#fsearch'), box=$('#fres');
+  function show(){
+    var q=nrm(inp.value); if(q.length<1){box.hidden=true; box.innerHTML=''; return}
+    var parts=q.split(' '), hits=[];
+    DB.forEach(function(f){var hay=nrm(f.n+' '+(f.g||'')); if(parts.every(function(p){return hay.indexOf(p)>=0}))hits.push(f)});
+    hits.sort(function(a,b){var sa=nrm(a.n).indexOf(parts[0])===0?0:1, sb=nrm(b.n).indexOf(parts[0])===0?0:1; return sa-sb});
+    hits=hits.slice(0,8);
+    box.innerHTML=hits.length?hits.map(function(f){return '<li><button type="button" data-fi="'+f.i+'"><b>'+esc(f.n)+'</b><span>'+esc(f.d||'')+' · '+fmt(f.c)+' جم كارب</span></button></li>'}).join(''):'<li class="none">لا يوجد. جرّب كلمة أخرى أو أضفه كمنتج معلّب.</li>';
+    box.hidden=false;
+  }
+  inp.addEventListener('input',show);
+  box.addEventListener('click',function(e){var b=e.target.closest('button[data-fi]'); if(!b)return; addFood(DB[Number(b.dataset.fi)]); inp.value=''; box.hidden=true; box.innerHTML=''});
+})();
+function addMyFoodsToDb(){
+  DB=DB.filter(function(f){return f.g!=='أصنافي'});
+  (settings.myFoods||[]).forEach(function(m){pushFood({g:'أصنافي',n:m.n,d:'لكل 100 جم (من الملصق)',c:Number(m.c)||0,w:100})});
+}
+function rebuildFoodPick(){
+  var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
+  DB.forEach(function(f,i){f.i=i;
+    if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
+    h+='<option value="'+i+'">'+esc(f.n)+'</option>';
+  });
+  $('#foodpick').innerHTML=h+'</optgroup>';
+}
+function pkPreview(){var c=num($('#pkc').value), g=num($('#pkg').value), el=$('#pkr'); el.textContent=(c>=0&&g>0&&c!=null)?('الكارب = '+fmt(r1(c*g/100))+' جم'):''}
+$('#pkc').addEventListener('input',pkPreview); $('#pkg').addEventListener('input',pkPreview);
+$('#pkadd').addEventListener('click',function(){
+  var n=$('#pkn').value.trim(), c=num($('#pkc').value), g=num($('#pkg').value);
+  if(!n||c==null||isNaN(c)||c<0||!(g>0)){toast('اكتب الاسم وكارب 100 جم والكمية'); return}
+  mealItems.push({k:'pk'+Date.now(),name:n,disp:n,d:'لكل 100 جم (من الملصق)',w:100,c:c,est:false,q:g/100,mode:'g',gr:g,fruit:false,editc:false});
+  if($('#pks').checked&&role!=='view'){
+    settings.myFoods=(settings.myFoods||[]).filter(function(m){return m.n!==n}); settings.myFoods.push({n:n.slice(0,40),c:c}); settings.myFoods=settings.myFoods.slice(-60);
+    persistSettings(); addMyFoodsToDb(); rebuildFoodPick();
+  }
+  $('#pkn').value=''; $('#pkc').value=''; $('#pkg').value=''; $('#pkr').textContent='';
+  renderMeal(); updateCalc(); toast('أُضيف '+n);
+});
+
 $('#foodpick').addEventListener('change',function(){var v=this.value; this.value=''; if(v!=='')addFood(DB[Number(v)])});
 $('#presetpick').addEventListener('change',function(){
   var v=this.value; this.value=''; if(v==='')return;
@@ -2833,7 +2905,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
+  var at={myFoods:settings.myFoods||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
@@ -3121,7 +3193,9 @@ accordion($('#set'),false); accordion($('#medcard'),false); accordion($('#rcard'
 [].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='إشعارات الهاتف'){d.classList.add('acct')} if(t==='الأقلام المفتوحة')d.hidden=true});
 
 /* ---------- render all ---------- */
-function render(){try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
+var _mfSig='';
+function render(){try{var sg0=JSON.stringify(settings.myFoods||[]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
+  try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
   renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
@@ -3457,6 +3531,10 @@ $('#f').addEventListener('submit',async function(ev){
   var supp=noExtra?[]:getSupp().filter(function(k){return !suppDoneToday(k)}), ket=noExtra?{ok:true}:readKet();
   if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
+  if(t>0&&!editingId){
+    var pend=[].filter.call(document.querySelectorAll('#supp .chip'),function(b){return !b.disabled&&!b.closest('[hidden]')&&b.getAttribute('aria-pressed')!=='true'}).map(function(b){return (SUPPS.filter(function(x){return x[0]===b.dataset.supp})[0]||[])[1]||''});
+    if(pend.length){err.textContent='قبل تسجيل ترسيبا علّم أنك أخذت: '+pend.join('، ')+'.'; var sb=$('#supp'); var dd=sb&&sb.closest('details'); if(dd)dd.open=true; if(sb&&sb.scrollIntoView)sb.scrollIntoView({block:'center',behavior:'smooth'}); return}
+  }
   if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[], isC=$('#corr').checked;
