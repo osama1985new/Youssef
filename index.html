@@ -163,6 +163,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 .setup .ghost{min-height:48px}
 .calc{border:1.5px solid color-mix(in srgb, var(--apidra) 45%, var(--line)); border-radius:12px; padding:12px 14px; background:color-mix(in srgb, var(--apidra) 7%, var(--surface)); display:flex; flex-direction:column; gap:8px}
 .calcbig{font-family:var(--f-display); font-size:38px; font-weight:600; color:var(--apidra); line-height:1.1}
+.carbonly[hidden]{display:none!important}
 .calc.corr{margin-top:10px}
 .calcdis{margin:4px 0 0; font-size:12.5px; color:var(--muted)}
 .calcbig small{font-size:14px; font-weight:400; color:var(--muted); margin-inline-start:6px}
@@ -1196,6 +1197,12 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
   body:not(.ro)[data-t=report] .wrap>#report{grid-column:1/-1; grid-row:4}
   body:not(.ro)[data-t=report] .wrap>#medcard{grid-column:1/-1; grid-row:5}
 }
+
+#savebar{position:fixed; inset-inline:16px; bottom:calc(84px + env(safe-area-inset-bottom,0px)); max-width:420px; margin-inline:auto; z-index:60; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px; border-radius:16px; background:var(--surface); border:1px solid var(--line); box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#savebar[hidden]{display:none}
+#savebar .primary{min-height:48px; font-size:16px}
+#savenote{font-size:12.5px; color:var(--muted)}
+@media (min-width:760px){#savebar{bottom:18px; inset-inline-start:auto; inset-inline-end:120px; margin:0; width:300px}}
 </style>
 </head>
 <body>
@@ -1398,8 +1405,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     <h3>أبيدرا للأكل</h3>
     <div class="field"><label>نظام الجرعة</label><div class="presets" id="dosemode" role="radiogroup"><button type="button" class="ghost" data-dm="fixed" aria-pressed="true">الجرعة الثابتة</button><button type="button" class="ghost" data-dm="carb" aria-pressed="false">حساب الكارب</button></div><input type="checkbox" id="scarb" hidden></div>
     <p class="hint" id="carbhint" style="margin:4px 0 10px;font-size:12.5px;color:var(--muted)"></p>
-    <div class="field"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
-    <details class="sub">
+    <div class="field carbonly"><label for="sicr">نسبة الكارب <em>(جرام لكل وحدة)</em></label><input id="sicr" type="text" inputmode="decimal" placeholder="مثلاً 15"></div>
+    <details class="sub carbonly">
       <summary>نسبة مختلفة لكل وجبة</summary>
       <div class="three" style="margin-top:8px">
         <div class="field"><label for="sicrbf">فطور</label><input id="sicrbf" type="text" inputmode="decimal"></div>
@@ -1515,6 +1522,7 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 </main>
 
 <div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">حسنًا</button></div></div>
+<div id="savebar" hidden><button type="button" class="primary" id="savebtn">حفظ الإعدادات</button><span id="savenote">تغييرات لم تُحفظ بعد</span></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -1937,7 +1945,7 @@ function applyTab(){
   });
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
-  document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false);
+  document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false); updateSaveBar();
   placeExport();
 }
 function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport()}
@@ -2778,6 +2786,7 @@ function readChecks(){
   return bad?null:out;
 }
 function syncSettingsInputs(){
+  if(setDirty)return;
   var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; paintDoseMode(!!settings.carbMode); $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
@@ -2814,13 +2823,16 @@ function readSettings(){
   if(incomplete&&!bad)return 'wait';
   return bad?null:out;
 }
+var setDirty=false;
+function markDirty(v){setDirty=v; updateSaveBar()}
+function updateSaveBar(){var b=$('#savebar'); if(!b)return; b.hidden=!(setDirty&&authed&&(tab==='set'||tab==='report'))}
 function onSetChange(){
   if(mode==='cloud'&&!settingsLoaded){refresh(); return}
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   var at={medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
-  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); render(); toast('حُفظت الإعدادات');
+  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('هل تبدأ علبة شرائط جديدة من اليوم؟ سيبدأ العداد من صفر.'))return;
@@ -2834,11 +2846,13 @@ $('#needlenew').addEventListener('click',function(){
 });
 function paintDoseMode(c){
   $('#scarb').checked=c;
+  [].forEach.call(document.querySelectorAll('#set .carbonly'),function(x){x.hidden=!c});
   [].forEach.call(document.querySelectorAll('#dosemode button'),function(b){b.setAttribute('aria-pressed',String((b.dataset.dm==='carb')===c))});
   $('#carbhint').textContent=c?'الأبيدرا المقترحة تُحسب من كارب الوجبة والنسبة التي حدّدها الطبيب.':'الأبيدرا المقترحة هي الجرعة الثابتة التي حدّدها الطبيب لكل وجبة.';
 }
 $('#dosemode').addEventListener('click',function(e){var b=e.target.closest('button[data-dm]'); if(!b)return; paintDoseMode(b.dataset.dm==='carb'); $('#scarb').dispatchEvent(new Event('change',{bubbles:true}))});
-$('#set').addEventListener('change',onSetChange); $('#medcard').addEventListener('change',onSetChange);
+['#set','#medcard'].forEach(function(q){['change','input'].forEach(function(ev){$(q).addEventListener(ev,function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox'))))return; markDirty(true)})})});
+$('#savebtn').addEventListener('click',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
   if(v==null||isNaN(v)||v<1||v>150){toast('اكتب رقم صحيح (من 1 إلى 150)'); return}
