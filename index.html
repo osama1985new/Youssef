@@ -1798,7 +1798,7 @@ function penLeftTxt(){var el=$('#penleft'); if(!el)return; var a=penLeft(setting
 function ageTxt(){var b=settings&&settings.birth; if(!b)return ''; var d=new Date(b+'T12:00:00'),n=new Date(); if(isNaN(d)||d>n)return ''; var y=n.getFullYear()-d.getFullYear(), m=n.getMonth()-d.getMonth(); if(n.getDate()<d.getDate())m--; if(m<0){y--; m+=12} return y+' سنة'+(m?' و '+m+' شهر':'')}
 function fixedDoses(E){
   var f=function(sl){return modeOf(E.filter(function(e){return e.slot===sl&&e.apidra>0&&!e.corr}).map(function(e){return e.apidra}))};
-  return {bf:settings.fixBf>0?settings.fixBf:f('bf_before'),ln:settings.fixLn>0?settings.fixLn:f('ln_before'),dn:settings.fixDn>0?settings.fixDn:f('dn_before'),tr:modeOf(E.filter(function(e){return e.tresiba>0}).map(function(e){return e.tresiba}))};
+  return {bf:settings.fixBf>0?settings.fixBf:f('bf_before'),ln:settings.fixLn>0?settings.fixLn:f('ln_before'),dn:settings.fixDn>0?settings.fixDn:f('dn_before'),tr:settings.plan>0?settings.plan:modeOf(E.filter(function(e){return e.tresiba>0}).map(function(e){return e.tresiba}))};
 }
 function lk(d){return dayKey(new Date(d.getTime()-SHIFT))}
 function dlog(d){return dayLong(new Date(d.getTime()-SHIFT))}
