@@ -91,7 +91,7 @@ function cleanEntry(e) {
       if (!m || typeof m !== 'object') return null;
       const q = numOrNull(m.q, 50), c = numOrNull(m.c, 500);
       if (q === undefined || c === undefined) return null;
-      meal.push({ n: String(m.n || '').slice(0, 60), q: q === null ? 1 : q, c: c === null ? 0 : c });
+      const mo = { n: String(m.n || '').slice(0, 60), q: q === null ? 1 : q, c: c === null ? 0 : c }; if (m.u) mo.u = String(m.u).slice(0, 20); meal.push(mo);
     }
   }
   const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
@@ -119,7 +119,26 @@ function cleanSettings(s) {
   const dOk = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !isNaN(new Date(String(v)));
   if (out.bps != null && out.bpd != null && out.bps <= out.bpd) return null;
   out.bodyDate = dOk(s.bodyDate) ? String(s.bodyDate) : null;
-  out.myFoods = Array.isArray(s.myFoods) ? s.myFoods.slice(-60).map(m => ({ n: String((m && m.n) || '').slice(0, 40), c: Number(m && m.c) })).filter(m => m.n && Number.isFinite(m.c) && m.c >= 0 && m.c <= 100) : [];
+  const T = (v, n) => String(v == null ? '' : v).slice(0, n);
+  const N = (v, mx) => { const x = Number(v); return Number.isFinite(x) && x >= 0 && x <= mx ? x : null; };
+  out.myFoods = Array.isArray(s.myFoods) ? s.myFoods.slice(-60).map(m => {
+    const o = { n: T(m && m.n, 40), c: Number(m && m.c) };
+    if (m && m.u) { o.u = T(m.u, 20); o.w = N(m.w, 5000) || 0; o.d = T(m.d, 40); o.s = Number(m.s) === 1 ? 1 : 0.5; }
+    return o;
+  }).filter(m => m.n && Number.isFinite(m.c) && m.c >= 0 && m.c <= (m.u ? 500 : 100)) : [];
+  out.foodOv = {};
+  if (s.foodOv && typeof s.foodOv === 'object') {
+    for (const k of Object.keys(s.foodOv).slice(0, 200)) {
+      const v = s.foodOv[k]; if (!v || !k) continue;
+      const c = N(v.c, 500); if (c === null || !v.u) continue;
+      out.foodOv[T(k, 60)] = { u: T(v.u, 20), c, w: N(v.w, 5000) || 0, d: T(v.d, 40), s: Number(v.s) === 1 ? 1 : 0.5,
+        a: (Array.isArray(v.a) ? v.a : []).slice(0, 5).map(a => ({ u: T(a && a.u, 20), r: N(a && a.r, 1000) })).filter(a => a.u && a.r > 0) };
+    }
+  }
+  out.meals = Array.isArray(s.meals) ? s.meals.slice(-30).map(m => ({
+    n: T(m && m.n, 40),
+    items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); return o; }).filter(x => x.n && x.q !== null && x.c !== null)
+  })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
   out.carbMode = s.carbMode === true;
   out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
