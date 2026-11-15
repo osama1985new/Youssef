@@ -1248,6 +1248,22 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .mi-eb{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
 .svl{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:4px}
 .svl li{display:flex; justify-content:space-between; align-items:center; font-size:14px}
+
+.mi{padding:14px 16px; gap:10px; border-radius:16px; background:var(--surface)}
+.mi-top b{font-size:17px}
+.mi-lbl{font-size:13px; color:var(--muted)}
+.mi-big{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.rb{flex:none; width:54px; height:54px; border-radius:50%; border:1.5px solid var(--line); background:var(--field); color:var(--ink); font-size:26px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center}
+.rb:active{background:var(--line)}
+.bigq{display:flex; align-items:baseline; justify-content:center; gap:8px; flex:1; min-width:0}
+.bigq input{border:0!important; background:transparent!important; width:88px; text-align:center; font-family:var(--f-display); font-size:34px!important; font-weight:700; min-height:50px; padding:0!important}
+.bigq .un{font-size:22px; font-weight:700; min-width:0}
+.mi-rng{width:100%; accent-color:var(--accent); margin:2px 0}
+.mi-sum{display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--line); padding-top:10px}
+.mi-sum>span:first-child{font-size:16px; font-weight:600}
+.mi-sum .mi-t{margin:0}
+.mi-sum .mi-t b{font-size:32px; font-weight:700}
+.mi-sum .mi-t{font-size:20px; font-weight:700; color:var(--accent)}
 </style>
 </head>
 <body>
@@ -2628,10 +2644,13 @@ function renderMeal(){ setTimeout(syncCorr,0);
       ?'<input type="text" data-f="name" placeholder="اسم الفاكهة (مثلاً تفاح)" value="'+esc(m.name)+'" autocomplete="off">'
       :'<span><b>'+esc(m.disp)+'</b>'+(m.est?'<span class="est">تقدير</span>':'')+'<span class="u">'+esc(portionText(m))+'</span></span>';
     var q=itemQ(m);
+    var rmax=Math.max(m.step>=1?20:6,Math.ceil(q*2)), sl='';
     var amount=m.mode==='g'
-      ?'<label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label>'
-      :'<div class="qty"><button type="button" data-q="'+i+'" data-d="1" aria-label="أكثر">+</button><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد"><button type="button" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button></div>'
-       +(m.alts&&m.alts.length?'<select class="unsel" data-unit="'+i+'" aria-label="الوحدة"><option value="0"'+(m.cur?'':' selected')+'>'+esc(m.bu)+'</option>'+m.alts.map(function(a,j){return '<option value="'+(j+1)+'"'+(m.cur===j+1?' selected':'')+'>'+esc(a.u)+'</option>'}).join('')+'</select>':'<span class="un" data-un>'+esc(m.u?unitLbl(m.u,m.q):'')+'</span>');
+      ?'<div class="mi-big"><label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label></div>'
+      :'<div class="mi-lbl">عدد '+esc(m.u?unitLbl(m.u,3):'الوحدات')+'</div><div class="mi-big"><button type="button" class="rb" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button><div class="bigq"><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد">'
+       +(m.alts&&m.alts.length?'<select class="unsel" data-unit="'+i+'" aria-label="الوحدة"><option value="0"'+(m.cur?'':' selected')+'>'+esc(m.bu)+'</option>'+m.alts.map(function(a,j){return '<option value="'+(j+1)+'"'+(m.cur===j+1?' selected':'')+'>'+esc(a.u)+'</option>'}).join('')+'</select>':'<span class="un" data-un>'+esc(m.u?unitLbl(m.u,m.q):'')+'</span>')
+       +'</div><button type="button" class="rb" data-q="'+i+'" data-d="1" aria-label="أكثر">+</button></div>'
+       +'<input type="range" class="mi-rng" data-rng min="0" max="'+rmax+'" step="'+(m.step>=1?1:m.step)+'" value="'+Math.min(m.q,rmax)+'" aria-label="الكمية">';
     var opts='';
     if(m.w>0)opts+='<button type="button" class="link" data-mode="'+i+'">'+(m.mode==='g'?'بالعدد':'بالجرام')+'</button>';
     if(m.fruit||(m.editc&&!m.u))opts+='<label>كارب الوحدة <input type="text" inputmode="decimal" data-f="c" value="'+fmt(m.c)+'"> جم</label>';
@@ -2649,7 +2668,7 @@ function renderMeal(){ setTimeout(syncCorr,0);
         +'<p class="small">القيم تقديرية وأحجام الملاعق والأرغفة تختلف. التعديل للوجبة الحالية، وزر «احفظ للصنف» يطبّقه على الوجبات الجديدة فقط ولا يغيّر السجل القديم.</p></div>';
     }
     return '<li class="mi" data-i="'+i+'"><div class="mi-top">'+top+'<button type="button" class="mi-x" data-rm="'+i+'" aria-label="شيل الصنف">✕</button></div>'+
-      '<div class="mi-bot">'+amount+'<span class="mi-t">إجمالي الكارب <b data-tot>'+fmt(r1(q*m.c))+'</b> جم</span></div>'+
+      amount+'<div class="mi-sum"><span>الكارب التقريبي</span><span class="mi-t"><b data-tot>'+fmt(r1(q*m.c))+'</b> جم</span></div>'+
       '<div class="mi-opts">'+opts+'</div>'+ed+'</li>';
   }).join('');
   try{paintSaved()}catch(_){}
@@ -2802,11 +2821,12 @@ $('#mlist').addEventListener('input',function(ev){
     else if(e==='s')m.step=inp.checked?0.5:1;
     li.querySelector('[data-tot]').textContent=fmt(r1(itemQ(m)*m.c)); updateCalc(); return;
   }
+  if(inp.dataset.rng!==undefined){m.q=Number(inp.value); var qi=li.querySelector('[data-f=q]'); if(qi)qi.value=qf(m.q); var un0=li.querySelector('[data-un]'); if(un0)un0.textContent=m.u?unitLbl(m.u,m.q):''; li.querySelector('[data-tot]').textContent=fmt(r1(itemQ(m)*m.c)); updateCalc(); return}
   if(!inp.dataset.f)return;
   if(inp.dataset.f==='name')m.name=inp.value;
   else{
     var v=num(inp.value); v=(v==null||isNaN(v))?0:v;
-    if(inp.dataset.f==='gr')m.gr=v; else if(inp.dataset.f==='q'){m.q=v; var un=li.querySelector('[data-un]'); if(un)un.textContent=m.u?unitLbl(m.u,m.q):''} else {m.c=v; m.bc=v}
+    if(inp.dataset.f==='gr')m.gr=v; else if(inp.dataset.f==='q'){m.q=v; var rg=li.querySelector('[data-rng]'); if(rg){if(v>Number(rg.max))rg.max=Math.ceil(v*2); rg.value=v} var un=li.querySelector('[data-un]'); if(un)un.textContent=m.u?unitLbl(m.u,m.q):''} else {m.c=v; m.bc=v}
     li.querySelector('[data-tot]').textContent=fmt(r1(itemQ(m)*m.c));
   }
   updateCalc();
