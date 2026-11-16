@@ -1264,6 +1264,39 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .mi-sum .mi-t{margin:0}
 .mi-sum .mi-t b{font-size:32px; font-weight:700}
 .mi-sum .mi-t{font-size:20px; font-weight:700; color:var(--accent)}
+
+.fpick{display:flex; flex-direction:column; gap:12px; margin-bottom:12px}
+.fpick .field{margin:0}
+.fpick label{font-size:13px; font-weight:600; color:var(--muted)}
+.fpick input,.fpick select{min-height:50px; border-radius:12px}
+.mtotal{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px 10px; margin:12px 0; padding:12px 16px; border-radius:14px; background:color-mix(in srgb,var(--accent) 9%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line)); font-size:16px; font-weight:600}
+.mtotal:empty{display:none}
+.mtotal>b{font-family:var(--f-display); font-size:26px; color:var(--accent)}
+.mtotal .small{flex-basis:100%; margin:0}
+.xtra{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface)}
+.xtra>details.more{margin:0!important; border:0!important; border-radius:0!important; background:transparent!important}
+.xtra>details.more+details.more{border-top:1px solid var(--line)!important}
+.xtra>details.more>summary{padding:13px 16px!important; font-size:15px; font-weight:600; color:var(--ink)}
+.xtra>details.more>summary::before{content:'+'; display:inline-block; width:20px; color:var(--accent); font-weight:700}
+.xtra>details.more[open]>summary::before{content:'−'}
+.xtra>details.more>*:not(summary){margin:0 16px 14px}
+
+.rb{width:48px!important; height:48px!important}
+.bigq{gap:4px!important; flex-wrap:nowrap}
+.bigq input{width:64px!important; font-size:30px!important}
+.bigq .un{font-size:17px!important; white-space:nowrap}
+.bigq .unsel{max-width:110px}
+.xtra>details.more>summary{list-style:none}
+.xtra>details.more>summary::-webkit-details-marker{display:none}
+.xtra>details.more>summary::marker{content:''}
+
+.mnote{margin:-4px 0 12px; text-align:center}
+.mtotal{justify-content:space-between!important}
+
+.mealseg{display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin:2px 0 14px; border:1.5px solid var(--line); border-radius:12px; overflow:hidden; background:var(--field)}
+.mealseg button{border:0; background:transparent; min-height:44px; font-size:15px; font-weight:600; color:var(--muted); cursor:pointer; font-family:inherit}
+.mealseg button+button{border-inline-start:1px solid var(--line)}
+.mealseg button[aria-pressed=true]{background:var(--accent); color:#fff}
 </style>
 </head>
 <body>
@@ -1314,14 +1347,27 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
     </div>
 
 
-    <div class="sect panel p-food">
+        <div class="sect panel p-food">
       <h3>الأكل</h3>
-      <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
-      <div class="field"><label for="fsearch">ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
+      <div class="mealseg" id="mealseg" role="tablist" aria-label="نوع الوجبة"><button type="button" data-mg="bf">فطار</button><button type="button" data-mg="ln">غدا</button><button type="button" data-mg="dn">عشا</button><button type="button" data-mg="sn">سناك</button></div>
+      <div class="fpick">
+      <div class="field"><label for="fsearch">١ · ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
       <div class="fsug" id="fsug" hidden style="display:none!important"></div>
-      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
+      <div class="field"><label for="presetpick">٢ · وجباتي والوجبات الجاهزة</label><select id="presetpick"></select></div>
+      <div class="field"><label for="foodpick">٣ · أو اختر من القائمة</label><select id="foodpick"></select></div>
+      </div>
       <ul class="mlist" id="mlist"></ul>
-      <details class="more" id="pkbox">
+      <p class="mtotal" id="mtotal"></p>
+      <p class="small mnote" id="mnote" hidden>القيم تقريبية، وأحجام الملاعق والأرغفة والحصص تختلف.</p>
+      <div class="xtra">
+      <details class="more" id="svbox" hidden>
+        <summary>احفظ هذه الوجبة</summary>
+        <div class="pk">
+          <input id="svn" type="text" placeholder="اسم الوجبة (مثلاً: غدا الجمعة)" autocomplete="off" maxlength="40">
+          <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
+          <ul class="svl" id="svl"></ul>
+        </div>
+      </details>      <details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
         <div class="pk">
           <input id="pkn" type="text" placeholder="اسم المنتج" autocomplete="off">
@@ -1355,15 +1401,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
         <div class="manual"><input id="m1n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m1c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
         <div class="manual"><input id="m2n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m2c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
       </details>
-      <p class="mtotal" id="mtotal"></p>
-      <details class="more" id="svbox" hidden>
-        <summary>احفظ هذه الوجبة</summary>
-        <div class="pk">
-          <input id="svn" type="text" placeholder="اسم الوجبة (مثلاً: غدا الجمعة)" autocomplete="off" maxlength="40">
-          <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
-          <ul class="svl" id="svl"></ul>
-        </div>
-      </details>
+      </div>
+
     </div>
 
     <div class="panel p-ins">
@@ -2642,12 +2681,12 @@ function renderMeal(){ setTimeout(syncCorr,0);
   el.innerHTML=mealItems.map(function(m,i){
     var top=m.fruit
       ?'<input type="text" data-f="name" placeholder="اسم الفاكهة (مثلاً تفاح)" value="'+esc(m.name)+'" autocomplete="off">'
-      :'<span><b>'+esc(m.disp)+'</b>'+(m.est?'<span class="est">تقدير</span>':'')+'<span class="u">'+esc(portionText(m))+'</span></span>';
+      :'<span><b>'+esc(m.disp)+'</b>'+(m.d?'<span class="u">'+esc(m.d)+'</span>':'')+'</span>';
     var q=itemQ(m);
     var rmax=Math.max(m.step>=1?20:6,Math.ceil(q*2)), sl='';
     var amount=m.mode==='g'
       ?'<div class="mi-big"><label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label></div>'
-      :'<div class="mi-lbl">عدد '+esc(m.u?unitLbl(m.u,3):'الوحدات')+'</div><div class="mi-big"><button type="button" class="rb" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button><div class="bigq"><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد">'
+      :'<div class="mi-big"><button type="button" class="rb" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button><div class="bigq"><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد">'
        +(m.alts&&m.alts.length?'<select class="unsel" data-unit="'+i+'" aria-label="الوحدة"><option value="0"'+(m.cur?'':' selected')+'>'+esc(m.bu)+'</option>'+m.alts.map(function(a,j){return '<option value="'+(j+1)+'"'+(m.cur===j+1?' selected':'')+'>'+esc(a.u)+'</option>'}).join('')+'</select>':'<span class="un" data-un>'+esc(m.u?unitLbl(m.u,m.q):'')+'</span>')
        +'</div><button type="button" class="rb" data-q="'+i+'" data-d="1" aria-label="أكثر">+</button></div>'
        +'<input type="range" class="mi-rng" data-rng min="0" max="'+rmax+'" step="'+(m.step>=1?1:m.step)+'" value="'+Math.min(m.q,rmax)+'" aria-label="الكمية">';
@@ -2655,7 +2694,7 @@ function renderMeal(){ setTimeout(syncCorr,0);
     if(m.w>0)opts+='<button type="button" class="link" data-mode="'+i+'">'+(m.mode==='g'?'بالعدد':'بالجرام')+'</button>';
     if(m.fruit||(m.editc&&!m.u))opts+='<label>كارب الوحدة <input type="text" inputmode="decimal" data-f="c" value="'+fmt(m.c)+'"> جم</label>';
     if(!m.fruit&&!m.editc)opts+='<button type="button" class="link" data-editc="'+i+'">'+(m.u?'عدّل الوحدة والكارب':'غيّر الكارب')+'</button>';
-    var st=srcTxt(m); if(st&&!m.fruit)opts+='<span class="srcl">'+esc(st)+'</span>';
+    var st=(m.src==='est'||m.src==='ov'||m.src==='my')?srcTxt(m):''; if(st&&!m.fruit)opts+='<span class="srcl">'+esc(st)+'</span>';
     var ed='';
     if(m.editc&&!m.fruit&&m.u){
       ed='<div class="mi-ed" data-ed="'+i+'">'
@@ -2700,13 +2739,13 @@ function addMyFoodsToDb(){
 }
 function applyOv(){var o=settings.foodOv||{}; DB.forEach(function(f){f.ov=o[f.n]||null})}
 function topFoods(){
-  var cnt={}; (typeof entries!=='undefined'?entries:[]).slice().sort(function(a,b){return new Date(b.ts)-new Date(a.ts)}).slice(0,120).forEach(function(e){(e.meal||[]).forEach(function(m){if(m.n)cnt[m.n]=(cnt[m.n]||0)+1})});
+  var cnt={}; (typeof entries!=='undefined'?entries:[]).slice().sort(function(a,b){return new Date(b.ts)-new Date(a.ts)}).filter(function(e){return slotGroup(e.slot)===curGrp()}).slice(0,120).forEach(function(e){(e.meal||[]).forEach(function(m){if(m.n)cnt[m.n]=(cnt[m.n]||0)+1})});
   return Object.keys(cnt).filter(function(n){return cnt[n]>=2}).sort(function(a,b){return cnt[b]-cnt[a]}).map(function(n){return DB.filter(function(f){return f.n===n&&f.k!=='fruit'})[0]}).filter(Boolean).slice(0,6);
 }
 function rebuildFoodPick(){
   var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
   DB.forEach(function(f,i){f.i=i});
-  var tf=topFoods(); if(tf.length){h+='<optgroup label="الأكثر استخدامًا">'+tf.map(function(f){return '<option value="'+f.i+'">'+esc(foodLabel(f))+'</option>'}).join('')+'</optgroup>'}
+  var tf=topFoods(); if(tf.length){h+='<optgroup label="الأكثر استخدامًا في '+(GROUPS.filter(function(x){return x[0]===curGrp()})[0]||[0,''])[1]+'">'+tf.map(function(f){return '<option value="'+f.i+'">'+esc(foodLabel(f))+'</option>'}).join('')+'</optgroup>'}
   DB.forEach(function(f,i){
     if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
     h+='<option value="'+i+'">'+esc(foodLabel(f))+'</option>';
@@ -2755,7 +2794,7 @@ $('#svadd').addEventListener('click',function(){
     var nm=m.fruit?m.name.trim():(m.fk||m.disp), q=itemQ(m);
     var o={n:nm.slice(0,60),q:r4(q),c:m.c}; if(m.u&&!m.fruit)o.u=m.u.slice(0,20); return o});
   if(!its.length){toast('أضف أصنافًا أولًا'); return}
-  settings.meals=(settings.meals||[]).filter(function(x){return x.n!==n}); settings.meals.push({n:n,items:its.slice(0,20)}); settings.meals=settings.meals.slice(-30);
+  settings.meals=(settings.meals||[]).filter(function(x){return x.n!==n}); settings.meals.push({n:n,g:curGrp(),items:its.slice(0,20)}); settings.meals=settings.meals.slice(-30);
   persistSettings(); $('#svn').value=''; renderPresets(); paintSaved(); toast('حُفظت الوجبة');
 });
 $('#svl').addEventListener('click',function(e){var b=e.target.closest('button[data-svdel]'); if(!b)return; settings.meals.splice(Number(b.dataset.svdel),1); persistSettings(); renderPresets(); paintSaved()});
@@ -2838,11 +2877,16 @@ $('#mlist').addEventListener('change',function(ev){var sel=ev.target; if(sel.dat
 function presetGroupOrder(){
   var g=slotGroup(curSlot()); var o=[g]; GROUPS.forEach(function(x){if(x[0]!==g)o.push(x[0])}); return o;
 }
+var foodGrp=null, foodGrpManual=false;
+function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
+function paintSeg(){var g=curGrp(); [].forEach.call(document.querySelectorAll('#mealseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.mg===g?'true':'false')})}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#mealseg button'); if(!b)return; foodGrp=b.dataset.mg; foodGrpManual=true; rebuildFoodPick()});
 function renderPresets(){
   var h='<option value="">اختر وجبة جاهزة…</option>';
   var sm=(settings.meals||[]);
-  if(sm.length)h+='<optgroup label="وجباتي المحفوظة">'+sm.map(function(x,i){var t=x.items.reduce(function(a,y){return a+(Number(y.q)||0)*(Number(y.c)||0)},0); return '<option value="m'+i+'">'+esc(x.n)+' — '+fmt(r1(t))+' جم</option>'}).join('')+'</optgroup>';
-  presetGroupOrder().forEach(function(g){
+  if(sm.some(function(x){return !x.g||x.g===curGrp()}))h+='<optgroup label="وجباتي المحفوظة">'+sm.map(function(x,i){if(x.g&&x.g!==curGrp())return '';var t=x.items.reduce(function(a,y){return a+(Number(y.q)||0)*(Number(y.c)||0)},0); return '<option value="m'+i+'">'+esc(x.n)+' — '+fmt(r1(t))+' جم</option>'}).join('')+'</optgroup>';
+  paintSeg();
+  presetGroupOrder().filter(function(g){return g===curGrp()}).forEach(function(g){
     var label=GROUPS.filter(function(x){return x[0]===g})[0][1], icr=icrForGroup(g), rows='';
     PRESETS.forEach(function(p,i){
       if(p[0]!==g)return;
@@ -2876,7 +2920,8 @@ function updateCalc(){
   var el=$('#calc'), slot=curSlot(), g=num($('#g').value); if(isNaN(g))g=null;
   var items=allMeal(), carbs=mealCarbs(items), has=items.length>0, before=BEFORE.indexOf(slot)>=0;
   var grp=slotGroup(slot), icr=icrForGroup(grp);
-  $('#mtotal').innerHTML=has?'كارب الوجبة: <b>'+fmt(r1(carbs))+' جم</b><span class="small" style="display:block;font-weight:400">تقدير تقريبي: أحجام الملاعق والأرغفة والحصص تختلف.</span>':'';
+  $('#mtotal').innerHTML=(has&&items.length>1)?'كارب الوجبة <b>'+fmt(r1(carbs))+' جم</b>':'';
+  var nt=$('#mnote'); if(nt)nt.hidden=!has;
   $('#icrbox').hidden=!(has&&settings.carbMode&&!icr);
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
@@ -3696,7 +3741,7 @@ $('#csv').addEventListener('click',function(){
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.xlsx'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
 });
-$('#slot').addEventListener('change',function(){syncCorr(); renderHint(prep()); renderPresets(); updateCalc()});
+$('#slot').addEventListener('change',function(){foodGrpManual=false; try{rebuildFoodPick()}catch(_){} syncCorr(); renderHint(prep()); renderPresets(); updateCalc()});
 $('#g').addEventListener('input',function(){gmsg(); updateCalc()});
 $('#t').addEventListener('input',function(){renderHint(prep())});
 $('#dt').addEventListener('change',updateCalc);
