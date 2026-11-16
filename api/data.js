@@ -136,7 +136,7 @@ function cleanSettings(s) {
     }
   }
   out.meals = Array.isArray(s.meals) ? s.meals.slice(-30).map(m => ({
-    n: T(m && m.n, 40),
+    n: T(m && m.n, 40), g: ['bf', 'ln', 'dn', 'sn'].includes(m && m.g) ? m.g : undefined,
     items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); return o; }).filter(x => x.n && x.q !== null && x.c !== null)
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
