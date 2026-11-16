@@ -2221,7 +2221,7 @@ document.addEventListener('click',function(e){
     var act=vb.dataset.visit;
     if(act==='done'){settings=Object.assign({},settings,{visitLast:toLocalInput(new Date()),visitNext:null}); persistSettings(); syncSettingsInputs(); render(); toast('سُجّلت آخر زيارة اليوم. اكتب موعد الزيارة القادمة.'); act='new'}
     else if(act==='skip'){try{localStorage.setItem('ysg:vmiss',settings.visitNext)}catch(x){} render(); return}
-    if(act==='new'){go('report'); setTimeout(function(){var v=$('#vnext'); if(v){v.scrollIntoView({block:'center'}); v.focus()}},150)}
+    if(act==='new'){gotoVisit()}
     return;
   }
   var uf=e.target.closest&&e.target.closest('[data-usefix]'); if(uf){$('#a').value=uf.dataset.usefix; syncInj(); return}
@@ -3868,10 +3868,15 @@ function clearNotifs(){
     });
   }).catch(function(){});
 }
+function gotoVisit(){
+  go('report');
+  [0,200,600].forEach(function(d){setTimeout(function(){var v=$('#vnext'); if(!v)return; for(var x=v.closest('details');x;x=x.parentElement&&x.parentElement.closest('details'))x.open=true; v.scrollIntoView({block:'center'}); try{v.focus({preventScroll:true})}catch(_){}},d)});
+}
 function openFromNotif(tag){
   var b=String(tag||'').split(':')[0]; if(!authed||role==='view')return;
   if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm()}
   else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); showForm()}
+  else if(b.indexOf('visit')===0){gotoVisit()}
 }
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',function(ev){if(ev.data&&ev.data.ntf)openFromNotif(ev.data.ntf)})}
 window.addEventListener('load',function(){try{var q=new URLSearchParams(location.search).get('n'); if(q){history.replaceState(null,'',location.pathname); var t0=0,iv=setInterval(function(){t0++; if(authed||t0>20){clearInterval(iv); if(authed)openFromNotif(q)}},300)}}catch(_){}});
