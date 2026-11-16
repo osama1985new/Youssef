@@ -1,5 +1,5 @@
 /* Service worker: offline shell + push reminders */
-const CACHE = 'ysg-shell-v1';
+const CACHE = 'ysg-shell-v2';
 const SHELL = ['/', '/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -54,9 +54,11 @@ self.addEventListener('push', e => {
         if (r.ok) msgs = (await r.json()).msgs || [];
       }
     } catch (err) {}
-    if (!msgs.length) msgs = [{ t: 'تذكير', b: 'افتح التطبيق علشان تشوف التذكير', tag: 'generic' }];
+    if (!msgs.length) msgs = [{ t: 'تذكير', b: 'افتح التطبيق لترى التذكير', tag: 'generic' }];
     for (const m of msgs) {
-      await self.registration.showNotification(m.t, { body: m.b, tag: m.tag || 'ysg', icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
+      let body = m.b; const old = m.at && Date.now() - m.at > 45 * 60e3;
+      if (old) { const t = new Date(m.at).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); body = m.b + ' (موعده ' + t + ')'; }
+      await self.registration.showNotification(m.t, { body, tag: (m.tag || 'ysg') + (m.at ? ':' + m.at : ''), timestamp: m.at || Date.now(), icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
     }
   })());
 });
@@ -64,8 +66,9 @@ self.addEventListener('push', e => {
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil((async () => {
+    const tag = e.notification.tag || '';
     const all = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const c of all) { if ('focus' in c) return c.focus(); }
-    return clients.openWindow('/');
+    for (const c of all) { if ('focus' in c) { try { c.postMessage({ ntf: tag }); } catch (err) {} return c.focus(); } }
+    return clients.openWindow('/?n=' + encodeURIComponent(tag));
   })());
 });
