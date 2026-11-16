@@ -91,14 +91,14 @@ function cleanEntry(e) {
       if (!m || typeof m !== 'object') return null;
       const q = numOrNull(m.q, 50), c = numOrNull(m.c, 500);
       if (q === undefined || c === undefined) return null;
-      const mo = { n: String(m.n || '').slice(0, 60), q: q === null ? 1 : q, c: c === null ? 0 : c }; if (m.u) mo.u = String(m.u).slice(0, 20); meal.push(mo);
+      const mo = { n: String(m.n || '').slice(0, 60), q: q === null ? 1 : q, c: c === null ? 0 : c }; if (m.u) mo.u = String(m.u).slice(0, 20); if (m.d) mo.d = String(m.d).slice(0, 40); if (m.x === 1 || m.x === 2) mo.x = m.x; meal.push(mo);
     }
   }
   const needle = e.needle === 'new' || e.needle === 'reuse' ? e.needle : null;
   const needleT = tresiba > 0 && (e.needleT === 'new' || e.needleT === 'reuse') ? e.needleT : null;
   const site = SITE_KEYS.includes(e.site) ? e.site : null;
   const tresibaTime = tresiba > 0 && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(e.tresibaTime || '')) ? e.tresibaTime : null;
-  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
+  return { id, ts: ts.toISOString(), slot: e.slot, glucose, apidra, tresiba, carbs, ...(e.cx === true ? { cx: true } : {}), meal, note: String(e.note || '').slice(0, 300), needle, needleT, site, supp, tresibaTime, corr: e.corr === true && apidra > 0, ketT, ketV };
 }
 
 const SETTING_RANGES = { low: [40, 120], high: [120, 400], plan: [0.5, 100], icr: [1, 150], icrBf: [1, 150], icrLn: [1, 150], icrDn: [1, 150], isf: [5, 400], target: [70, 200], maxd: [0.5, 50], a1cVal: [3, 20], ketHigh: [180, 500], ketHours: [1, 8], wt: [20, 250], ht: [100, 230], bps: [60, 230], bpd: [30, 150], stripN: [1, 500], needleN: [1, 1000], needleUsed: [0, 1000], stockA: [0, 50], stockT: [0, 50], primeU: [0, 10], stockDays: [1, 60], fixBf: [0.5, 100], fixLn: [0.5, 100], fixDn: [0.5, 100] };
@@ -135,9 +135,10 @@ function cleanSettings(s) {
         a: (Array.isArray(v.a) ? v.a : []).slice(0, 5).map(a => ({ u: T(a && a.u, 20), r: N(a && a.r, 1000) })).filter(a => a.u && a.r > 0) };
     }
   }
+  out.mealNo = Array.isArray(s.mealNo) ? s.mealNo.slice(-100).map(k => T(k, 200)).filter(Boolean) : [];
   out.meals = Array.isArray(s.meals) ? s.meals.slice(-30).map(m => ({
     n: T(m && m.n, 40), g: ['bf', 'ln', 'dn', 'sn'].includes(m && m.g) ? m.g : undefined,
-    items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); return o; }).filter(x => x.n && x.q !== null && x.c !== null)
+    items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); if (x && x.d) o.d = T(x.d, 40); if (x && (x.x === 1 || x.x === 2)) o.x = x.x; return o; }).filter(x => x.n && x.q !== null && x.c !== null)
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
   out.carbMode = s.carbMode === true;
