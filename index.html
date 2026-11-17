@@ -1331,8 +1331,8 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .mealseg button{border:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important; border-radius:12px!important; color:var(--c)!important; background:color-mix(in srgb,var(--c) 8%,transparent)!important; font-weight:600}
 .mealseg button+button{border-inline-start:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important}
 .mealseg button[aria-pressed=true]{background:color-mix(in srgb,var(--c) 22%,var(--surface))!important; border-color:var(--c)!important; color:var(--ink)!important; font-weight:700}
-.p-food[data-mg]{background:color-mix(in srgb,var(--mgc) 30%,var(--surface))!important; border:1.5px solid color-mix(in srgb,var(--mgc) 55%,transparent)!important; transition:background .2s}
-.p-food[data-mg] .fcard,.p-food[data-mg] .fitem,.p-food[data-mg] .fi{background:color-mix(in srgb,var(--mgc) 9%,var(--surface))!important}
+.p-food[data-mg]{background:color-mix(in srgb,var(--mgc) 11%,var(--surface))!important; border:1.5px solid color-mix(in srgb,var(--mgc) 40%,transparent)!important; transition:background .2s}
+.p-food[data-mg] .fcard,.p-food[data-mg] .fitem,.p-food[data-mg] .fi{background:color-mix(in srgb,var(--mgc) 5%,var(--surface))!important}
 
 html{touch-action:manipulation}
 input,select,textarea{font-size:max(16px,1em)}
@@ -2853,7 +2853,9 @@ $('#pkadd').addEventListener('click',function(){
 function paintSaved(){
   var box=$('#svbox'); if(!box)return;
   var has=mealItems.some(function(m){return !m.fruit||m.name}), sm=settings.meals||[];
-  box.hidden=!(has&&role!=='view');
+  var snap=mealItems.filter(function(m){return m.fruit?m.name.trim():true}).map(function(m){return {n:m.fruit?m.name.trim():(m.fk||m.disp),q:itemQ(m),c:m.c==null?0:m.c,x:m.c==null?1:0}});
+  var dup=false; try{var cs=coreSet(snap); dup=cs.length&&sm.some(function(x){return sameSet(coreSet(x.items),cs)})}catch(_){}
+  box.hidden=!(has&&role!=='view')||dup;
   $('#svl').innerHTML=sm.map(function(x,i){return '<li><span>'+esc(x.n)+'</span><button type="button" class="link" data-svdel="'+i+'">حذف</button></li>'}).join('');
 }
 $('#svadd').addEventListener('click',function(){
