@@ -1338,6 +1338,11 @@ html{touch-action:manipulation}
 input,select,textarea{font-size:max(16px,1em)}
 .mealseg button[aria-pressed=true]{background:var(--c)!important; color:#fff!important; border-color:var(--c)!important; font-weight:800; box-shadow:0 2px 8px color-mix(in srgb,var(--c) 45%,transparent)}
 .mealseg button:not([aria-pressed=true]){opacity:.8}
+.calc{text-align:center}
+.calc .eyebrow{text-align:center}
+.calc .calcbig{font-family:var(--f-display); font-size:26px!important; font-weight:500!important; text-align:center; display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1.2}
+.calc .calcbig small{font-size:14px}
+.p-ins[hidden],.p-extra[hidden],#calc[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -2214,10 +2219,10 @@ function syncCorr(){
   var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
-  document.querySelector('.p-ins').hidden=!showIns;
+  document.querySelector('.p-ins').hidden=!showIns||isSnack();
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
-  var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId);
+  var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId)||isSnack();
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
   if(imode==='tres'&&lastMode!=='tres'&&!editingId){
     if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
@@ -2237,7 +2242,7 @@ function setMode(m){
   keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other'; if(m==='tres')$('#slot').value='bed';
   setSlotOptions(); if(m==='read'&&PREMEAL.indexOf(curSlot())>=0)$('#slot').value='other';
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
-  syncInj(); renderHint(prep()); updateCalc();
+  try{applySnack()}catch(_){} syncInj(); renderHint(prep()); updateCalc();
 }
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
@@ -3046,7 +3051,19 @@ function presetGroupOrder(){
 }
 var foodGrp=null, foodGrpManual=false;
 function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
-function paintSeg(){var g=curGrp(); var pf=document.querySelector('.p-food'); if(pf)pf.dataset.mg=g; [].forEach.call(document.querySelectorAll('#mealseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.mg===g?'true':'false')})}
+function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
+function applySnack(){
+  var sn=isSnack();
+  var pi=document.querySelector('.p-ins'), pe=document.querySelector('.p-extra');
+  if(pi)pi.hidden=sn; if(pe)pe.hidden=sn;
+  var c=$('#calc'); if(c)c.hidden=sn;
+  if(sn){
+    if($('#a').value){$('#a').value=''; autoA=null}
+    [].forEach.call(document.querySelectorAll('#supp .chip[aria-pressed=true]'),function(b){b.setAttribute('aria-pressed','false')}); autoSup=[];
+    try{syncInj()}catch(_){}
+  }
+}
+function paintSeg(){try{applySnack()}catch(_){} var g=curGrp(); var pf=document.querySelector('.p-food'); if(pf)pf.dataset.mg=g; [].forEach.call(document.querySelectorAll('#mealseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.mg===g?'true':'false')})}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#mealseg button'); if(!b)return; foodGrp=b.dataset.mg; foodGrpManual=true; rebuildFoodPick()});
 function renderPresets(){
   var h='<option value="">اختر وجبة جاهزة…</option>';
