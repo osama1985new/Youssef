@@ -1343,6 +1343,30 @@ input,select,textarea{font-size:max(16px,1em)}
 .calc .calcbig{font-family:var(--f-display); font-size:26px!important; font-weight:500!important; text-align:center; display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1.2}
 .calc .calcbig small{font-size:14px}
 .p-ins[hidden],.p-extra[hidden],#calc[hidden]{display:none!important}
+.nw{display:flex; flex-direction:column; gap:10px; padding:4px 2px 2px}
+.nw input[type=text]{width:100%}
+.nwseg{display:flex; gap:6px}
+.nwseg button{flex:1; min-height:42px; border:1.5px solid var(--line); border-radius:12px; background:var(--surface); color:var(--muted); font:inherit; font-size:14px; font-weight:600}
+.nwseg button[aria-pressed=true]{border-color:var(--mgc,var(--brand,#2f8573)); color:var(--ink); background:color-mix(in srgb,var(--mgc,#2f8573) 14%,var(--surface))}
+.nwf{display:flex; flex-direction:column; gap:6px}
+.nwf label{font-size:13px; color:var(--muted)}
+.nwr{margin:0; min-height:1.3em; font-size:14px; color:var(--ink); font-weight:600}
+.nwr.warn{color:var(--muted); font-weight:400; font-size:13px}
+.fres .addnew{margin-top:6px; width:100%; min-height:44px; border:1.5px dashed var(--line); border-radius:12px; background:transparent; color:var(--ink); font:inherit; font-weight:600}
+.bpst{margin:2px 0 8px; min-height:1.4em; font-size:15px; font-weight:700}
+.bpst small{font-weight:400; color:var(--muted)}
+.bpst.ok{color:var(--ok,#2f8573)} .bpst.mid{color:#b07a1f} .bpst.hi{color:#b5532f} .bpst.lo{color:#4a6fa5}
+.bpl{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px}
+.bpl li{display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:10px}
+.bpl li b{font-weight:700} .bpl li small{color:var(--muted)}
+@keyframes tabin{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+[data-tab]:not(.tabhide){animation:tabin .22s ease-out}
+@keyframes liin{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+#mlist>li.mi{animation:liin .18s ease-out}
+.rb,.nwseg button,.mealseg button,button.ghost{transition:background-color .15s,border-color .15s,box-shadow .15s,transform .1s}
+.rb:active,button.ghost:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){[data-tab]:not(.tabhide),#mlist>li.mi{animation:none}.rb,button.ghost{transition:none}}
+.toast.ok::before{content:'✓'; margin-inline-end:8px; font-weight:700}
 </style>
 </head>
 <body>
@@ -1414,7 +1438,23 @@ input,select,textarea{font-size:max(16px,1em)}
           <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
           <ul class="svl" id="svl"></ul>
         </div>
-      </details>      <details class="more" id="pkbox">
+      </details>      <details class="more" id="newbox">
+        <summary>صنف غير موجود في القائمة</summary>
+        <div class="nw">
+          <input id="nwn" type="text" list="nwlist" placeholder="اسم الصنف" autocomplete="off" maxlength="40">
+          <datalist id="nwlist"></datalist>
+          <div class="nwseg" id="nwseg" role="group" aria-label="طريقة الإدخال"><button type="button" data-nm="a" aria-pressed="true">كارب الصنف</button><button type="button" data-nm="b" aria-pressed="false">من ملصق المنتج</button></div>
+          <div class="nwf" id="nwA"><label for="nwc">كارب الصنف كله (جم)</label><input id="nwc" type="text" inputmode="decimal" placeholder="اتركه فاضيًا لو لا تعرفه" autocomplete="off"></div>
+          <div class="nwf" id="nwB" hidden>
+            <div class="two cen"><div class="field"><label for="nwc100">كارب لكل 100 جم</label><input id="nwc100" type="text" inputmode="decimal" placeholder="من الملصق" autocomplete="off"></div>
+            <div class="field"><label for="nwg">الكمية (جم)</label><input id="nwg" type="text" inputmode="decimal" placeholder="مثلاً 40" autocomplete="off"></div></div>
+          </div>
+          <p class="nwr" id="nwr" aria-live="polite"></p>
+          <label class="cgmrow"><input type="checkbox" id="nws" checked><span>احفظه لأستخدمه لاحقًا</span></label>
+          <button type="button" class="ghost" id="nwadd">أضف إلى الوجبة</button>
+        </div>
+      </details>
+      <div hidden id="oldadd"><details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
         <div class="pk">
           <input id="pkn" type="text" placeholder="اسم المنتج" autocomplete="off">
@@ -1431,7 +1471,7 @@ input,select,textarea{font-size:max(16px,1em)}
         <summary>صنف آخر غير موجود في القائمة</summary>
         <div class="manual"><input id="m1n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m1c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
         <div class="manual"><input id="m2n" type="text" placeholder="اسم الصنف" autocomplete="off"><input id="m2c" type="text" inputmode="decimal" placeholder="كارب جم" autocomplete="off"></div>
-      </details>
+      </details></div>
       </div>
 
     </div>
@@ -1540,6 +1580,9 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field"><label for="sbps">الضغط الانقباضي (الكبير)</label><input id="sbps" type="text" inputmode="numeric" placeholder="مثلاً 115"></div>
       <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
     </div>
+    <p class="bpst" id="bpst" aria-live="polite"></p>
+    <button type="button" class="ghost" id="bplog">سجّل قراءة الضغط الآن</button>
+    <ul class="bpl" id="bpl"></ul>
     <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
     <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن الآن</label><div id="sage" class="agebox">—</div></div></div>
     <h3>زيارة الطبيب</h3>
@@ -1727,7 +1770,7 @@ function pushFood(o){o.i=DB.length; DB.push(o); if(o.k)BY[o.k]=o}
 /* core list: key|name|portion|carbs per portion|grams per portion|e (estimate) */
 var CORE_TXT=[
 'qar|جبنة قريش|ربع كوب (30 جم)|0',
-'egg|2 بيضة|2 بيضة|0',
+'egg|بيضة|بيضة|0',
 'sal|سلطة|كوب|5',
 'ful|فول مدمس|4 ملاعق (75 جم)|15|75',
 'bread|نص رغيف بلدي|نص رغيف|30',
@@ -1758,6 +1801,7 @@ var CORE_TXT=[
 'molo|ملوخية|كوب (187 مل)|15|187'
 ];
 CORE_TXT.forEach(function(l){var p=l.split('|'); pushFood({k:p[0],g:'أكلك المعتاد',n:p[1],d:p[2],c:Number(p[3]),w:Number(p[4])||0,e:p[5]==='e'})});
+BY.egg.un={u:'بيضة',s:1,d:'بيضة'};
 /* "point" tables: name|description|grams for one point (15 g carbs) */
 function pts(g,t){t.split('\n').forEach(function(l){l=l.trim(); if(!l)return; var p=l.split('|'); pushFood({g:g,n:p[0],d:p[1]||'',c:15,w:Number(p[2])||0})})}
 /* tables with carbs per piece: name|description|carbs|e */
@@ -1809,10 +1853,10 @@ DB.forEach(function(f){if(f.g==='مخبوزات العيد'){var m=/^(\d+)/.exec
 
 /* ready meals: [group, name, [[key, portions], ...]] */
 var PRESETS=[
- ['bf','فول وبيض وعيش',[['ful',2],['egg',1],['sal',1],['bread',1]]],
- ['bf','قريش وبيض وعيش',[['qar',1],['egg',1],['sal',1],['bread',1]]],
+ ['bf','فول وبيض وعيش',[['ful',2],['egg',2],['sal',1],['bread',1]]],
+ ['bf','قريش وبيض وعيش',[['qar',1],['egg',2],['sal',1],['bread',1]]],
  ['bf','زبادي وفاكهة وعيش',[['yog',2],['fruit',1],['bread4',1]]],
- ['bf','جبنة وبيض وسلطة',[['cheese',1],['egg',1],['sal',1],['bread4',1]]],
+ ['bf','جبنة وبيض وسلطة',[['cheese',1],['egg',2],['sal',1],['bread4',1]]],
  ['ln','فرخة مشوية ورز وخضار',[['chick',1],['rice',3],['sote',1],['sal',1]]],
  ['ln','سمك ورز بسمتي وسلطة',[['fish',1],['basm',3],['sal',1],['veg',1]]],
  ['ln','كبدة وبطاطس مشوية',[['liver',1],['pot',2],['sal',1]]],
@@ -1822,7 +1866,7 @@ var PRESETS=[
  ['ln','مسقعة وعيش',[['mosa',1],['bread4',2],['sal',1]]],
  ['ln','مكرونة بشاميل وسلطة',[['bech',3],['sal',1]]],
  ['dn','تونة وسلطة وعيش',[['tuna',1],['sal',1],['bread4',1]]],
- ['dn','جبنة وبيض (كارب قليل)',[['cheese',1],['egg',1],['sal',1]]],
+ ['dn','جبنة وبيض (كارب قليل)',[['cheese',1],['egg',2],['sal',1]]],
  ['dn','لحمة وخضار سوتيه',[['meat',1],['sote',2],['sal',1]]],
  ['dn','زبادي وقريش وسلطة',[['yog',1],['qar',1],['sal',1]]],
  ['dn','كريب وجبنة وسلطة',[['crepe',2],['cheese',1],['sal',1]]],
@@ -1911,7 +1955,7 @@ function prep(){
   return entries.filter(function(e){return e&&e.ts}).map(function(e){var o=Object.assign({},e); o.d=new Date(e.ts); return o})
     .filter(function(e){return !isNaN(e.d)}).sort(function(a,b){return a.d-b.d});
 }
-var tt; function toast(m){var el=$('#toast'); el.textContent=m; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){el.classList.remove('show')},2800)}
+var tt; function toast(m){var el=$('#toast'); el.textContent=m; el.classList.toggle('ok',/^(حُفظ|حُفظت|سُجّل|أُضيف|تم)/.test(m)); el.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){el.classList.remove('show')},2800)}
 
 function adviceFor(v){
   if(v<54)return 'هبوط شديد. اتبع خطة الطبيب للهبوط فورًا، وإن كان الطفل غير واعٍ أو لا يستطيع البلع فاطلب الإسعاف.';
@@ -2803,12 +2847,65 @@ function nrm(t){return String(t||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/
     DB.forEach(function(f){var hay=nrm(f.n+' '+(f.g||'')); if(parts.every(function(p){return hay.indexOf(p)>=0}))hits.push(f)});
     hits.sort(function(a,b){var sa=nrm(a.n).indexOf(parts[0])===0?0:1, sb=nrm(b.n).indexOf(parts[0])===0?0:1; return sa-sb});
     hits=hits.slice(0,8);
-    box.innerHTML=hits.length?hits.map(function(f){return '<li><button type="button" data-fi="'+f.i+'"><b>'+esc(f.n)+'</b><span>'+esc(foodLabel(f).slice(f.n.length+3))+'</span></button></li>'}).join(''):'<li class="none">لا يوجد. جرّب كلمة أخرى أو أضفه كمنتج معلّب.</li>';
+    box.innerHTML=hits.length?hits.map(function(f){return '<li><button type="button" data-fi="'+f.i+'"><b>'+esc(f.n)+'</b><span>'+esc(foodLabel(f).slice(f.n.length+3))+'</span></button></li>'}).join(''):'<li class="none">لا يوجد في القائمة.</li>';
+    box.innerHTML+='<li><button type="button" class="addnew" data-addnew="1">+ أضف «'+esc(inp.value.trim().slice(0,30))+'» كصنف جديد</button></li>';
     box.hidden=false;
   }
   inp.addEventListener('input',show);
-  box.addEventListener('click',function(e){var b=e.target.closest('button[data-fi]'); if(!b)return; addFood(DB[Number(b.dataset.fi)]); inp.value=''; box.hidden=true; box.innerHTML=''});
+  box.addEventListener('click',function(e){var an=e.target.closest('button[data-addnew]'); if(an){var nm=inp.value.trim(); inp.value=''; box.hidden=true; box.innerHTML=''; nwOpen(nm); return} var b=e.target.closest('button[data-fi]'); if(!b)return; addFood(DB[Number(b.dataset.fi)]); inp.value=''; box.hidden=true; box.innerHTML=''});
 })();
+/* ====== unified "item not in list" box (replaces packaged-product + other-item boxes) ====== */
+var nwMode='a';
+function nwPaint(){
+  [].forEach.call(document.querySelectorAll('#nwseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.nm===nwMode?'true':'false')});
+  $('#nwA').hidden=nwMode!=='a'; $('#nwB').hidden=nwMode!=='b';
+  var r=$('#nwr'); r.className='nwr'; r.textContent='';
+  if(nwMode==='a'){
+    var c=num($('#nwc').value);
+    if($('#nwc').value.trim()===''){r.className='nwr warn'; r.textContent='بدون كارب يُحسب الصنف «غير مكتمل» ولا يدخل في الإجمالي.'}
+    else if(isNaN(c)||c<0){r.className='nwr warn'; r.textContent='اكتب الكارب رقمًا.'}
+    else r.textContent='الكارب: '+fmt(c)+' جم';
+  }else{
+    var c1=num($('#nwc100').value), g=num($('#nwg').value);
+    if(c1!=null&&g!=null&&!isNaN(c1)&&!isNaN(g)&&c1>=0&&g>0)r.textContent='الكارب: '+fmt(r1(c1*g/100))+' جم';
+  }
+}
+function nwFillList(){var dl=$('#nwlist'); if(!dl)return; dl.innerHTML=(settings.myFoods||[]).map(function(m){return '<option value="'+esc(m.n)+'">'}).join('')}
+function nwOpen(name){
+  var d=$('#newbox'); d.open=true; if(name)$('#nwn').value=name; nwFillList(); nwMatch(); nwPaint();
+  setTimeout(function(){d.scrollIntoView({block:'center',behavior:'smooth'}); var t=$(nwMode==='a'?'#nwc':'#nwc100'); if(t&&$('#nwn').value)try{t.focus({preventScroll:true})}catch(_){}},60);
+}
+/* a name that matches a saved item fills its carb */
+function nwMatch(){
+  var n=$('#nwn').value.trim(); if(!n)return;
+  var m=(settings.myFoods||[]).filter(function(x){return x.n===n})[0]; if(!m)return;
+  if(m.u){nwMode='a'; $('#nwc').value=fmt(Number(m.c)||0)} else {nwMode='b'; $('#nwc100').value=fmt(Number(m.c)||0)}
+}
+$('#nwseg').addEventListener('click',function(e){var b=e.target.closest('button[data-nm]'); if(!b)return; nwMode=b.dataset.nm; nwPaint()});
+['nwc','nwc100','nwg'].forEach(function(i){$('#'+i).addEventListener('input',nwPaint)});
+$('#nwn').addEventListener('change',function(){nwMatch(); nwPaint()});
+$('#newbox').addEventListener('toggle',function(){if(this.open)nwFillList()});
+$('#nwadd').addEventListener('click',function(){
+  var n=$('#nwn').value.trim(); if(!n){toast('اكتب اسم الصنف'); $('#nwn').focus(); return}
+  var save=$('#nws').checked&&role!=='view', item;
+  if(nwMode==='a'){
+    var raw=$('#nwc').value.trim(), c=raw===''?null:num(raw);
+    if(raw!==''&&(isNaN(c)||c<0)){toast('اكتب الكارب رقمًا'); $('#nwc').focus(); return}
+    var f={k:'nw'+Date.now(),n:n.slice(0,40),d:'',c:c==null?0:c,w:0,un:{u:'حصة',s:1,d:''}};
+    item=newItem(f,1); if(c==null){item.c=null; item.bc=null}
+    item.d='كارب مُدخل يدويًا'; item.dunk=false; item.src='man';
+    mealItems.push(item);
+    if(save&&c!=null){settings.myFoods=(settings.myFoods||[]).filter(function(m){return m.n!==f.n}); settings.myFoods.push({n:f.n,c:c,u:'حصة',s:1}); settings.myFoods=settings.myFoods.slice(-60); persistSettings(); addMyFoodsToDb(); rebuildFoodPick()}
+  }else{
+    var c1=num($('#nwc100').value), g=num($('#nwg').value);
+    if(c1==null||isNaN(c1)||c1<0||!(g>0)){toast('اكتب كارب 100 جم والكمية'); return}
+    mealItems.push({k:'pk'+Date.now(),name:n,disp:n,d:'لكل 100 جم (من الملصق)',w:100,c:c1,est:false,q:g/100,mode:'g',gr:g,fruit:false,editc:false});
+    if(save){settings.myFoods=(settings.myFoods||[]).filter(function(m){return m.n!==n}); settings.myFoods.push({n:n.slice(0,40),c:c1}); settings.myFoods=settings.myFoods.slice(-60); persistSettings(); addMyFoodsToDb(); rebuildFoodPick()}
+  }
+  ['nwn','nwc','nwc100','nwg'].forEach(function(i){$('#'+i).value=''}); nwPaint();
+  $('#newbox').open=false; renderMeal(); updateCalc(); toast('أُضيف '+n);
+});
+nwPaint();
 function addMyFoodsToDb(){
   DB=DB.filter(function(f){return f.g!=='أصنافي'});
   (settings.myFoods||[]).forEach(function(m){
@@ -2971,6 +3068,7 @@ document.addEventListener('click',function(e){
 
 /* ====== smart suggestions: last meal for this slot + most used foods ====== */
 function savedItem(m){
+  if(m&&m.n==='2 بيضة'&&!m.x){m=Object.assign({},m,{n:'بيضة',q:(Number(m.q)||1)*2,u:'بيضة'})}
   var f=m.x?null:DB.filter(function(x){return x.n===m.n&&!x.fruit})[0], q=Number(m.q)||1;
   if(f){var it=newItem(f,1); if(m.u){ if(it.u===m.u){it.q=q; return it} var ai=it.alts.map(function(a){return a.u}).indexOf(m.u); if(ai>=0){setUnit(it,ai+1); it.q=q; return it} } else if(!m.fk){it=newItem(f,q); return it}}
   return {k:'sv'+Math.random().toString(36).slice(2,7),fk:m.n,name:m.n,disp:m.n,d:m.d||'',dunk:!m.d,drev:'',raw:'',d0:m.x===2?'':(m.d||''),pend:m.x===2,w:0,c:m.x===1?null:(Number(m.c)||0),est:false,q:q,mode:'n',gr:0,fruit:false,editc:false,u:m.u||'',step:0.5,src:'',bu:m.u||'',bc:m.x===1?null:(Number(m.c)||0),bw:0,alts:[],cur:0};
@@ -3354,12 +3452,43 @@ function readSettings(){
 var setDirty=false;
 function markDirty(v){setDirty=v; updateSaveBar()}
 function updateSaveBar(){var b=$('#savebar'); if(!b)return; b.hidden=!(setDirty&&authed&&(tab==='set'||tab==='report'))}
+/* ====== blood pressure: reference classification + log (informational, not a diagnosis) ====== */
+function bpClass(sy,di){
+  if(!(sy>0&&di>0))return null;
+  if(sy<90||di<60)return {t:'منخفض',c:'lo'};
+  if(sy>=140||di>=90)return {t:'مرتفع',c:'hi'};
+  if(sy>=130||di>=80)return {t:'مرتفع قليلًا',c:'mid'};
+  if(sy>=120)return {t:'أعلى قليلًا من الطبيعي',c:'mid'};
+  return {t:'طبيعي',c:'ok'};
+}
+function bpLive(){
+  var el=$('#bpst'); if(!el)return;
+  var sy=num($('#sbps').value), di=num($('#sbpd').value), k=(sy&&di&&sy>di)?bpClass(sy,di):null;
+  el.className='bpst'+(k?' '+k.c:''); el.innerHTML=k?(k.t+' <small>· تصنيف إرشادي للمراهقين، والقرار للطبيب</small>'):'';
+}
+function bpPaint(){
+  bpLive();
+  var ul=$('#bpl'); if(!ul)return;
+  var L=(settings.bpLog||[]).slice(-5).reverse();
+  ul.innerHTML=L.map(function(r){var k=bpClass(r.s,r.d), d=new Date(r.t); return '<li><span><b>'+r.s+'/'+r.d+'</b> <small>'+dayFull(d)+'</small></span><span class="bpst '+(k?k.c:'')+'" style="margin:0;min-height:0;font-size:14px">'+(k?k.t:'')+'</span></li>'}).join('');
+}
+['sbps','sbpd'].forEach(function(i){$('#'+i).addEventListener('input',bpLive)});
+$('#bplog').addEventListener('click',function(){
+  if(role==='view'){toast('للعرض فقط'); return}
+  var sy=num($('#sbps').value), di=num($('#sbpd').value);
+  if(!(sy>=60&&sy<=260&&di>=30&&di<=160&&sy>di)){toast('اكتب الضغط الكبير والصغير بشكل صحيح'); return}
+  if(mode==='cloud'&&!settingsLoaded){refresh(); toast('الإعدادات قيد التحميل. جرّب بعد لحظة'); return}
+  settings.bpLog=(settings.bpLog||[]).concat([{t:new Date().toISOString(),s:Math.round(sy),d:Math.round(di)}]).slice(-60);
+  settings.bps=Math.round(sy); settings.bpd=Math.round(di);
+  persistSettings(); bpPaint(); try{render()}catch(_){}
+  var k=bpClass(sy,di); toast('سُجّل الضغط '+Math.round(sy)+'/'+Math.round(di)+(k?' · '+k.t:''));
+});
 function onSetChange(){
   if(mode==='cloud'&&!settingsLoaded){refresh(); return}
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
+  var at={bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
@@ -3406,7 +3535,7 @@ function reportInfo(){
   if(s.wt)t.push(['الوزن',fmt(s.wt)+' <small>كجم</small>']);
   if(s.ht)t.push(['الطول',fmt(s.ht)+' <small>سم</small>']);
   if(s.wt&&s.ht)t.push(['مؤشر كتلة الجسم',fmt(r1(s.wt/Math.pow(s.ht/100,2)))+' <small>BMI</small>']);
-  if(s.bps&&s.bpd)t.push(['ضغط الدم',s.bps+'/'+s.bpd+' <small>mmHg</small>']);
+  if(s.bps&&s.bpd){var bk=bpClass(s.bps,s.bpd); t.push(['ضغط الدم',s.bps+'/'+s.bpd+' <small>mmHg</small>'+(bk?' <small>· '+bk.t+'</small>':'')])}
   var h='<h3>بيانات أساسية</h3>';
   if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. يُقيَّم مؤشر الكتلة للمراهقين بمنحنيات النمو عند الطبيب.':'')+'</p>':'');
   else h+='<p class="cap">الوزن والطول والضغط: لم تُسجَّل بعد.</p>';
@@ -3651,7 +3780,7 @@ var _mfSig='';
 function render(){try{var sg0=JSON.stringify([settings.myFoods||[],settings.foodOv||{},(typeof entries!=='undefined'?entries.length:0)]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
   try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
-  try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
   rangeNote();
 }
