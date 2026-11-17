@@ -135,6 +135,7 @@ function cleanSettings(s) {
         a: (Array.isArray(v.a) ? v.a : []).slice(0, 5).map(a => ({ u: T(a && a.u, 20), r: N(a && a.r, 1000) })).filter(a => a.u && a.r > 0) };
     }
   }
+  out.mealBF = s.mealBF === true;
   out.mealNo = Array.isArray(s.mealNo) ? s.mealNo.slice(-100).map(k => T(k, 200)).filter(Boolean) : [];
   out.meals = Array.isArray(s.meals) ? s.meals.slice(-30).map(m => ({
     n: T(m && m.n, 40), g: ['bf', 'ln', 'dn', 'sn'].includes(m && m.g) ? m.g : undefined,
