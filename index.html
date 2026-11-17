@@ -2219,7 +2219,7 @@ function syncCorr(){
   var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
-  document.querySelector('.p-ins').hidden=!showIns||isSnack();
+  document.querySelector('.p-ins').hidden=!showIns||(isSnack()&&!settings.carbMode);
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
   var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId)||isSnack();
@@ -2231,7 +2231,7 @@ function syncCorr(){
   lastMode=imode;
   var mh=$('#modehint'), ns2=imode==='tres'?nextSite():null;
   mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة ترسيبا كانت في: '+ns2.last+'. وُضع المكان التالي للتدوير، غيّره إن أردت.';
-  $('#calc').hidden=imode!=='meal'; var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
+  $('#calc').hidden=imode!=='meal'||isSnack(); var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
 var modeTouched=false;
 function setMode(m){
@@ -3053,12 +3053,14 @@ var foodGrp=null, foodGrpManual=false;
 function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
 function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
 function applySnack(){
-  var sn=isSnack();
-  var pi=document.querySelector('.p-ins'), pe=document.querySelector('.p-extra');
-  if(pi)pi.hidden=sn; if(pe)pe.hidden=sn;
-  var c=$('#calc'); if(c)c.hidden=sn;
+  var sn=isSnack(), pe=document.querySelector('.p-extra'), c=$('#calc'), pi=document.querySelector('.p-ins');
+  if(pe)pe.hidden=sn||(imode==='corr'&&!editingId); if(c)c.hidden=sn;
+  var hideIns=sn&&!settings.carbMode;
+  if(pi&&hideIns)pi.hidden=true;
+  if(!hideIns&&pi&&imode==='meal')pi.hidden=false;
   if(sn){
-    if($('#a').value){$('#a').value=''; autoA=null}
+    if(hideIns&&$('#a').value){$('#a').value=''; autoA=null}
+    else if(autoA!=null&&$('#a').value===autoA){$('#a').value=''; autoA=null}
     [].forEach.call(document.querySelectorAll('#supp .chip[aria-pressed=true]'),function(b){b.setAttribute('aria-pressed','false')}); autoSup=[];
     try{syncInj()}catch(_){}
   }
@@ -3110,6 +3112,7 @@ function updateCalc(){
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
   var fixedM=!settings.carbMode;
+  el.hidden=isSnack();
   if(!(before&&(has||fixedM))&&!hiG){el.innerHTML=''; return}
   var h='<div class="calc"><p class="eyebrow">'+(fixedM?'الجرعة الثابتة المحدّدة من الطبيب':'أبيدرا المقترحة')+'</p>';
   if(g!=null&&g>0&&g<settings.low){
@@ -3133,7 +3136,7 @@ function updateCalc(){
   else if(cc&&cc.u>0)corrH='<div class="calc corr"><p class="eyebrow">جرعة التصحيح (جدول الطبيب)</p><p class="calcbig">'+fmt(cc.u)+'<small>وحدة أبيدرا</small></p></div>';
   if(total==null&&!corrH&&!hiG&&!(fixedM&&before)&&!(icr&&ui.length&&before)){el.innerHTML=''; return}
   h+='</div>'+corrH;
-  el.innerHTML=h;
+  el.innerHTML=h; el.hidden=isSnack();
 }
 
 /* ---------- report ---------- */
@@ -3964,7 +3967,7 @@ $('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
-  var slot=imode==='nofood'?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=($('#n').value||'').trim();
+  var slot=(imode==='nofood'||(isSnack()&&!editingId))?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=($('#n').value||'').trim();
   if(!editingId)setNow();
   var d=new Date($('#dt').value);
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
