@@ -2259,7 +2259,19 @@ $('#modebar').addEventListener('click',function(e){var b=e.target.closest('butto
   setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
 function updateAplan(){var el=$('#aplan'); if(!el)return; el.innerHTML=''; return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
-function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+var lastLinkSlot=null, autoA=null, autoSup=[];
+var SLOT_SUPP={bf_after:['omega','milga'],ln_after:['calmag','d3']}, SLOT_FIX={bf_before:'fixBf',ln_before:'fixLn',dn_before:'fixDn'};
+function slotLink(){
+  if(editingId){lastLinkSlot=null; return}
+  var sl=$('#slot').value; if(sl===lastLinkSlot)return; lastLinkSlot=sl;
+  var a=$('#a');
+  if(autoA!=null&&a.value===autoA){a.value=''} autoA=null;
+  var k=SLOT_FIX[sl], v=k?settings[k]:null;
+  if(imode==='meal'&&v>0&&role!=='view'&&a.value===''){a.value=String(v); autoA=a.value}
+  autoSup.forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled)b.setAttribute('aria-pressed','false')}); autoSup=[];
+  (SLOT_SUPP[sl]||[]).forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled&&b.getAttribute('aria-pressed')!=='true'){b.setAttribute('aria-pressed','true'); autoSup.push(x)}});
+}
+function syncInj(){try{slotLink()}catch(_){} updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
 function syncInjKey(){updateAplan(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
@@ -2278,7 +2290,7 @@ function foodLabel(f){
   $('#foodpick').innerHTML=h+'</optgroup>';
 })();
 (function(){var h='';for(var i=0;i<5;i++)h+='<div class="scalerow"><input type="text" inputmode="numeric" data-sc="'+i+'a" placeholder="من"><input type="text" inputmode="numeric" data-sc="'+i+'b" placeholder="إلى"><input type="text" inputmode="decimal" data-sc="'+i+'u" placeholder="وحدات"></div>';$('#sscale').innerHTML=h})();
-function setNow(){$('#dt').value=toLocalInput(new Date())}
+function setNow(){$("#dt").value=toLocalInput(new Date()); lastLinkSlot=null; autoA=null; autoSup=[]}
 setNow();
 function tickClock(){var d=new Date(); $('#today').innerHTML=esc(dayLong(d))+'<span class="clk">'+esc(timeStr(d))+'</span>'}
 tickClock(); setInterval(tickClock,15000);
@@ -3898,7 +3910,7 @@ $('#csv').addEventListener('click',function(){
   a.download='sugar-log-'+$('#rfrom').value+'_'+$('#rto').value+'.xlsx'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
 });
-$('#slot').addEventListener('change',function(){foodGrpManual=false; try{rebuildFoodPick()}catch(_){} syncCorr(); renderHint(prep()); renderPresets(); updateCalc()});
+$('#slot').addEventListener('change',function(){foodGrpManual=false; try{slotLink(); syncInj()}catch(_){} try{rebuildFoodPick()}catch(_){} syncCorr(); renderHint(prep()); renderPresets(); updateCalc()});
 $('#g').addEventListener('input',function(){gmsg(); updateCalc()});
 $('#t').addEventListener('input',function(){renderHint(prep())});
 $('#dt').addEventListener('change',updateCalc);
