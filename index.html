@@ -2272,7 +2272,7 @@ function slotLink(){
   var a=$('#a');
   if(autoA!=null&&a.value===autoA){a.value=''} autoA=null;
   var k=SLOT_FIX[sl], v=k?settings[k]:null;
-  if(imode==='meal'&&v>0&&role!=='view'&&a.value===''){a.value=String(v); autoA=a.value}
+  if(imode==='meal'&&v>0&&role!=='view'&&a.value===''&&!isSnack()&&!settings.carbMode){a.value=String(v); autoA=a.value}
   autoSup.forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled)b.setAttribute('aria-pressed','false')}); autoSup=[];
   (SLOT_SUPP[sl]||[]).forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled&&b.getAttribute('aria-pressed')!=='true'){b.setAttribute('aria-pressed','true'); autoSup.push(x)}});
 }
@@ -3967,7 +3967,7 @@ $('#editcancel').addEventListener('click',cancelEdit);
 $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
-  var slot=(imode==='nofood'||(isSnack()&&!editingId))?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=num($('#a').value), t=num($('#t').value), note=($('#n').value||'').trim();
+  var slot=(imode==='nofood'||(isSnack()&&!editingId))?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=((isSnack()&&!editingId&&!settings.carbMode)?null:num($('#a').value)), t=num($('#t').value), note=($('#n').value||'').trim();
   if(!editingId)setNow();
   var d=new Date($('#dt').value);
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
