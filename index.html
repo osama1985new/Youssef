@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F3F6F8">
@@ -1312,6 +1312,29 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .sgl li{display:flex; justify-content:space-between; align-items:center; gap:8px}
 .sgl input{width:70px; min-height:38px; text-align:center}
 .sgb{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+.fsw{position:relative}
+.fsw .fsi{position:absolute; inset-inline-start:16px; top:19px; color:var(--muted); pointer-events:none}
+#fsearch{padding-inline-start:50px!important; min-height:56px!important; border-radius:14px!important; font-size:18px!important}
+#fsearch::placeholder{color:var(--muted); opacity:.8}
+.fsw .fres{top:100%}
+.mealseg [data-mg=bf]{--c:#a97b1c}.mealseg [data-mg=ln]{--c:#2f8573}.mealseg [data-mg=dn]{--c:#5566a8}.mealseg [data-mg=sn]{--c:#a85a73}
+.p-food[data-mg=bf]{--mgc:#a97b1c}.p-food[data-mg=ln]{--mgc:#2f8573}.p-food[data-mg=dn]{--mgc:#5566a8}.p-food[data-mg=sn]{--mgc:#a85a73}
+@media (prefers-color-scheme:dark){
+ :root:not([data-theme=light]) .mealseg [data-mg=bf]{--c:#d9b25f}:root:not([data-theme=light]) .mealseg [data-mg=ln]{--c:#6fc1aa}:root:not([data-theme=light]) .mealseg [data-mg=dn]{--c:#8c9be0}:root:not([data-theme=light]) .mealseg [data-mg=sn]{--c:#d98ba5}
+ :root:not([data-theme=light]) .p-food[data-mg=bf]{--mgc:#d9b25f}:root:not([data-theme=light]) .p-food[data-mg=ln]{--mgc:#6fc1aa}:root:not([data-theme=light]) .p-food[data-mg=dn]{--mgc:#8c9be0}:root:not([data-theme=light]) .p-food[data-mg=sn]{--mgc:#d98ba5}
+}
+:root[data-theme=dark] .mealseg [data-mg=bf]{--c:#d9b25f}:root[data-theme=dark] .mealseg [data-mg=ln]{--c:#6fc1aa}:root[data-theme=dark] .mealseg [data-mg=dn]{--c:#8c9be0}:root[data-theme=dark] .mealseg [data-mg=sn]{--c:#d98ba5}
+:root[data-theme=dark] .p-food[data-mg=bf]{--mgc:#d9b25f}:root[data-theme=dark] .p-food[data-mg=ln]{--mgc:#6fc1aa}:root[data-theme=dark] .p-food[data-mg=dn]{--mgc:#8c9be0}:root[data-theme=dark] .p-food[data-mg=sn]{--mgc:#d98ba5}
+.mealseg{gap:6px!important; border:0!important; background:transparent!important; overflow:visible!important}
+.mealseg button{border:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important; border-radius:12px!important; color:var(--c)!important; background:color-mix(in srgb,var(--c) 8%,transparent)!important; font-weight:600}
+.mealseg button+button{border-inline-start:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important}
+.mealseg button[aria-pressed=true]{background:color-mix(in srgb,var(--c) 22%,var(--surface))!important; border-color:var(--c)!important; color:var(--ink)!important; font-weight:700}
+.p-food[data-mg]{background:color-mix(in srgb,var(--mgc) 6%,var(--surface)); border-top:3px solid color-mix(in srgb,var(--mgc) 55%,transparent); transition:background .2s}
+
+html{touch-action:manipulation}
+input,select,textarea{font-size:max(16px,1em)}
 </style>
 </head>
 <body>
@@ -1365,12 +1388,12 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
         <div class="sect panel p-food">
       <h3>الأكل</h3>
       <div class="mealsug" id="mealsug" hidden></div>
-      <div class="mealseg" id="mealseg" role="tablist" aria-label="نوع الوجبة"><button type="button" data-mg="bf">فطار</button><button type="button" data-mg="ln">غدا</button><button type="button" data-mg="dn">عشا</button><button type="button" data-mg="sn">سناك</button></div>
+      <div class="mealseg" id="mealseg" role="tablist" aria-label="نوع الوجبة"><button type="button" data-mg="bf">فطار</button><button type="button" data-mg="ln">غداء</button><button type="button" data-mg="dn">عشاء</button><button type="button" data-mg="sn">سناك</button></div>
       <div class="fpick">
-      <div class="field"><label for="fsearch">١ · ابحث عن صنف</label><input id="fsearch" type="search" autocomplete="off" placeholder="مثلاً: رز، تفاح، بيتزا، شيبسي"><ul class="fres" id="fres" hidden></ul></div>
+      <div class="field fsw"><label for="fsearch" class="sr">ابحث عن صنف</label><svg class="fsi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="fsearch" type="search" autocomplete="off" placeholder="ابحث" aria-label="ابحث عن صنف"><ul class="fres" id="fres" hidden></ul></div>
       <div class="fsug" id="fsug" hidden style="display:none!important"></div>
-      <div class="field"><label for="presetpick">٢ · وجباتي والوجبات الجاهزة</label><select id="presetpick"></select></div>
-      <div class="field"><label for="foodpick">٣ · أو اختر من القائمة</label><select id="foodpick"></select></div>
+      <div class="field"><label for="presetpick">وجباتي والوجبات الجاهزة</label><select id="presetpick"></select></div>
+      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
       </div>
       <ul class="mlist" id="mlist"></ul>
       <p class="mtotal" id="mtotal"></p>
@@ -1394,22 +1417,6 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
           <label class="cgmrow"><input type="checkbox" id="pks" checked><span>احفظه في أصنافي لأستخدمه لاحقًا</span></label>
           <p class="small" id="pkr"></p>
           <button type="button" class="ghost" id="pkadd">أضف إلى الوجبة</button>
-        </div>
-      </details>
-      <details class="more" id="unitbox">
-        <summary>صنف جديد بوحدة منزلية</summary>
-        <div class="pk">
-          <input id="ubn" type="text" placeholder="اسم الصنف (مثلاً: رز بالشعرية)" autocomplete="off">
-          <div class="two cen">
-            <div class="field"><label for="ubu">الوحدة</label><input id="ubu" type="text" placeholder="معلقة، ثمرة، كوب…" maxlength="20"></div>
-            <div class="field"><label for="ubc">كارب الوحدة (جم)</label><input id="ubc" type="text" inputmode="decimal"></div>
-          </div>
-          <div class="two cen">
-            <div class="field"><label for="ubw">وزن الوحدة (جم، اختياري)</label><input id="ubw" type="text" inputmode="decimal"></div>
-            <div class="field"><label for="ubd">وصف الوحدة</label><input id="ubd" type="text" maxlength="40" placeholder="مثلاً: مليانة"></div>
-          </div>
-          <label class="cgmrow"><input type="checkbox" id="ubs"><span>قابلة للتجزئة (نص، ربع…)</span></label>
-          <button type="button" class="ghost" id="ubadd">احفظ الصنف وأضفه للوجبة</button>
         </div>
       </details>
       <details class="more" id="manualbox">
@@ -1821,7 +1828,7 @@ var PRESETS=[
 ['بسكويت سادة نايس','شيتوس بفس','دوريتوس بالجبنة ناتشوز','توينكيز بالشوكولاتة','كادبوري ديري ميلك شوكو أوريو','مولتو ميني بالشوكولاتة','هوهوز بالكريمة والكاكاو','تودو براوني (قطعة كيك شوكولاتة)','بسكويت بالزبدة جود داي','رقائق البطاطس SPUDS'].forEach(function(n,i){
   var f=DB.filter(function(x){return x.n===n})[0]; if(f){BY['sn'+i]=f; PRESETS.push(['sn',n.replace(' (قطعة كيك شوكولاتة)',''),[['sn'+i,1]]])}
 });
-var GROUPS=[['bf','فطار'],['ln','غدا'],['dn','عشا'],['sn','سناك']];
+var GROUPS=[['bf','فطار'],['ln','غداء'],['dn','عشاء'],['sn','سناك']];
 
 var nf=new Intl.NumberFormat('en',{maximumFractionDigits:1});
 function fmt(n){return nf.format(n)}
@@ -2252,7 +2259,8 @@ function updateAplan(){var el=$('#aplan'); if(!el)return; el.innerHTML=''; retur
 function syncInj(){updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
-$('#a').addEventListener('input',syncInj); $('#t').addEventListener('input',syncInj);
+function syncInjKey(){updateAplan(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+$('#a').addEventListener('input',syncInjKey); $('#t').addEventListener('input',syncInjKey);
 function foodLabel(f){
   if(f.ov&&f.ov.u)return f.n+' — 1 '+f.ov.u+(f.ov.w>0?' ('+f.ov.w+' جم)':'')+' — '+fmt(f.ov.c)+' جم كارب';
   var d=f.d||''; if(f.w>0&&d.indexOf('جم')<0&&d.indexOf('مل')<0)d=(d?d+' · ':'')+f.w+' جم';
@@ -2521,8 +2529,8 @@ function extraText(e,rep){
 function mealText(e){
   if(!e.meal||!e.meal.length)return '';
   var t=e.meal.map(function(m){return esc(m.n)+(m.u?' — '+qtxt(m.q,m.u):(m.q!==1?' ×'+fmt(m.q):''))+(m.x===1?' (كارب غير معروف)':m.x===2?' (كارب غير مؤكد)':'')}).join('، ');
-  if(e.cx)return t+' (كارب غير مكتمل'+(e.carbs>0?'، المعروف '+fmt(e.carbs)+' جم':'')+')';
-  return t+(e.carbs>0?' ('+fmt(e.carbs)+' جم كارب)':'');
+  if(e.cx)return t+' (الإجمالي غير مكتمل'+(e.carbs>0?'، المعروف '+fmt(e.carbs)+' جم':'')+')';
+  return t+(e.carbs>0?' (الإجمالي '+fmt(e.carbs)+' جم كارب)':'');
 }
 
 /* ---------- icons ---------- */
@@ -2735,15 +2743,15 @@ function renderMeal(){ setTimeout(syncCorr,0);
     var rmax=Math.max(m.step>=1?20:6,Math.ceil(q*2)), sl='';
     var amount=m.mode==='g'
       ?'<div class="mi-big"><label class="gin">الوزن <input type="text" inputmode="decimal" data-f="gr" value="'+(m.gr?fmt(m.gr):'')+'"> جم</label></div>'
-      :'<div class="mi-big"><button type="button" class="rb" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button><div class="bigq"><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد">'
+      :'<div class="mi-big"><button type="button" class="rb" data-q="'+i+'" data-d="1" aria-label="أكثر">+</button><div class="bigq"><input type="text" inputmode="decimal" data-f="q" value="'+qf(m.q)+'" aria-label="العدد">'
        +(m.alts&&m.alts.length?'<select class="unsel" data-unit="'+i+'" aria-label="الوحدة"><option value="0"'+(m.cur?'':' selected')+'>'+esc(m.bu)+'</option>'+m.alts.map(function(a,j){return '<option value="'+(j+1)+'"'+(m.cur===j+1?' selected':'')+'>'+esc(a.u)+'</option>'}).join('')+'</select>':'<span class="un" data-un>'+esc(ulabel(m))+'</span>')
-       +'</div><button type="button" class="rb" data-q="'+i+'" data-d="1" aria-label="أكثر">+</button></div>'
+       +'</div><button type="button" class="rb" data-q="'+i+'" data-d="-1" aria-label="أقل">−</button></div>'
        +'<input type="range" class="mi-rng" data-rng min="0" max="'+rmax+'" step="'+(m.step>=1?1:m.step)+'" value="'+Math.min(m.q,rmax)+'" aria-label="الكمية">';
     var opts='';
     if(m.w>0)opts+='<button type="button" class="link" data-mode="'+i+'">'+(m.mode==='g'?'بالعدد':'بالجرام')+'</button>';
     if(m.fruit||(m.editc&&!m.u))opts+='<label>كارب الوحدة <input type="text" inputmode="decimal" data-f="c" value="'+(m.c==null?'':fmt(m.c))+'"> جم</label>';
     if(!m.fruit&&!m.editc)opts+='<button type="button" class="link" data-editc="'+i+'">'+(m.u?'عدّل الوحدة والكارب':'غيّر الكارب')+'</button>';
-    var st=srcTxt(m); if(st&&!m.fruit)opts+='<span class="srcl">'+esc(st)+'</span>';
+    
     var ed='';
     if(m.editc&&!m.fruit&&m.u){
       ed='<div class="mi-ed" data-ed="'+i+'">'
@@ -2751,6 +2759,7 @@ function renderMeal(){ setTimeout(syncCorr,0);
         +'<div class="two"><label>وزن الوحدة (جم، اختياري)<input type="text" inputmode="decimal" data-e="w" value="'+(m.bw?fmt(r1(m.bw)):'')+'"></label><label>وصف الوحدة<input type="text" data-e="d" value="'+esc(m.d||'')+'" maxlength="40" placeholder="مثلاً: ممسوحة أو مليانة"></label></div>'
         +'<div class="pendbox" data-pendbox'+(m.pend?'':' hidden')+'><p>غيّرت وصف الوحدة. راجع كارب الوحدة وحدّد القيمة الجديدة. القيمة لم تتغيّر تلقائيًا، والصنف يُحسب «غير مؤكد» ولا يدخل في الإجمالي حتى تؤكّد.</p><button type="button" class="ghost" data-ccon="'+i+'">أكّد كارب الوحدة</button></div>'
         +(m.raw?'<p class="small">نص الجدول الأصلي: '+esc(m.raw)+'</p>':'')
+        +(srcTxt(m)?'<p class="small">المصدر: '+esc(srcTxt(m))+'</p>':'')
         +'<label class="cgmrow"><input type="checkbox" data-e="s"'+(m.step<1?' checked':'')+'><span>قابلة للتجزئة (نص، ربع…)</span></label>'
         +(m.alts.length?'<div class="small">وحدات بديلة: '+m.alts.map(function(a,j){return esc(a.u)+' = '+fmt(a.r)+' '+esc(m.bu)+' <button type="button" class="link" data-altx="'+i+':'+j+'">حذف</button>'}).join(' · ')+'</div>':'')
         +'<div class="two"><label>وحدة بديلة<input type="text" data-e="au" maxlength="20" placeholder="مثلاً: نص رغيف"></label><label>تساوي كم من الوحدة الأساسية<input type="text" inputmode="decimal" data-e="ar" placeholder="مثلاً 2"></label></div>'
@@ -2789,6 +2798,12 @@ function addMyFoodsToDb(){
   applyOv();
 }
 function applyOv(){var o=settings.foodOv||{}; DB.forEach(function(f){f.ov=o[f.n]||null})}
+var MEALCAT={
+  bf:['أكلك المعتاد','بقوليات','خبز','لبن وزبادي','فاكهة','عصائر ومشروبات','مخبوزات العيد','خضار (كارب قليل)'],
+  ln:['أكلك المعتاد','أرز ومكرونة ونشويات','خضار ونشويات الخضار','بقوليات','خبز','خضار (كارب قليل)','شوربة وسلطات','فاكهة'],
+  dn:['أكلك المعتاد','خبز','شوربة وسلطات','خضار (كارب قليل)','خضار ونشويات الخضار','لبن وزبادي','بقوليات','أرز ومكرونة ونشويات'],
+  sn:['فاكهة','مكسرات وتسالي','لبن وزبادي','منتجات سوبر ماركت (للقطعة)','حلويات','عصائر ومشروبات','مخبوزات العيد','بيتزا ومعجنات ووجبات برة']
+};
 function topFoods(){
   var cnt={}; (typeof entries!=='undefined'?entries:[]).slice().sort(function(a,b){return new Date(b.ts)-new Date(a.ts)}).filter(function(e){return slotGroup(e.slot)===curGrp()}).slice(0,120).forEach(function(e){(e.meal||[]).forEach(function(m){if(m.n)cnt[m.n]=(cnt[m.n]||0)+1})});
   return Object.keys(cnt).filter(function(n){return cnt[n]>=2}).sort(function(a,b){return cnt[b]-cnt[a]}).map(function(n){return DB.filter(function(f){return f.n===n&&f.k!=='fruit'})[0]}).filter(Boolean).slice(0,6);
@@ -2797,8 +2812,17 @@ function rebuildFoodPick(){
   var h='<option value="">+ اختر صنفًا…</option>', cur=null, open=false;
   DB.forEach(function(f,i){f.i=i});
   var tf=topFoods(); if(tf.length){h+='<optgroup label="الأكثر استخدامًا في '+(GROUPS.filter(function(x){return x[0]===curGrp()})[0]||[0,''])[1]+'">'+tf.map(function(f){return '<option value="'+f.i+'">'+esc(foodLabel(f))+'</option>'}).join('')+'</optgroup>'}
-  DB.forEach(function(f,i){
-    if(f.g!==cur){if(open)h+='</optgroup>'; h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
+  var ord=MEALCAT[curGrp()]||[], rank={}; ord.forEach(function(c,i){rank[c]=i});
+  var order=DB.map(function(f,i){return i}).sort(function(a,z){
+    var ra=rank[DB[a].g]==null?999:rank[DB[a].g], rz=rank[DB[z].g]==null?999:rank[DB[z].g];
+    return ra!==rz?ra-rz:a-z});
+  var sepDone=false;
+  order.forEach(function(i){
+    var f=DB[i];
+    if(f.g!==cur){
+      if(open)h+='</optgroup>';
+      if(!sepDone&&rank[f.g]==null&&ord.length){h+='<option disabled>──── أقسام أخرى ────</option>'; sepDone=true}
+      h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
     h+='<option value="'+i+'">'+esc(foodLabel(f))+'</option>';
   });
   $('#foodpick').innerHTML=h+'</optgroup>';
@@ -2823,20 +2847,10 @@ $('#pkadd').addEventListener('click',function(){
 });
 
 
-$('#ubadd').addEventListener('click',function(){
-  var n=$('#ubn').value.trim(), u=$('#ubu').value.trim(), c=num($('#ubc').value), w=num($('#ubw').value)||0;
-  if(!n||!u||c==null||isNaN(c)||c<0){toast('اكتب الاسم والوحدة وكارب الوحدة'); return}
-  var my={n:n.slice(0,40),u:u.slice(0,20),c:c,w:w>0?w:0,d:$('#ubd').value.trim().slice(0,40),s:$('#ubs').checked?0.5:1};
-  if(role==='view')return;
-  settings.myFoods=(settings.myFoods||[]).filter(function(x){return x.n!==my.n}); settings.myFoods.push(my); settings.myFoods=settings.myFoods.slice(-60);
-  persistSettings(); addMyFoodsToDb(); rebuildFoodPick();
-  var f=DB.filter(function(x){return x.n===my.n&&x.g==='أصنافي'})[0]; if(f)addFood(f);
-  ['ubn','ubu','ubc','ubw','ubd'].forEach(function(i){$('#'+i).value=''}); $('#ubs').checked=false; toast('حُفظ '+n);
-});
 function paintSaved(){
   var box=$('#svbox'); if(!box)return;
   var has=mealItems.some(function(m){return !m.fruit||m.name}), sm=settings.meals||[];
-  box.hidden=!((has||sm.length)&&role!=='view');
+  box.hidden=!(has&&role!=='view');
   $('#svl').innerHTML=sm.map(function(x,i){return '<li><span>'+esc(x.n)+'</span><button type="button" class="link" data-svdel="'+i+'">حذف</button></li>'}).join('');
 }
 $('#svadd').addEventListener('click',function(){
@@ -2859,37 +2873,57 @@ function coreSet(items){
   var o={}; a.forEach(function(m){var b=baseName(m.n); if(b)o[b]=1}); return Object.keys(o).sort();
 }
 function sameSet(a,b){return a.length===b.length&&a.every(function(x,i){return x===b[i]})}
+/* a meal logged twice or more in the same meal-section is added to the saved meals automatically */
+function buildRepeat(grp,sig,occ){
+  var names={}; occ[occ.length-1].forEach(function(m){names[baseName(m.n)]=m});
+  var out=[];
+  Object.keys(names).forEach(function(b){
+    var rows=[]; for(var i=occ.length-1;i>=0;i--){var m=occ[i].filter(function(x){return baseName(x.n)===b})[0]; if(m)rows.push(m)}   /* newest first */
+    if(rows.length*3<occ.length*2)return;
+    var cnt={}; rows.forEach(function(m){var k=(m.u||'')+'|'+r4(Number(m.q)||1); cnt[k]=(cnt[k]||0)+1});
+    var best=Object.keys(cnt).sort(function(a,z){return cnt[z]-cnt[a]})[0];
+    var pick=rows.filter(function(m){return (m.u||'')+'|'+r4(Number(m.q)||1)===best})[0];
+    var o={n:pick.n.replace(/\s*\(\s*[\d.]+\s*جم\s*\)\s*$/,''),q:r4(Number(pick.q)||1),c:Number(pick.c)||0}; if(pick.u)o.u=pick.u; if(pick.d)o.d=pick.d; if(pick.x)o.x=pick.x;
+    out.push(o);
+  });
+  if(!out.length)return null;
+  var nm=out.filter(function(o){return !o.x&&o.c*o.q>0}).slice(0,2).map(function(o){return o.n.replace(/\s*\(.*\)\s*$/,'')}).join(' + ')||out[0].n;
+  return {key:grp+'|'+sig.join('+'),grp:grp,items:out.slice(0,20),name:nm.slice(0,36)};
+}
+function addAutoMeal(sg){
+  var nm=sg.name, k=2; settings.meals=settings.meals||[];
+  while(settings.meals.some(function(x){return x.n===nm&&(!x.g||x.g===sg.grp)}))nm=sg.name+' '+(k++);
+  settings.meals.push({n:nm,g:sg.grp,items:sg.items}); settings.meals=settings.meals.slice(-30); return nm;
+}
+function alreadySaved(grp,sig){return (settings.meals||[]).some(function(m){return (!m.g||m.g===grp)&&sameSet(coreSet(m.items),sig)})}
 function checkRepeat(doc,items){
   if(role==='view'||!items||!items.length)return;
   var grp=slotGroup(doc.slot), sig=coreSet(items); if(!sig.length||sig.length>8)return;
-  var key=grp+'|'+sig.join('+');
-  if((settings.mealNo||[]).indexOf(key)>=0)return;
-  if((settings.meals||[]).some(function(m){return (!m.g||m.g===grp)&&sameSet(coreSet(m.items),sig)}))return;
-  var since=Date.now()-60*DAY, occ=[];
-  entries.forEach(function(e){
+  if((settings.mealNo||[]).indexOf(grp+'|'+sig.join('+'))>=0||alreadySaved(grp,sig))return;
+  var since=Date.now()-90*DAY, occ=[];
+  entries.slice().sort(function(a,z){return new Date(a.ts)-new Date(z.ts)}).forEach(function(e){
     if(e.id===doc.id||new Date(e.ts).getTime()===new Date(doc.ts).getTime()||!e.meal||!e.meal.length||new Date(e.ts).getTime()<since||slotGroup(e.slot)!==grp)return;
     if(sameSet(coreSet(e.meal),sig))occ.push(e.meal);
   });
   occ.push(items);
-  if(occ.length<3)return;
-  /* quantities: most frequent (unit+qty) per item; flag clear variation */
-  var varied=false, out=[], names={};
-  items.forEach(function(m){names[baseName(m.n)]=m});
-  var keys=Object.keys(names);
-  keys.forEach(function(b){
-    var rows=[]; occ.forEach(function(meal){var m=meal.filter(function(x){return baseName(x.n)===b})[0]; if(m)rows.push(m)});
-    if(rows.length*3<occ.length*2)return;   /* optional item: appears in <2/3 of the repeats */
-    var cnt={}; rows.forEach(function(m){var k=(m.u||'')+'|'+r4(Number(m.q)||1); cnt[k]=(cnt[k]||0)+1});
-    var best=Object.keys(cnt).sort(function(a,z){return cnt[z]-cnt[a]})[0];
-    if(cnt[best]/rows.length<0.6)varied=true;
-    var pick=rows.filter(function(m){return (m.u||'')+'|'+r4(Number(m.q)||1)===best})[0];
-    var o={n:pick.n,q:r4(Number(pick.q)||1),c:Number(pick.c)||0}; if(pick.u)o.u=pick.u; if(pick.d)o.d=pick.d; if(pick.x)o.x=pick.x;
-    o.dist=Object.keys(cnt).length; out.push(o);
+  if(occ.length<2)return;
+  var sg=buildRepeat(grp,sig,occ); if(!sg)return;
+  var nm=addAutoMeal(sg); persistSettings(); try{renderPresets()}catch(_){} toast('اتحفظت تلقائيًا في وجباتي: '+nm);
+}
+var _bfDone=false;
+function backfillMeals(){
+  if(_bfDone||role==='view'||settings.mealBF||typeof entries==='undefined'||!entries.length)return; _bfDone=true;
+  var since=Date.now()-90*DAY, bag={};
+  entries.slice().sort(function(a,z){return new Date(a.ts)-new Date(z.ts)}).forEach(function(e){
+    if(!e.meal||!e.meal.length||new Date(e.ts).getTime()<since)return;
+    var grp=slotGroup(e.slot), sig=coreSet(e.meal); if(!sig.length||sig.length>8)return;
+    var k=grp+'|'+sig.join('+'); (bag[k]=bag[k]||{grp:grp,sig:sig,occ:[]}).occ.push(e.meal);
   });
-  if(!out.length)return;
-  var nm=out.filter(function(o){return !o.x&&o.c*o.q>0}).slice(0,2).map(function(o){return o.n.replace(/\s*\(.*\)\s*$/,'')}).join(' + ')||out[0].n;
-  sugCur={key:key,grp:grp,items:out,varied:varied,count:occ.length,name:nm.slice(0,40)};
-  paintSug();
+  var made=0;
+  Object.keys(bag).map(function(k){return bag[k]}).filter(function(g){return g.occ.length>=2&&!alreadySaved(g.grp,g.sig)&&(settings.mealNo||[]).indexOf(g.grp+'|'+g.sig.join('+'))<0})
+   .sort(function(a,z){return z.occ.length-a.occ.length}).slice(0,12).forEach(function(g){var sg=buildRepeat(g.grp,g.sig,g.occ); if(sg){addAutoMeal(sg); made++}});
+  settings.mealBF=true; persistSettings(); try{renderPresets()}catch(_){}
+  if(made)toast('أضفت '+made+' وجبة من وجباتك السابقة إلى وجباتي');
 }
 function paintSug(){
   var box=$('#mealsug'); if(!box)return;
@@ -2995,7 +3029,7 @@ function presetGroupOrder(){
 }
 var foodGrp=null, foodGrpManual=false;
 function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
-function paintSeg(){var g=curGrp(); [].forEach.call(document.querySelectorAll('#mealseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.mg===g?'true':'false')})}
+function paintSeg(){var g=curGrp(); var pf=document.querySelector('.p-food'); if(pf)pf.dataset.mg=g; [].forEach.call(document.querySelectorAll('#mealseg button'),function(b){b.setAttribute('aria-pressed',b.dataset.mg===g?'true':'false')})}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#mealseg button'); if(!b)return; foodGrp=b.dataset.mg; foodGrpManual=true; rebuildFoodPick()});
 function renderPresets(){
   var h='<option value="">اختر وجبة جاهزة…</option>';
@@ -3288,7 +3322,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={myFoods:settings.myFoods||[],mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
+  var at={myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات');
 }
 $('#stripnew').addEventListener('click',function(){
@@ -3477,7 +3511,7 @@ function ansHigh(){
       var m=prev.filter(function(p){return p.meal&&p.meal.length}).pop();
       if(m){
         var hrs=Math.round((e.d-m.d)/36e5*10)/10;
-        line+='قبلها بحوالي '+fmt(hrs)+' ساعة سُجّلت وجبة: '+m.meal.map(function(x){return x.n}).join('، ')+(m.cx?' (كارب غير مكتمل)':(m.carbs>0?' (حوالي '+fmt(Math.round(m.carbs))+' جم كارب)':''))+'، '+(m.apidra>0?'وأبيدرا '+fmt(m.apidra)+' وحدة.':(m.corr?'':'ولا توجد أبيدرا مسجَّلة معها.'));
+        line+='قبلها بحوالي '+fmt(hrs)+' ساعة سُجّلت وجبة: '+m.meal.map(function(x){return x.n}).join('، ')+(m.cx?' (الإجمالي غير مكتمل)':(m.carbs>0?' (الإجمالي حوالي '+fmt(Math.round(m.carbs))+' جم كارب)':''))+'، '+(m.apidra>0?'وأبيدرا '+fmt(m.apidra)+' وحدة.':(m.corr?'':'ولا توجد أبيدرا مسجَّلة معها.'));
       }else line+='لا توجد وجبة مسجَّلة في الـ5 ساعات قبلها.';
     }
     obs.push(line);
@@ -3580,7 +3614,7 @@ var _mfSig='';
 function render(){try{var sg0=JSON.stringify([settings.myFoods||[],settings.foodOv||{},(typeof entries!=='undefined'?entries.length:0)]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
   try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
-  try{clearNotifs()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
   rangeNote();
 }
@@ -3996,9 +4030,19 @@ function openFromNotif(tag){
   if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm()}
   else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); showForm()}
   else if(b.indexOf('visit')===0){gotoVisit()}
+  else if(b==='g-high'){
+    var E=(typeof entries!=='undefined'?entries:[]), hi=null, tmax=0;
+    E.forEach(function(e){if(e.glucose!=null){var t=new Date(e.ts).getTime(); if(t>tmax){tmax=t; hi=e}}});
+    go('add'); setMode('read');
+    if(hi&&hi.glucose>settings.high&&!(hi.apidra>0)&&Date.now()-tmax<4*3600e3){startEdit(hi.id)}
+    showFocusA();
+  }
+}
+function showFocusA(){
+  [0,150,500].forEach(function(d){setTimeout(function(){var a=$('#a'); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)});
 }
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',function(ev){if(ev.data&&ev.data.ntf)openFromNotif(ev.data.ntf)})}
-window.addEventListener('load',function(){try{var q=new URLSearchParams(location.search).get('n'); if(q){history.replaceState(null,'',location.pathname); var t0=0,iv=setInterval(function(){t0++; if(authed||t0>20){clearInterval(iv); if(authed)openFromNotif(q)}},300)}}catch(_){}});
+window.addEventListener('load',function(){try{var q=new URLSearchParams(location.search).get('n'); if(q){history.replaceState(null,'',location.pathname); var t0=0,iv=setInterval(function(){t0++; if((authed&&typeof entries!=='undefined'&&entries.length)||t0>25){clearInterval(iv); if(authed)openFromNotif(q)}},300)}}catch(_){}});
 
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}
 function b64uToU8(b){var p=(b+'===').slice(0,b.length+(4-b.length%4)%4).replace(/-/g,'+').replace(/_/g,'/'), r=atob(p), u=new Uint8Array(r.length); for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i); return u}
@@ -4057,6 +4101,21 @@ start(true);
     });
   }
   tick(); setInterval(tick,400); document.addEventListener('change',tick,true); document.addEventListener('input',tick,true);
+})();
+/* no zoom + keep the focused field above the keyboard */
+(function(){
+  ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
+  document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+  function lift(el){
+    if(!el||!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)||/^(checkbox|radio|file|range|date|time|datetime-local)$/.test(el.type||''))return;
+    [250,600].forEach(function(d){setTimeout(function(){
+      if(document.activeElement!==el)return;
+      var r=el.getBoundingClientRect(), vv=window.visualViewport, h=vv?vv.height:window.innerHeight;
+      if(r.top>h*0.12&&r.bottom<h*0.55)return;
+      window.scrollBy({top:r.top-h*0.18,behavior:'smooth'});
+    },d)});
+  }
+  document.addEventListener('focusin',function(e){lift(e.target)});
 })();
 /* Arabic-Indic digits typed or pasted anywhere become English digits */
 (function(){

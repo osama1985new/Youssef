@@ -54,11 +54,21 @@ self.addEventListener('push', e => {
         if (r.ok) msgs = (await r.json()).msgs || [];
       }
     } catch (err) {}
-    if (!msgs.length) msgs = [{ t: 'تذكير', b: 'افتح التطبيق لترى التذكير', tag: 'generic' }];
+    const ICON = { 'g-low': '🔻', 'g-high': '🔺', fast: '🌅', bed: '🌙', tres: '💉', trY: '💉', med: '💊', visit: '🩺', visitp: '🩺', visitdone: '🩺', ket: '🧪', ketd: '🧪', nodose: '💉', apd: '⏱️', hypo15: '⏱️', hypo30: '⏱️', low2h: '⏱️', strips: '📦', needles: '📦', stock: '📦', test: '✅' };
+    const iconFor = tag => { const b = String(tag || '').split(':')[0]; if (ICON[b]) return ICON[b]; if (b.indexOf('sp_') === 0) return '💊'; if (b.indexOf('stock') === 0) return '📦'; return '🔔'; };
+    if (!msgs.length) {
+      /* several pushes can arrive for one batch: the first one already showed everything. Never show an empty "open the app" notice. */
+      const shown = await self.registration.getNotifications();
+      if (shown.length) return;
+      const n = await self.registration.showNotification('🔔 تذكير', { tag: 'generic', silent: true, icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
+      setTimeout(async () => { (await self.registration.getNotifications({ tag: 'generic' })).forEach(x => x.close()); }, 800);
+      return;
+    }
     for (const m of msgs) {
       let body = m.b; const old = m.at && Date.now() - m.at > 45 * 60e3;
       if (old) { const t = new Date(m.at).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); body = m.b + ' (موعده ' + t + ')'; }
-      await self.registration.showNotification(m.t, { body, tag: (m.tag || 'ysg') + (m.at ? ':' + m.at : ''), timestamp: m.at || Date.now(), icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
+      const title = iconFor(m.tag) + ' ' + m.t;
+      await self.registration.showNotification(title, { body, tag: (m.tag || 'ysg') + (m.at ? ':' + m.at : ''), timestamp: m.at || Date.now(), icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
     }
   })());
 });
