@@ -1331,10 +1331,13 @@ body.ro .mealtxt,body.ro .notes .note:not([class*="ket-"]),body.ro .suppline{dis
 .mealseg button{border:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important; border-radius:12px!important; color:var(--c)!important; background:color-mix(in srgb,var(--c) 8%,transparent)!important; font-weight:600}
 .mealseg button+button{border-inline-start:1.5px solid color-mix(in srgb,var(--c) 30%,var(--line))!important}
 .mealseg button[aria-pressed=true]{background:color-mix(in srgb,var(--c) 22%,var(--surface))!important; border-color:var(--c)!important; color:var(--ink)!important; font-weight:700}
-.p-food[data-mg]{background:color-mix(in srgb,var(--mgc) 6%,var(--surface)); border-top:3px solid color-mix(in srgb,var(--mgc) 55%,transparent); transition:background .2s}
+.p-food[data-mg]{background:color-mix(in srgb,var(--mgc) 30%,var(--surface))!important; border:1.5px solid color-mix(in srgb,var(--mgc) 55%,transparent)!important; transition:background .2s}
+.p-food[data-mg] .fcard,.p-food[data-mg] .fitem,.p-food[data-mg] .fi{background:color-mix(in srgb,var(--mgc) 9%,var(--surface))!important}
 
 html{touch-action:manipulation}
 input,select,textarea{font-size:max(16px,1em)}
+.mealseg button[aria-pressed=true]{background:var(--c)!important; color:#fff!important; border-color:var(--c)!important; font-weight:800; box-shadow:0 2px 8px color-mix(in srgb,var(--c) 45%,transparent)}
+.mealseg button:not([aria-pressed=true]){opacity:.8}
 </style>
 </head>
 <body>
@@ -4027,8 +4030,10 @@ function gotoVisit(){
 }
 function openFromNotif(tag){
   var b=String(tag||'').split(':')[0]; if(!authed||role==='view')return;
-  if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm()}
-  else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); showForm()}
+  if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm(); focusId('g')}
+  else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); showForm(); focusId('t')}
+  else if(b==='med'||b.indexOf('sp_')===0){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}
+  else if(b==='g-low'){go('add'); setMode('read'); focusId('g')}
   else if(b.indexOf('visit')===0){gotoVisit()}
   else if(b==='g-high'){
     var E=(typeof entries!=='undefined'?entries:[]), hi=null, tmax=0;
@@ -4038,6 +4043,7 @@ function openFromNotif(tag){
     showFocusA();
   }
 }
+function focusId(id){[0,150,500].forEach(function(d){setTimeout(function(){var a=$('#'+id); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)})}
 function showFocusA(){
   [0,150,500].forEach(function(d){setTimeout(function(){var a=$('#a'); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)});
 }
