@@ -2072,7 +2072,7 @@ async function removeEntry(id){
   if(mode!=='cloud')lsSet(LS_E,entries);
 }
 var forceDup=false, undoT;
-function showUndo(id,q){var el=$('#undo'); el.innerHTML=(q?'حُفظ على الهاتف وسيُرسل عند عودة الإنترنت':'حُفظ')+' <button type="button" class="link" data-undo="'+id+'">تراجع</button>'; el.classList.add('show'); clearTimeout(undoT); undoT=setTimeout(function(){el.classList.remove('show')},7000)}
+function showUndo(id,q){var el=$('#undo'); el.innerHTML=(q?'حُفظ على الهاتف وسيُرسل عند عودة الإنترنت':'حُفظ'); el.classList.add('show'); clearTimeout(undoT); undoT=setTimeout(function(){el.classList.remove('show')},7000)}
 document.addEventListener('click',async function(e){
   var u=e.target.closest&&e.target.closest('[data-undo]');
   if(u){var id=u.dataset.undo; $('#undo').classList.remove('show'); try{await removeEntry(id); toast('أُلغي التسجيل'); render()}catch(_){toast('تعذّر التراجع. جرّب من السجل.')} return}
