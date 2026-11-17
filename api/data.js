@@ -136,6 +136,7 @@ function cleanSettings(s) {
     }
   }
   out.mealBF = s.mealBF === true;
+  out.bpLog = Array.isArray(s.bpLog) ? s.bpLog.slice(-60).map(r => ({ t: String(r && r.t || '').slice(0, 30), s: Math.round(Number(r && r.s)), d: Math.round(Number(r && r.d)) })).filter(r => !isNaN(new Date(r.t)) && r.s >= 60 && r.s <= 260 && r.d >= 30 && r.d <= 160 && r.s > r.d) : [];
   out.mealNo = Array.isArray(s.mealNo) ? s.mealNo.slice(-100).map(k => T(k, 200)).filter(Boolean) : [];
   out.meals = Array.isArray(s.meals) ? s.meals.slice(-30).map(m => ({
     n: T(m && m.n, 40), g: ['bf', 'ln', 'dn', 'sn'].includes(m && m.g) ? m.g : undefined,
