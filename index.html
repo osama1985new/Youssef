@@ -1422,17 +1422,17 @@ input,select,textarea{font-size:max(16px,1em)}
 #mealmgr .mml>li{padding:10px 12px}
 #mealmgr .mml .rowh b{font-size:15px}
 
-.fpick>details.more{margin:0; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
-.fpick>details.more>summary{list-style:none; display:flex; align-items:center; justify-content:space-between; min-height:50px; padding:0 14px; color:var(--ink); font-size:15px; font-weight:500}
-.fpick>details.more>summary::-webkit-details-marker{display:none}
-.fpick>details.more>summary::marker{content:''}
-.fpick>details.more>summary::after{content:'+'; color:var(--accent); font-size:20px; font-weight:600; line-height:1}
-.fpick>details.more[open]>summary::after{content:'−'}
-.fpick>details.more[open]>summary{border-bottom:1px solid var(--line)}
-.fpick>details.more>*:not(summary){margin:12px 14px 14px}
-.fpick>#mealmgr .mmgr{padding:0}
-.fpick>#mealmgr[hidden]{display:none}
-.fpick>details.more{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.fgrp>details.more{margin:0; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+.fgrp>details.more>summary{list-style:none; display:flex; align-items:center; justify-content:space-between; min-height:50px; padding:0 14px; color:var(--ink); font-size:15px; font-weight:500}
+.fgrp>details.more>summary::-webkit-details-marker{display:none}
+.fgrp>details.more>summary::marker{content:''}
+.fgrp>details.more>summary::after{content:'+'; color:var(--accent); font-size:20px; font-weight:600; line-height:1}
+.fgrp>details.more[open]>summary::after{content:'−'}
+.fgrp>details.more[open]>summary{border-bottom:1px solid var(--line)}
+.fgrp>details.more>*:not(summary){margin:12px 14px 14px}
+.fgrp>#mealmgr .mmgr{padding:0}
+.fgrp>#mealmgr[hidden]{display:none}
+.fgrp>details.more{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
 #mmcnt{color:var(--muted); font-size:13px; margin-inline-start:6px; margin-inline-end:auto}
 #nwcnt{color:var(--muted); font-size:13px; margin-inline-start:6px; margin-inline-end:auto}
 .fpick>#nwmine>.nwul{margin:12px 14px 14px}
@@ -1440,6 +1440,18 @@ input,select,textarea{font-size:max(16px,1em)}
 .subh{margin:2px 0 8px; font-size:13px; font-weight:600; color:var(--muted)}
 #mealmgr #nwmine{margin-top:14px}
 #mealmgr #nwmine>.nwul{margin:0}
+
+/* grouped, list-style pickers */
+.fgrp{border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line)); border-radius:14px; background:var(--surface); overflow:hidden}
+.fgrp>*+*{border-top:1px solid var(--line)}
+.fgrp>.field{display:flex!important; flex-direction:row!important; align-items:center!important; gap:10px; padding:0 14px!important; margin:0!important; min-height:54px}
+.fgrp>.field label{flex:0 0 auto; min-width:86px; margin:0!important; padding:0!important; text-align:start!important; width:auto!important; font-size:14.5px; font-weight:500; color:var(--ink)}
+.fgrp>.field select{flex:1; min-width:0; border:0!important; background-color:transparent!important; box-shadow:none!important; min-height:52px; padding-inline:0; font-size:15px; color:var(--muted); width:auto!important; text-align:start}
+.fgrp>details.more{border:0!important; border-top:1px solid var(--line)!important; border-radius:0!important; background:transparent!important}
+.fgrp>details.more>summary{min-height:54px; border:0!important}
+.fgrp>details.more[open]>summary{border-bottom:1px solid var(--line)!important}
+.fgrp>details.more>summary::after{font-size:22px}
+.fpick .fsw{margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -1497,6 +1509,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="fpick">
       <div class="field fsw"><label for="fsearch" class="sr">ابحث عن صنف</label><svg class="fsi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="fsearch" type="search" autocomplete="off" placeholder="ابحث" aria-label="ابحث عن صنف"><ul class="fres" id="fres" hidden></ul></div>
       <div class="fsug" id="fsug" hidden style="display:none!important"></div>
+      <div class="fgrp">
       <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
       <div class="field"><label for="foodpick">صنف آخر</label><select id="foodpick"></select></div>
       <details class="more" id="newbox">
@@ -1519,6 +1532,7 @@ input,select,textarea{font-size:max(16px,1em)}
         <div id="mmsec" hidden><p class="subh">الوجبات الجاهزة</p><div class="mmgr" id="mmgr2"></div></div>
         <div id="nwmine" hidden><p class="subh">الأصناف المضافة</p><ul class="nwul" id="nwul"></ul></div>
         <span id="nwcnt" hidden></span></details>
+      </div>
       </div>
       <ul class="mlist" id="mlist"></ul>
       <p class="mtotal" id="mtotal"></p>
