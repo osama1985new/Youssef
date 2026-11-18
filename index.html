@@ -1552,6 +1552,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
     </div>
     <p class="msg" id="khint" hidden></p>
+    <div class="field" id="tdf" hidden><label for="tdt">يوم ووقت جرعة الترسيبا</label><input id="tdt" type="datetime-local"><p class="small" style="margin:4px 0 0">غيّر اليوم لو الجرعة كانت أمس.</p></div>
     <details class="more">
       <summary>ملاحظة</summary>
       <div class="stack" style="margin-top:8px">
@@ -1873,6 +1874,11 @@ crb('منتجات سوبر ماركت (للقطعة)',
 'أستروس كريسب بالشوكولاتة والفول السوداني||25\nأولكر بسكوت محشو بالبلح||25\nبرنش باتية بالجبنة والزيتون||40\nبرنش باتية جامبو بالجبنة البيضا||33\nبرنش باتية جامبو بالبسطرمة||46\nبرنش باتية جامبو بالجبنة الحارة||34\nبرنش جامبو كرواسون بالشوكولاتة||37\nبرنش ساندويتش غرقان بالجبنة البيضا||49\nبرنش ساندويتش غرقان بالجبنة الرومي||43\nبرنش ساندويتش غرقان بالجبنة والفلفل الحار||35.5\nبرنش ساندويتش غرقان بكريمة الشوكولاتة||51\nبرنش ساندويتش غرقان بمربى فراولة||54\nبسكوت بيمبو بالشوكولاتة||19\nبسكوت لمبادا ويفر بالشوكولاتة||13\nبسكويت بالزبدة جود داي||15\nبسكويت سادة نايس||23\nبسكويت كتاكيتو الشمعدان||17\nبسكويت ميني كتاكيتو الشمعدان||15\nتودو براوني (قطعة كيك شوكولاتة)||24.5\nتورتا ميجا كيكة بالشوكولاتة||15\nتوينكيز بالشوكولاتة||13.8\nتوينكيز بكريمة الفراولة||23\nدوريتوس بالجبنة ناتشوز||48\nدومتي ساندويتش فيتا بلس سادة||60\nراز ميني كب كيك بقطع الشوكولاتة||22\nرقائق البطاطس SPUDS||21\nالشمعدان ويفر محشو (شوكولاتة)||12\nشيبسي زنجر كنتاكي||37.5\nشيتوس بفس||35.5\nشيتوس حار نار||34.5\nفريسكا بسكوت شوكو ستيك (2 قطعة)||12\nفلامنكو بالشطة والليمون||42\nفلامنكو ذرة بالجبنة المتبلة||42\nكادبوري ديري ميلك شوكو أوريو||22\nكادبوري ديري ميلك شوكو دي لايت||22\nكادبوري بالبندق (أصغر وزن)||5\nكرانشي بالشطة والليمون||30\nكورونا بيمبو بسكويت بالشوكولاتة||19\nكورونا شوكولاتة دارك||12\nكوكونتي كوفرتينا جوز هند بالشوكولاتة||27.5\nمندولين بسكوت بالكراميل والشوكولاتة||17\nمولتو فينو بالشوكولاتة بالبندق||53\nمولتو مجنم حشو أكتر||46\nمولتو مجنم تشيز كيك فراولة||51.5\nمولتو ميني بالشوكولاتة||21.5\nمولتو ميني بالبندق||28\nمولتو ميني ماجنم||44\nنايس بسكويت بجوز الهند||23\nهوهوز بالكريمة والكاكاو||16\nهوهوز بجيلي الفراولة||16\nوافل بالكراميل ستروب وافل||18');
 crb('مخبوزات العيد',
 'بتيفور سادة|30 جم = نقطة|15\nبرازق بالسمسم|25 جم = نقطة|15\nبسكوت بالعجوة|24 جم = نقطة|15\nبسكوت نشادر سادة|22 جم = نقطة|15\nبيتيفور بالمربى والفرماسيل|20 جم = نقطة|15\nغريبة|24 جم = نقطة|15\nكحك العيد بالسكر|20 جم = نقطة|15\nكحك العيد بدون حشو وبدون سكر|22 جم = نقطة|15\nمعمول بالعجوة|22 جم = نقطة|15\nمعمول بالمكسرات|30 جم = نقطة|15');
+/* extra items from the Hamad Medical Corporation food-exchange table (1 starch exchange = 15 g carbs) */
+[['أرز ومكرونة ونشويات','سميد مطبوخ','نص كوب'],['أرز ومكرونة ونشويات','هريس مطبوخ','نص كوب'],['أرز ومكرونة ونشويات','جريش مطبوخ','نص كوب'],['خبز','بسكويت سادة (غير محلى)','4 حبات صغيرة']].forEach(function(r){pushFood({g:r[0],n:r[1],d:r[2],c:15,w:0,s:'hamad'})});
+pushFood({g:'مكسرات وتسالي',n:'فشار جاهز',d:'',c:5,w:0,s:'hamad',un:{u:'كوب',s:1,d:'3 أكواب = حصة (15 جم كارب)'}});
+/* extra items from the Oman Ministry of Health carbohydrate-counting guide */
+[['بقوليات','حمص بالطحينية','ثلث كوب',15],['بيتزا ومعجنات ووجبات برة','سمبوسة','3 حبات صغيرة',15],['بيتزا ومعجنات ووجبات برة','فطاير','3 قطع صغيرة',15],['بيتزا ومعجنات ووجبات برة','كبة كبيرة','1 حبة كبيرة',15],['حلويات','فوشار بالكراميل أو العسل','كوب',30],['حلويات','كيك مافن','قطعة صغيرة',30]].forEach(function(r){pushFood({g:r[0],n:r[1],d:r[2],c:r[3],w:0,s:'om'})});
 /* fix per-gram weights for the two groups above that carry 15 g per point */
 DB.forEach(function(f){if(f.g==='مخبوزات العيد'){var m=/^(\d+)/.exec(f.d); if(m)f.w=Number(m[1]); f.d='نقطة = '+f.w+' جم'}});
 
@@ -2313,6 +2319,7 @@ function setMode(m){
   keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other'; if(m==='tres')$('#slot').value='bed';
   setSlotOptions(); if(m==='read'&&PREMEAL.indexOf(curSlot())>=0)$('#slot').value='other';
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
+  try{var tf=$('#tdf'); tf.hidden=!(imode==='tres'&&!editingId); if(!tf.hidden)$('#tdt').value=toLocalInput(new Date())}catch(_){}
   try{applySnack()}catch(_){} syncInj(); renderHint(prep()); updateCalc();
 }
 document.addEventListener('click',function(e){
@@ -2331,7 +2338,6 @@ document.addEventListener('click',function(e){
   var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
-  if(b.dataset.mode==='tres'&&!isNight()){var mh=$('#modehint'); mh.textContent='تُسجَّل ترسيبا بعد الساعة 10 مساءً فقط.'; mh.hidden=false; toast('تُسجَّل ترسيبا بعد الساعة 10 مساءً'); return}
   setMode(b.dataset.mode)});
 imode=defMode(); syncCorr();
 function updateAplan(){var el=$('#aplan'); if(!el)return; el.innerHTML=''; return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
@@ -2366,7 +2372,7 @@ function foodLabel(f){
   $('#foodpick').innerHTML=h+'</optgroup>';
 })();
 (function(){var h='';for(var i=0;i<5;i++)h+='<div class="scalerow"><input type="text" inputmode="numeric" data-sc="'+i+'a" placeholder="من"><input type="text" inputmode="numeric" data-sc="'+i+'b" placeholder="إلى"><input type="text" inputmode="decimal" data-sc="'+i+'u" placeholder="وحدات"></div>';$('#sscale').innerHTML=h})();
-function setNow(){$("#dt").value=toLocalInput(new Date()); lastLinkSlot=null; autoA=null; autoSup=[]}
+function setNow(){$("#dt").value=toLocalInput(new Date()); try{$("#tdt").value=toLocalInput(new Date())}catch(_){} lastLinkSlot=null; autoA=null; autoSup=[]}
 setNow();
 function tickClock(){var d=new Date(); $('#today').innerHTML=esc(dayLong(d))+'<span class="clk">'+esc(timeStr(d))+'</span>'}
 tickClock(); setInterval(tickClock,15000);
@@ -2757,7 +2763,7 @@ function unitLbl(u,q){var p=UPL[u]; if(!p)return u; if(q===2)return p[1]; if(q>=
 var FRAC={'ربع':.25,'نص':.5,'ثلث':1/3,'سدس':1/6};
 function unitOf(f){
   var o=f.ov; if(o&&o.u)return {u:o.u,n:1,c:o.c,w:o.w||0,desc:o.d||'',dunk:!o.d,drev:'',step:o.s||0.5,alts:o.a||[],src:'ov',raw:f.d||''};
-  if(f.un)return {u:f.un.u,n:1,c:f.c,w:f.w||0,desc:f.un.d||'',dunk:!f.un.d,drev:'',step:f.un.s||0.5,alts:[],src:'my',raw:f.d||''};
+  if(f.un)return {u:f.un.u,n:1,c:f.c,w:f.w||0,desc:f.un.d||'',dunk:!f.un.d,drev:'',step:f.un.s||0.5,alts:[],src:(f.s==='hamad'||f.s==='om')?f.s:'my',raw:f.d||''};
   var d=String(f.d||''), n=1, u='حصة', step=.5, m;
   if(f.k==='fruit'||f.fruit){u='ثمرة'}
   else if((m=d.match(/(ربع|نص|ثلث)?\s*ثمرة/))){u='ثمرة'; n=m[1]?FRAC[m[1]]:1}
@@ -2780,7 +2786,7 @@ function unitOf(f){
   else if(/^(واحدة|حبة)/.test(d)){u='حبة'}
   if(!(n>0))n=1;
   var dt=descOf(d,u);
-  return {u:u,n:n,c:r4(f.c/n),w:r4((f.w||0)/n),desc:dt.t,dunk:dt.unk,drev:dt.rev,step:step,alts:[],src:f.e?'est':(f.g==='أكلك المعتاد'?'core':'tbl'),raw:d};
+  return {u:u,n:n,c:r4(f.c/n),w:r4((f.w||0)/n),desc:dt.t,dunk:dt.unk,drev:dt.rev,step:step,alts:[],src:f.e?'est':((f.s==='hamad'||f.s==='om')?f.s:f.g==='أكلك المعتاد'?'core':'tbl'),raw:d};
 }
 /* unit-size description: taken ONLY from the table text; never guessed */
 function descOf(d,u){
@@ -2794,7 +2800,7 @@ function descOf(d,u){
   }else{ if(size)t.push(size[1]); if(fill)t.push(fill[1]) }
   return {t:unk?'':t.join(' '),unk:unk,rev:rev};
 }
-function srcTxt(m){return {ov:'قيمة عدّلتها · من إدخالك',my:'صنف أضفته · من إدخالك',man:'أدخلته يدويًا · من إدخالك',est:'تقدير للمراجعة',core:'قائمة أكلك المعتاد · غير مراجَعة',tbl:'جدول الحصص (PDF) · مرجعي'}[m.src]||''}
+function srcTxt(m){return {ov:'قيمة عدّلتها · من إدخالك',my:'صنف أضفته · من إدخالك',man:'أدخلته يدويًا · من إدخالك',est:'تقدير للمراجعة',core:'قائمة أكلك المعتاد · غير مراجَعة',tbl:'جدول الحصص (PDF) · مرجعي',hamad:'جدول التبادل الغذائي · مؤسسة حمد الطبية',om:'دليل عدّ الكربوهيدرات · وزارة الصحة (سلطنة عُمان)'}[m.src]||''}
 function setUnit(m,idx){
   m.cur=idx; var a=idx>0?m.alts[idx-1]:null;
   if(a){m.u=a.u; m.c=m.bc==null?null:r4(m.bc*a.r); m.w=m.bw?r4(m.bw*a.r):0}
@@ -4117,7 +4123,7 @@ $('#dt').addEventListener('change',updateCalc);
 
 var editingId=null;
 function setEditing(id){
-  editingId=id; $('#dtf').hidden=!id; $('#editbar').hidden=!id; $('#save').textContent=id?'حفظ التعديل':'حفظ التسجيل';
+  editingId=id; $('#dtf').hidden=!id; if(id)$('#tdf').hidden=true; $('#editbar').hidden=!id; $('#save').textContent=id?'حفظ التعديل':'حفظ التسجيل';
 }
 function cancelEdit(){
   setEditing(null);
@@ -4148,8 +4154,9 @@ $('#f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=$('#ferr'); err.textContent='';
   var slot=(imode==='nofood'||(isSnack()&&!editingId))?'sn':imode==='tres'?'bed':curSlot(), g=num($('#g').value), a=((isSnack()&&!editingId&&!settings.carbMode)?null:num($('#a').value)), t=num($('#t').value), note=($('#n').value||'').trim();
-  if(!editingId)setNow();
+  var tdv=$('#tdt').value; if(!editingId)setNow();
   var d=new Date($('#dt').value);
+  if(imode==='tres'&&!editingId&&tdv){var td=new Date(tdv); if(!isNaN(td)){if(td.getTime()>Date.now()+60000){err.textContent='وقت الجرعة في المستقبل. راجع اليوم والوقت.'; return} d=td}}
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
   if(g!=null&&(g<20||g>600)){err.textContent='يجب أن تكون قراءة السكر بين 20 و600. راجع الرقم.'; return}
   if(a!=null&&(a<0||a>50)){err.textContent='جرعة أبيدرا غير معتادة. راجع الرقم.'; return}
@@ -4245,7 +4252,7 @@ function gotoVisit(){
 function openFromNotif(tag){
   var b=String(tag||'').split(':')[0]; if(!authed||role==='view')return;
   if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm(); focusId('g')}
-  else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); showForm(); focusId('t')}
+  else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); if(b==='trY'){var yd=new Date(Date.now()-864e5); yd.setHours(22,0,0,0); $('#tdt').value=toLocalInput(yd)} showForm(); focusId('t')}
   else if(b==='med'||b.indexOf('sp_')===0){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}
   else if(b==='g-low'){go('add'); setMode('read'); focusId('g')}
   else if(b.indexOf('visit')===0){gotoVisit()}
