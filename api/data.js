@@ -357,7 +357,7 @@ async function runCron(host, force) {
   RR.filter(e => ['bf_before', 'ln_before', 'dn_before'].includes(e.slot) && !(e.apidra > 0)).forEach(e => {
     const t = Date.parse(e.ts), dt = now - t;
     if (dt >= 20 * 60e3 && dt < 90 * 60e3 && !recentAll.some(x => x.apidra > 0 && Date.parse(x.ts) >= t - 5 * 60e3 && Date.parse(x.ts) <= t + dt))
-      due.push(['nodose:' + t, 'جرعة أبيدرا', 'سجّلت قراءة ' + ({ bf_before: 'قبل الفطور', ln_before: 'قبل الغداء', dn_before: 'قبل العشاء' })[e.slot] + ' ولم تُسجّل الجرعة']);
+      due.push(['nodose:' + t, 'جرعة أبيدرا', 'سجّلت قراءة ' + ({ bf_before: 'قبل الفطار', ln_before: 'قبل الغداء', dn_before: 'قبل العشاء' })[e.slot] + ' ولم تُسجّل الجرعة']);
   });
   /* 2 hours after an Apidra dose: remind to check sugar (unless a reading was logged after the dose) */
   if (!settings.cgm) recentAll.filter(e => e.apidra > 0).forEach(e => {
@@ -367,7 +367,7 @@ async function runCron(host, force) {
   });
   const SP = (Array.isArray(settings.supps) && settings.supps.length) ? settings.supps : [{ k: 'omega', n: 'الأوميجا', g: 'bf' }, { k: 'milga', n: 'ميلجا أدفانس', g: 'bf' }, { k: 'calmag', n: 'الكال ماج', g: 'ln' }, { k: 'd3', n: 'فيتامين D3', g: 'ln' }];
   /* omega after breakfast / vitamins after lunch: 1h after the meal's Apidra dose, or a fixed time when no dose was logged; once a day, only if not logged yet */
-  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, SP.filter(x => x.g === 'bf').map(x => [x.k, x.n, [x.k]]), 'بعد الفطور'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, SP.filter(x => x.g === 'ln').map(x => [x.k, x.n, (x.k === 'calmag' || x.k === 'd3') ? [x.k, 'vit'] : [x.k]]), 'بعد الغداء']].forEach(([k, on, at, h1, h2, items, when]) => {
+  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, SP.filter(x => x.g === 'bf').map(x => [x.k, x.n, [x.k]]), 'بعد الفطار'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, SP.filter(x => x.g === 'ln').map(x => [x.k, x.n, (x.k === 'calmag' || x.k === 'd3') ? [x.k, 'vit'] : [x.k]]), 'بعد الغداء']].forEach(([k, on, at, h1, h2, items, when]) => {
     if (!on) return;
     const miss = items.filter(([, , keys]) => !recentAll.some(e => (e.supp || []).some(x => keys.includes(x)) && sday(Date.parse(e.ts)) === today)).map(x => x[1]);
     if (!miss.length) return;
