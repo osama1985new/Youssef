@@ -1421,6 +1421,19 @@ input,select,textarea{font-size:max(16px,1em)}
 #mealmgr .mml .acts button{flex:1 1 0!important; width:auto!important; min-height:36px; font-size:13.5px}
 #mealmgr .mml>li{padding:10px 12px}
 #mealmgr .mml .rowh b{font-size:15px}
+
+.fpick>details.more{margin:0; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+.fpick>details.more>summary{list-style:none; display:flex; align-items:center; justify-content:space-between; min-height:50px; padding:0 14px; color:var(--ink); font-size:15px; font-weight:500}
+.fpick>details.more>summary::-webkit-details-marker{display:none}
+.fpick>details.more>summary::marker{content:''}
+.fpick>details.more>summary::after{content:'+'; color:var(--accent); font-size:20px; font-weight:600; line-height:1}
+.fpick>details.more[open]>summary::after{content:'−'}
+.fpick>details.more[open]>summary{border-bottom:1px solid var(--line)}
+.fpick>details.more>*:not(summary){margin:12px 14px 14px}
+.fpick>#mealmgr .mmgr{padding:0}
+.fpick>#mealmgr[hidden]{display:none}
+.fpick>details.more{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+#mmcnt{color:var(--muted); font-size:13px; margin-inline-start:6px; margin-inline-end:auto}
 </style>
 </head>
 <body>
@@ -1478,22 +1491,9 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="fpick">
       <div class="field fsw"><label for="fsearch" class="sr">ابحث عن صنف</label><svg class="fsi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="fsearch" type="search" autocomplete="off" placeholder="ابحث" aria-label="ابحث عن صنف"><ul class="fres" id="fres" hidden></ul></div>
       <div class="fsug" id="fsug" hidden style="display:none!important"></div>
-      <div class="field"><label for="presetpick">وجباتي والوجبات الجاهزة</label><select id="presetpick"></select></div>
-      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي الجاهزة <span id="mmcnt"></span></summary><div class="mmgr" id="mmgr2"></div></details>
-      <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
-      </div>
-      <ul class="mlist" id="mlist"></ul>
-      <p class="mtotal" id="mtotal"></p>
-      <p class="small mnote" id="mnote" hidden>القيم تقريبية، وأحجام الملاعق والأرغفة والحصص تختلف.</p>
-      <div class="xtra">
-      <details class="more" id="svbox" hidden>
-        <summary>احفظ هذه الوجبة</summary>
-        <div class="pk">
-          <input id="svn" type="text" placeholder="اسم الوجبة (مثلاً: غدا الجمعة)" autocomplete="off" maxlength="40">
-          <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
-          <ul class="svl" id="svl"></ul>
-        </div>
-      </details>      <details class="more" id="newbox">
+      <div class="field"><label for="presetpick">وجبة جاهزة</label><select id="presetpick"></select></div>
+      <div class="field"><label for="foodpick">صنف آخر</label><select id="foodpick"></select></div>
+      <details class="more" id="newbox">
         <summary>إضافة صنف جديد</summary>
         <div class="nw">
           <div class="nwh"><label for="nwn">اسم الصنف</label><input id="nwn" type="text" list="nwlist" placeholder="مثال: كحك بالعجوة" autocomplete="off" maxlength="40"></div>
@@ -1510,7 +1510,20 @@ input,select,textarea{font-size:max(16px,1em)}
           <details class="nwmine" id="nwmine"><summary>أصنافي المضافة <span id="nwcnt"></span></summary><ul class="nwul" id="nwul"></ul></details>
         </div>
       </details>
-      <div hidden id="oldadd"><details class="more" id="pkbox">
+      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي الجاهزة <span id="mmcnt"></span></summary><div class="mmgr" id="mmgr2"></div></details>
+      </div>
+      <ul class="mlist" id="mlist"></ul>
+      <p class="mtotal" id="mtotal"></p>
+      <p class="small mnote" id="mnote" hidden>القيم تقريبية، وأحجام الملاعق والأرغفة والحصص تختلف.</p>
+      <div class="xtra">
+      <details class="more" id="svbox" hidden>
+        <summary>احفظ هذه الوجبة</summary>
+        <div class="pk">
+          <input id="svn" type="text" placeholder="اسم الوجبة (مثلاً: غدا الجمعة)" autocomplete="off" maxlength="40">
+          <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
+          <ul class="svl" id="svl"></ul>
+        </div>
+      </details>      <div hidden id="oldadd"><details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
         <div class="pk">
           <input id="pkn" type="text" placeholder="اسم المنتج" autocomplete="off">
