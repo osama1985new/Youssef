@@ -2835,7 +2835,7 @@ function renderHint(E){
       var s=tr.reduce(function(a,e){return a+e.tresiba},0);
       h+='<p><b class="warn">سُجّلت اليوم:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. تأكّد أنك لا تكرر الجرعة.</p>';
     }
-    $('#t').placeholder=settings.plan>0?'المقترحة '+fmt(settings.plan):'0'; $('#tplan').innerHTML=settings.plan>0?'':'جرعة الطبيب: اكتبها في الإعدادات وستظهر هنا كتذكير.';
+    $('#t').placeholder=settings.plan>0?fmt(settings.plan):'0'; if(settings.plan>0&&!editingId&&imode==='tres'&&!$('#t').value&&document.activeElement!==$('#t'))$('#t').value=String(settings.plan); $('#tplan').innerHTML=settings.plan>0?'':'جرعة الطبيب: اكتبها في الإعدادات وستظهر هنا كتذكير.';
   }
   el.innerHTML=h; el.hidden=!h;
 }
@@ -3501,7 +3501,7 @@ function updateCalc(){
       if(mealU>0)total=r5(mealU);
     }
   }
-  if(total!=null&&!isSnack()&&!$('#a').value)$('#a').placeholder='المقترحة '+fmt(total);
+  if(total!=null&&!isSnack()&&!$('#a').value)$('#a').placeholder=fmt(total);
   if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
   if(total!=null&&!fixedM)h+='<p class="calcdis">الرقم تقديري، ارجع للطبيب لتحديد الرقم الفعلي</p>';
   var cc=(g!=null&&g>0&&(before||hiG))?corrUnits(g):null, corrH='';
