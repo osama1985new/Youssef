@@ -1414,6 +1414,13 @@ input,select,textarea{font-size:max(16px,1em)}
 .mmed .acts .primary{flex:1.4}
 .mmed .acts button{min-height:44px}
 .mml .mmed .acts .primary{background:var(--accent,#2f8573)!important; color:#fff!important; border-color:transparent!important; font-weight:700}
+#mealmgr{margin-top:2px}
+#mealmgr>summary{font-size:14px; font-weight:600}
+#mealmgr .mmgr{padding:8px 0 2px}
+#mealmgr .mml .acts{display:flex!important; flex-direction:row!important; gap:8px}
+#mealmgr .mml .acts button{flex:1 1 0!important; width:auto!important; min-height:36px; font-size:13.5px}
+#mealmgr .mml>li{padding:10px 12px}
+#mealmgr .mml .rowh b{font-size:15px}
 </style>
 </head>
 <body>
@@ -1472,6 +1479,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field fsw"><label for="fsearch" class="sr">ابحث عن صنف</label><svg class="fsi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="fsearch" type="search" autocomplete="off" placeholder="ابحث" aria-label="ابحث عن صنف"><ul class="fres" id="fres" hidden></ul></div>
       <div class="fsug" id="fsug" hidden style="display:none!important"></div>
       <div class="field"><label for="presetpick">وجباتي والوجبات الجاهزة</label><select id="presetpick"></select></div>
+      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي الجاهزة <span id="mmcnt"></span></summary><div class="mmgr" id="mmgr2"></div></details>
       <div class="field"><label for="foodpick">أو اختر من القائمة</label><select id="foodpick"></select></div>
       </div>
       <ul class="mlist" id="mlist"></ul>
@@ -3009,14 +3017,12 @@ function mmRow(m,j){
   return '<div class="mmr" data-j="'+j+'"><input type="text" class="in" value="'+esc(m.n||'')+'" maxlength="60" placeholder="اسم البند" aria-label="اسم البند"><input type="text" class="iq" inputmode="decimal" value="'+esc(fmt(Number(m.q)||1))+'" aria-label="الكمية"><input type="text" class="ic" inputmode="decimal" value="'+(m.x?'':esc(fmt(Number(m.c)||0)))+'" placeholder="؟" aria-label="الكارب للوحدة"><button type="button" class="mmx" data-mm="rm" aria-label="حذف البند">✕</button></div>'
     +(m.u?'<div class="mmu">'+esc(m.u)+(m.d?' · '+esc(m.d):'')+'</div>':'');
 }
-function mmRender(force){
-  var box=$('#mmgr'); if(!box)return;
-  if(mmI>=0&&!force)return;
-  var L=settings.meals||[];
-  if(!L.length){box.innerHTML='<p class="nwnote">لا توجد وجبات محفوظة بعد.</p>'; return}
-  box.innerHTML='<ul class="mml">'+L.map(function(m,i){
+var mmHost=null;
+function mmListHtml(L,editHere){
+  if(!L.length)return '<p class="nwnote">لا توجد وجبات محفوظة بعد.</p>';
+  return '<ul class="mml">'+L.map(function(m,i){
     var gl=(MMG.filter(function(x){return x[0]===m.g})[0]||[0,''])[1];
-    if(i===mmI&&mmD){
+    if(i===mmI&&mmD&&editHere){
       return '<li class="mmed" data-i="'+i+'"><label>اسم الوجبة</label><input type="text" id="mmn" value="'+esc(mmD.n)+'" maxlength="40">'
         +'<label>تظهر في</label><div class="nwseg" id="mmg">'+MMG.map(function(x){return '<button type="button" data-g="'+x[0]+'" aria-pressed="'+(mmD.g===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
         +'<div class="mmh"><span>البند</span><span>الكمية</span><span>كارب/وحدة</span><span></span></div>'
@@ -3025,11 +3031,17 @@ function mmRender(force){
         +'<div class="acts"><button type="button" class="primary" data-mm="save">حفظ</button><button type="button" data-mm="cancel">إلغاء</button></div></li>';
     }
     return '<li data-i="'+i+'"><div class="rowh"><b>'+esc(m.n)+'</b><small>'+gl+' · '+m.items.length+' بنود · '+fmt(mmTot(m.items))+' جم</small></div>'
-      +(role==='view'?'':'<div class="acts"><button type="button" data-mm="edit">تعديل</button><button type="button" class="del" data-mm="del">حذف</button></div>')+'</li>';
+      +((role==='view'||(mmI>=0&&!editHere))?'':'<div class="acts"><button type="button" data-mm="edit">تعديل</button><button type="button" class="del" data-mm="del">حذف</button></div>')+'</li>';
   }).join('')+'</ul>';
 }
+function mmRender(force){
+  if(mmI>=0&&!force)return;
+  var L=settings.meals||[];
+  [].forEach.call(document.querySelectorAll('.mmgr'),function(c){c.innerHTML=mmListHtml(L,mmI>=0&&c===mmHost)});
+  var md=$('#mealmgr'); if(md){md.hidden=!L.length||role==='view'; var ct=$('#mmcnt'); if(ct)ct.textContent=L.length?'('+L.length+')':''}
+}
 function mmSyncDraft(){
-  var li=document.querySelector('#mmgr .mmed'); if(!li||!mmD)return;
+  var li=document.querySelector('.mmgr .mmed'); if(!li||!mmD)return;
   mmD.n=$('#mmn').value;
   mmD.items=[].map.call(li.querySelectorAll('.mmr'),function(r,k){
     var o=mmD.items[k]||{}, c=r.querySelector('.ic').value.trim();
@@ -3037,11 +3049,11 @@ function mmSyncDraft(){
   });
 }
 document.addEventListener('click',function(e){
-  var b=e.target.closest('#mmgr button'); if(!b||role==='view')return;
+  var b=e.target.closest('.mmgr button'); if(!b||role==='view')return;
   var L=settings.meals||[];
   if(b.dataset.g){mmSyncDraft(); mmD.g=b.dataset.g; mmRender(true); return}
   var a=b.dataset.mm; if(!a)return;
-  if(a==='edit'){mmI=Number(b.closest('li').dataset.i); var m=L[mmI]; mmD={n:m.n,g:m.g||'ln',items:JSON.parse(JSON.stringify(m.items||[]))}; mmRender(true)}
+  if(a==='edit'){mmHost=b.closest('.mmgr'); mmI=Number(b.closest('li').dataset.i); var m=L[mmI]; mmD={n:m.n,g:m.g||'ln',items:JSON.parse(JSON.stringify(m.items||[]))}; mmRender(true)}
   else if(a==='cancel'){mmI=-1; mmD=null; mmRender(true)}
   else if(a==='del'){var i=Number(b.closest('li').dataset.i); if(!confirm('حذف الوجبة «'+L[i].n+'»؟ السجلات القديمة لن تتغير.'))return; L.splice(i,1); settings.meals=L; persistSettings(); mmRender(true); try{renderPresets(); paintSaved()}catch(_){} toast('حُذفت الوجبة')}
   else if(a==='add'){mmSyncDraft(); mmD.items.push({n:'',q:'1',c:'',_x:true}); mmRender(true); var rs=document.querySelectorAll('#mmrows .in'); if(rs.length)rs[rs.length-1].focus()}
