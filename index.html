@@ -4385,7 +4385,8 @@ $('#f').addEventListener('submit',async function(ev){
   var supp=noExtra?[]:getSupp().filter(function(k){return !suppDoneToday(k)}), ket=noExtra?{ok:true}:readKet();
   if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
-  if(t>0&&!editingId){
+  var edE=editingId?entries.filter(function(x){return x.id===editingId})[0]:null;
+  if(t>0&&(!editingId||(edE&&lk(new Date(edE.ts))===lk(new Date())))){
     var pend=[].filter.call(document.querySelectorAll('#supp .chip'),function(b){return !b.disabled&&!b.closest('[hidden]')&&b.getAttribute('aria-pressed')!=='true'}).map(function(b){return (SUPPS.filter(function(x){return x[0]===b.dataset.supp})[0]||[])[1]||''});
     if(pend.length){err.textContent='قبل تسجيل ترسيبا علّم أنك أخذت: '+pend.join('، ')+'.'; var sb=$('#supp'); var dd=sb&&sb.closest('details'); if(dd)dd.open=true; if(sb&&sb.scrollIntoView)sb.scrollIntoView({block:'center',behavior:'smooth'}); return}
   }
