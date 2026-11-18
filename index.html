@@ -1434,6 +1434,12 @@ input,select,textarea{font-size:max(16px,1em)}
 .fpick>#mealmgr[hidden]{display:none}
 .fpick>details.more{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
 #mmcnt{color:var(--muted); font-size:13px; margin-inline-start:6px; margin-inline-end:auto}
+#nwcnt{color:var(--muted); font-size:13px; margin-inline-start:6px; margin-inline-end:auto}
+.fpick>#nwmine>.nwul{margin:12px 14px 14px}
+.fpick>#nwmine[hidden]{display:none}
+.subh{margin:2px 0 8px; font-size:13px; font-weight:600; color:var(--muted)}
+#mealmgr #nwmine{margin-top:14px}
+#mealmgr #nwmine>.nwul{margin:0}
 </style>
 </head>
 <body>
@@ -1507,10 +1513,12 @@ input,select,textarea{font-size:max(16px,1em)}
           <p class="nwr" id="nwr" aria-live="polite"></p>
           <button type="button" class="primary nwadd" id="nwadd">إضافة</button>
           <p class="nwnote">يُضاف للوجبة، ويُحفظ في قائمة الأصناف تحت «أضفتَها أنت».</p>
-          <details class="nwmine" id="nwmine"><summary>أصنافي المضافة <span id="nwcnt"></span></summary><ul class="nwul" id="nwul"></ul></details>
         </div>
       </details>
-      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي الجاهزة <span id="mmcnt"></span></summary><div class="mmgr" id="mmgr2"></div></details>
+      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي وأصنافي <span id="mmcnt"></span></summary>
+        <div id="mmsec" hidden><p class="subh">الوجبات الجاهزة</p><div class="mmgr" id="mmgr2"></div></div>
+        <div id="nwmine" hidden><p class="subh">الأصناف المضافة</p><ul class="nwul" id="nwul"></ul></div>
+        <span id="nwcnt" hidden></span></details>
       </div>
       <ul class="mlist" id="mlist"></ul>
       <p class="mtotal" id="mtotal"></p>
@@ -1768,12 +1776,6 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="swtxt"><b>تذكيرات على هذا الهاتف</b><span id="pushst" class="small"></span></div>
       <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الهاتف"><i></i></label>
     </div>
-
-    <h3>وجباتي وأصنافي</h3>
-    <p class="cap">عدّل أو احذف وجباتك الجاهزة وأصنافك المضافة. السجلات القديمة لا تتغير.</p>
-    <div id="mmgr" class="mmgr"></div>
-    <p class="cap" style="margin-top:6px">أصنافك المضافة</p>
-    <ul class="nwul" id="nwul2"></ul>
 
     <h3>الحساب</h3>
     <p class="small">اخرج من البرنامج على هذا الهاتف، وسيطلب الرقم السري مجددًا عند الدخول القادم.</p>
@@ -2991,7 +2993,7 @@ nwPaint();
 /* manage the items the user added: rename / edit carb / delete */
 var nwEdit=-1;
 function nwMine(){
-  var L=settings.myFoods||[]; $('#nwcnt').textContent=L.length?'('+L.length+')':'';
+  var L=settings.myFoods||[]; $('#nwcnt').textContent=L.length?'('+L.length+')':''; var nm=$('#nwmine'); if(nm)nm.hidden=!L.length; mmBar();
   var h;
   if(!L.length){h='<li><span class="nwnote">لم تُضف أصنافًا بعد.</span></li>'}
   else h=L.map(function(m,i){
@@ -3031,6 +3033,7 @@ function mmRow(m,j){
     +(m.u?'<div class="mmu">'+esc(m.u)+(m.d?' · '+esc(m.d):'')+'</div>':'');
 }
 var mmHost=null;
+function mmBar(){var md=$('#mealmgr'); if(!md)return; var a=(settings.meals||[]).length,b=(settings.myFoods||[]).length; md.hidden=!(a+b)||role==='view'; var ct=$('#mmcnt'); if(ct)ct.textContent=(a+b)?'('+(a+b)+')':''}
 function mmListHtml(L,editHere){
   if(!L.length)return '<p class="nwnote">لا توجد وجبات محفوظة بعد.</p>';
   return '<ul class="mml">'+L.map(function(m,i){
@@ -3051,7 +3054,7 @@ function mmRender(force){
   if(mmI>=0&&!force)return;
   var L=settings.meals||[];
   [].forEach.call(document.querySelectorAll('.mmgr'),function(c){c.innerHTML=mmListHtml(L,mmI>=0&&c===mmHost)});
-  var md=$('#mealmgr'); if(md){md.hidden=!L.length||role==='view'; var ct=$('#mmcnt'); if(ct)ct.textContent=L.length?'('+L.length+')':''}
+  var ms=$('#mmsec'); if(ms)ms.hidden=!L.length; mmBar();
 }
 function mmSyncDraft(){
   var li=document.querySelector('.mmgr .mmed'); if(!li||!mmD)return;
