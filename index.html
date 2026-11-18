@@ -1452,6 +1452,27 @@ input,select,textarea{font-size:max(16px,1em)}
 .fgrp>details.more[open]>summary{border-bottom:1px solid var(--line)!important}
 .fgrp>details.more>summary::after{font-size:22px}
 .fpick .fsw{margin-bottom:2px}
+
+.mi-ed{gap:10px}
+.mi-ed .two{display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:end}
+.mi-ed label{font-size:12.5px}
+.mi-ed .cgmrow{font-size:13.5px; color:var(--ink)}
+.mi-more{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.mi-more>summary{min-height:42px; display:flex; align-items:center; font-size:14px; font-weight:600; color:var(--accent); cursor:pointer; list-style:none}
+.mi-more>summary::-webkit-details-marker{display:none}
+.mi-more>summary::after{content:'+'; margin-inline-start:auto; font-size:20px}
+.mi-more[open]>summary::after{content:'−'}
+.mi-more[open]{padding-bottom:12px}
+.mi-more .mmb{display:flex; flex-direction:column; gap:12px}
+.mi-more .alts{display:flex; flex-wrap:wrap; gap:6px}
+.mi-more .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:var(--surface); border:1px solid var(--line); font-size:13px}
+.mi-more .chip .link{padding:0; min-height:0; color:var(--muted)}
+.mi-more .ghost.sm{min-height:38px; font-size:14px; width:auto!important; align-self:flex-start}
+.mi-ed .mi-eb{display:flex; flex-direction:row; gap:8px}
+.mi-ed .mi-eb button{flex:1; width:auto!important; min-height:44px}
+.mi-ed .mi-eb .primary{flex:1.3}
+.pulse{animation:pls 1.2s ease 2}
+@keyframes pls{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 30%,transparent); border-radius:12px}}
 </style>
 </head>
 <body>
@@ -1528,7 +1549,7 @@ input,select,textarea{font-size:max(16px,1em)}
           <p class="nwnote">يُضاف للوجبة، ويُحفظ في قائمة الأصناف تحت «أضفتَها أنت».</p>
         </div>
       </details>
-      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل وجباتي وأصنافي <span id="mmcnt"></span></summary>
+      <details class="more mealmgr" id="mealmgr" hidden><summary>تعديل الوجبات والأصناف <span id="mmcnt"></span></summary>
         <div id="mmsec" hidden><p class="subh">الوجبات الجاهزة</p><div class="mmgr" id="mmgr2"></div></div>
         <div id="nwmine" hidden><p class="subh">الأصناف المضافة</p><ul class="nwul" id="nwul"></ul></div>
         <span id="nwcnt" hidden></span></details>
@@ -1543,7 +1564,6 @@ input,select,textarea{font-size:max(16px,1em)}
         <div class="pk">
           <input id="svn" type="text" placeholder="اسم الوجبة (مثلاً: غدا الجمعة)" autocomplete="off" maxlength="40">
           <button type="button" class="ghost" id="svadd">حفظ الوجبة</button>
-          <ul class="svl" id="svl"></ul>
         </div>
       </details>      <div hidden id="oldadd"><details class="more" id="pkbox">
         <summary>منتج معلّب (الكارب من الملصق)</summary>
@@ -2342,7 +2362,7 @@ function renderTresRem(){
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا اليوم سُجّلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>لم تُسجَّل ترسيبا اليوم بعد</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
-var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed'];
+var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed','bf_after','ln_after','dn_after'];
 function setSlotOptions(){
   var allow=imode==='meal'?MEAL_SLOTS:imode==='read'?READ_SLOTS:null, order=imode==='read'?READ_SLOTS:null;
   var list=allow?SLOTS.filter(function(x){return allow.indexOf(x[0])>=0||x[0]===keepSlot}):SLOTS;
@@ -2399,7 +2419,7 @@ document.addEventListener('click',function(e){
   }
   var uf=e.target.closest&&e.target.closest('[data-usefix]'); if(uf){$('#a').value=uf.dataset.usefix; syncInj(); return}
   var rd=e.target.closest&&e.target.closest('[data-remdis]'); if(rd){var dd=lsGet('ysg:rrdis',{}),tk0=lk(new Date()); if(dd.k!==tk0)dd={k:tk0,s:[]}; dd.s=(dd.s||[]).concat(rd.dataset.remdis); lsSet('ysg:rrdis',dd); renderReadRem(); return}
-  var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode(MEAL_SLOTS.indexOf(rb.dataset.remslot)>=0?'meal':'read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
+  var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode('read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
   setMode(b.dataset.mode)});
@@ -2769,7 +2789,7 @@ function renderHint(E){
       var s=tr.reduce(function(a,e){return a+e.tresiba},0);
       h+='<p><b class="warn">سُجّلت اليوم:</b> ترسيبا '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. تأكّد أنك لا تكرر الجرعة.</p>';
     }
-    $('#tplan').innerHTML=settings.plan>0?'جرعة الطبيب: <b>'+fmt(settings.plan)+' وحدة</b> <button type="button" class="link" data-useplan>اكتبها في الخانة</button>':'جرعة الطبيب: اكتبها في الإعدادات وستظهر هنا كتذكير.';
+    $('#t').placeholder=settings.plan>0?'المقترحة '+fmt(settings.plan):'0'; $('#tplan').innerHTML=settings.plan>0?'':'جرعة الطبيب: اكتبها في الإعدادات وستظهر هنا كتذكير.';
   }
   el.innerHTML=h; el.hidden=!h;
 }
@@ -2917,15 +2937,20 @@ function renderMeal(){ setTimeout(syncCorr,0);
     if(m.editc&&!m.fruit&&m.u){
       ed='<div class="mi-ed" data-ed="'+i+'">'
         +'<div class="two"><label>الوحدة<input type="text" data-e="u" value="'+esc(m.bu)+'" maxlength="20"></label><label>كارب الوحدة (جم)<input type="text" inputmode="decimal" data-e="c" value="'+(m.bc==null?'':fmt(m.bc))+'"></label></div>'
-        +'<div class="two"><label>وزن الوحدة (جم، اختياري)<input type="text" inputmode="decimal" data-e="w" value="'+(m.bw?fmt(r1(m.bw)):'')+'"></label><label>وصف الوحدة<input type="text" data-e="d" value="'+esc(m.d||'')+'" maxlength="40" placeholder="مثلاً: ممسوحة أو مليانة"></label></div>'
+        +'<label class="cgmrow"><input type="checkbox" data-e="s"'+(m.step<1?' checked':'')+'><span>قابلة للتجزئة (نص، ربع…)</span></label>'
         +'<div class="pendbox" data-pendbox'+(m.pend?'':' hidden')+'><p>غيّرت وصف الوحدة. راجع كارب الوحدة وحدّد القيمة الجديدة. القيمة لم تتغيّر تلقائيًا، والصنف يُحسب «غير مؤكد» ولا يدخل في الإجمالي حتى تؤكّد.</p><button type="button" class="ghost" data-ccon="'+i+'">أكّد كارب الوحدة</button></div>'
+        +'<details class="mi-more"'+((edOpen||m.pend||m.alts.length)?' open':'')+'><summary>وحدة بديلة ووزن ووصف</summary>'
+        +'<div class="mmb">'
+        +(m.alts.length?'<div class="alts">'+m.alts.map(function(a,j){return '<span class="chip">'+esc(a.u)+' = '+fmt(a.r)+' '+esc(m.bu)+' <button type="button" class="link" data-altx="'+i+':'+j+'" aria-label="حذف">✕</button></span>'}).join('')+'</div>':'')
+        +'<div class="two"><label>وحدة بديلة<input type="text" data-e="au" maxlength="20" placeholder="مثلاً: نص رغيف"></label><label>تساوي كم وحدة أساسية<input type="text" inputmode="decimal" data-e="ar" placeholder="مثلاً 2"></label></div>'
+        +'<button type="button" class="ghost sm" data-altadd="'+i+'">+ أضف الوحدة البديلة</button>'
+        +'<div class="two"><label>وزن الوحدة (جم)<input type="text" inputmode="decimal" data-e="w" value="'+(m.bw?fmt(r1(m.bw)):'')+'" placeholder="اختياري"></label><label>وصف الوحدة<input type="text" data-e="d" value="'+esc(m.d||'')+'" maxlength="40" placeholder="مثلاً: ممسوحة"></label></div>'
         +(m.raw?'<p class="small">نص الجدول الأصلي: '+esc(m.raw)+'</p>':'')
         +(srcTxt(m)?'<p class="small">المصدر: '+esc(srcTxt(m))+'</p>':'')
-        +'<label class="cgmrow"><input type="checkbox" data-e="s"'+(m.step<1?' checked':'')+'><span>قابلة للتجزئة (نص، ربع…)</span></label>'
-        +(m.alts.length?'<div class="small">وحدات بديلة: '+m.alts.map(function(a,j){return esc(a.u)+' = '+fmt(a.r)+' '+esc(m.bu)+' <button type="button" class="link" data-altx="'+i+':'+j+'">حذف</button>'}).join(' · ')+'</div>':'')
-        +'<div class="two"><label>وحدة بديلة<input type="text" data-e="au" maxlength="20" placeholder="مثلاً: نص رغيف"></label><label>تساوي كم من الوحدة الأساسية<input type="text" inputmode="decimal" data-e="ar" placeholder="مثلاً 2"></label></div>'
-        +'<div class="mi-eb"><button type="button" class="ghost" data-altadd="'+i+'">أضف وحدة بديلة</button>'+(ro?'':'<button type="button" class="ghost" data-ovsave="'+i+'">احفظ للصنف</button>')+(m.src==='ov'&&!ro?'<button type="button" class="link" data-ovreset="'+i+'">رجّع الأصلي</button>':'')+'<button type="button" class="link" data-edone="'+i+'">تم</button></div>'
-        +'<p class="small">القيم تقديرية وأحجام الملاعق والأرغفة تختلف. التعديل للوجبة الحالية، وزر «احفظ للصنف» يطبّقه على الوجبات الجديدة فقط ولا يغيّر السجل القديم.</p></div>';
+        +'</div></details>'
+        +'<div class="mi-eb">'+(ro?'':'<button type="button" class="ghost" data-ovsave="'+i+'">احفظ للصنف</button>')+'<button type="button" class="primary" data-edone="'+i+'">تم</button></div>'
+        +(m.src==='ov'&&!ro?'<button type="button" class="link" data-ovreset="'+i+'">رجّع الأصلي</button>':'')
+        +'<p class="small">التعديل لهذه الوجبة فقط، و«احفظ للصنف» يطبّقه على الوجبات الجديدة.</p></div>';
     }
     return '<li class="mi" data-i="'+i+'"><div class="mi-top">'+top+'<button type="button" class="mi-x" data-rm="'+i+'" aria-label="شيل الصنف">✕</button></div>'+
       amount+'<div class="mi-sum"><span>الكارب التقريبي</span><span class="mi-t">'+totHtml(m)+'</span></div>'+
@@ -3005,7 +3030,7 @@ $('#nwadd').addEventListener('click',function(){
 nwPaint();
 
 /* manage the items the user added: rename / edit carb / delete */
-var nwEdit=-1;
+var nwEdit=-1; var edOpen=false; document.addEventListener('toggle',function(e){var t=e.target; if(t&&t.classList&&t.classList.contains('mi-more'))edOpen=t.open},true);
 function nwMine(){
   var L=settings.myFoods||[]; $('#nwcnt').textContent=L.length?'('+L.length+')':''; var nm=$('#nwmine'); if(nm)nm.hidden=!L.length; mmBar();
   var h;
@@ -3172,7 +3197,6 @@ function paintSaved(){
   var snap=mealItems.filter(function(m){return m.fruit?m.name.trim():true}).map(function(m){return {n:m.fruit?m.name.trim():(m.fk||m.disp),q:itemQ(m),c:m.c==null?0:m.c,x:m.c==null?1:0}});
   var dup=false; try{var cs=coreSet(snap); dup=cs.length&&sm.some(function(x){return sameSet(coreSet(x.items),cs)})}catch(_){}
   box.hidden=!(has&&role!=='view')||dup;
-  $('#svl').innerHTML=sm.map(function(x,i){return '<li><span>'+esc(x.n)+'</span><button type="button" class="link" data-svdel="'+i+'">حذف</button></li>'}).join('');
 }
 $('#svadd').addEventListener('click',function(){
   var n=$('#svn').value.trim(); if(!n){toast('اكتب اسم الوجبة'); return}
@@ -3183,7 +3207,6 @@ $('#svadd').addEventListener('click',function(){
   settings.meals=(settings.meals||[]).filter(function(x){return x.n!==n}); settings.meals.push({n:n,g:curGrp(),items:its.slice(0,20)}); settings.meals=settings.meals.slice(-30);
   persistSettings(); $('#svn').value=''; renderPresets(); paintSaved(); toast('حُفظت الوجبة');
 });
-$('#svl').addEventListener('click',function(e){var b=e.target.closest('button[data-svdel]'); if(!b)return; settings.meals.splice(Number(b.dataset.svdel),1); persistSettings(); renderPresets(); paintSaved()});
 
 /* ====== repeated-meal suggestion (uses the existing saved-meals list; never saves without approval) ====== */
 var sugCur=null;
@@ -3412,6 +3435,7 @@ function updateCalc(){
   var afterSlot=slot.indexOf('_after')>0;
   var hiG=g!=null&&g>settings.high;
   var fixedM=!settings.carbMode;
+  $('#a').placeholder='0';
   el.hidden=isSnack();
   if(!(before&&(has||fixedM))&&!hiG){el.innerHTML=''; return}
   var h='<div class="calc"><p class="eyebrow">'+(fixedM?'الجرعة الثابتة المحدّدة من الطبيب':'أبيدرا المقترحة')+'</p>';
@@ -3429,6 +3453,7 @@ function updateCalc(){
       if(mealU>0)total=r5(mealU);
     }
   }
+  if(total!=null&&!isSnack()&&!$('#a').value)$('#a').placeholder='المقترحة '+fmt(total);
   if(total!=null)h+='<p class="calcbig">'+fmt(total)+'<small>وحدة أبيدرا</small></p>';
   if(total!=null&&!fixedM)h+='<p class="calcdis">الرقم تقديري، ارجع للطبيب لتحديد الرقم الفعلي</p>';
   var cc=(g!=null&&g>0&&(before||hiG))?corrUnits(g):null, corrH='';
@@ -4389,13 +4414,14 @@ function openFromNotif(tag){
   var b=String(tag||'').split(':')[0]; if(!authed||role==='view')return;
   if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm(); focusId('g')}
   else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); if(b==='trY'){var yd=new Date(Date.now()-864e5); yd.setHours(22,0,0,0); $('#tdt').value=toLocalInput(yd)} showForm(); focusId('t')}
-  else if(b==='med'||b.indexOf('sp_')===0){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}
+  else if(b.indexOf('sp_')===0){go('add'); setMode('read'); showForm(); [0,200,600].forEach(function(d){setTimeout(function(){var x=document.querySelector('.p-extra'); if(x){x.hidden=false; x.scrollIntoView({block:'center',behavior:'smooth'}); var sp=$('#supp'); if(sp)sp.classList.add('pulse')}},d)}); setTimeout(function(){var sp=$('#supp'); if(sp)sp.classList.remove('pulse')},2600)}
+  else if(b==='med'){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}
   else if(b==='g-low'){go('add'); setMode('read'); focusId('g')}
   else if(b==='apd'||b==='nodose'||b==='hypo15'||b==='hypo30'||b==='low2h'){
     var tt=Number(String(tag).split(':')[1]), E2=(typeof entries!=='undefined'?entries:[]), en=null;
     E2.forEach(function(e){if(en)return; var d=Math.abs(new Date(e.ts).getTime()-tt); if(d<90e3)en=e});
     if(b==='nodose'&&en){go('add'); setMode('read'); startEdit(en.id); showFocusA(); return}
-    go('add'); setMode(b==='apd'?'meal':'read');
+    go('add'); setMode('read');
     var AF={bf_before:'bf_after',ln_before:'ln_after',dn_before:'dn_after'}, sl='other';
     if(b==='apd'&&en){sl=AF[en.slot]||(function(){var h=new Date(en.ts).getHours(); return h<12?'bf_after':h<17?'ln_after':'dn_after'})()}
     var so=$('#slot'); if([].some.call(so.options,function(o){return o.value===sl}))so.value=sl; foodGrpManual=false; try{so.dispatchEvent(new Event('change'))}catch(_){} syncInj(); showForm(); focusId('g');
