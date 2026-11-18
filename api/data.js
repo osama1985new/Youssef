@@ -72,7 +72,7 @@ function cleanEntry(e) {
   const apidra = numOrNull(e.apidra, 50);
   const tresiba = numOrNull(e.tresiba, 100);
   if (glucose === undefined || apidra === undefined || tresiba === undefined) return null;
-  const supp = Array.isArray(e.supp) ? e.supp.filter(x => SUPP_KEYS.includes(x)).slice(0, 5) : [];
+  const supp = Array.isArray(e.supp) ? e.supp.filter(x => typeof x === 'string' && /^[a-z0-9]{1,12}$/.test(x)).slice(0, 5) : [];
   let ketT = null, ketV = null;
   if (e.ketT === 'b') {
     const n = Number(e.ketV);
@@ -123,7 +123,7 @@ function cleanSettings(s) {
   const N = (v, mx) => { const x = Number(v); return Number.isFinite(x) && x >= 0 && x <= mx ? x : null; };
   out.myFoods = Array.isArray(s.myFoods) ? s.myFoods.slice(-60).map(m => {
     const o = { n: T(m && m.n, 40), c: Number(m && m.c) };
-    if (m && m.u) { o.u = T(m.u, 20); o.w = N(m.w, 5000) || 0; o.d = T(m.d, 40); o.s = Number(m.s) === 1 ? 1 : 0.5; }
+    if (m && m.u) { o.u = T(m.u, 20); o.w = N(m.w, 5000) || 0; o.d = T(m.d, 40); o.s = Number(m.s) === 1 ? 1 : 0.5; o.a = Array.isArray(m.a) ? m.a.slice(0, 3).map(x => ({ u: T(x && x.u, 20), r: N(x && x.r, 100) })).filter(x => x.u && x.r > 0) : []; }
     return o;
   }).filter(m => m.n && Number.isFinite(m.c) && m.c >= 0 && m.c <= (m.u ? 500 : 100)) : [];
   out.foodOv = {};
@@ -144,6 +144,8 @@ function cleanSettings(s) {
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
   out.carbMode = s.carbMode === true;
+  out.supps = Array.isArray(s.supps) ? s.supps.slice(0, 8).map(x => ({ k: /^[a-z0-9]{1,12}$/.test(String(x && x.k)) ? String(x.k) : null, n: T(x && x.n, 24), g: x && (x.g === 'bf' || x.g === 'ln') ? x.g : '' })).filter(x => x.k && x.n) : null;
+  if (out.supps && !out.supps.length) out.supps = null;
   out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
   out.omegaAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.omegaAt || '')) ? String(s.omegaAt) : null;
   out.vitAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.vitAt || '')) ? String(s.vitAt) : null;
@@ -363,8 +365,9 @@ async function runCron(host, force) {
     if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !RR.some(r => Date.parse(r.ts) >= t + 30 * 60e3))
       due.push(['apd:' + t, 'قراءة بعد الأكل', 'مضت ساعتان على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قِس السكر وسجّله']);
   });
+  const SP = (Array.isArray(settings.supps) && settings.supps.length) ? settings.supps : [{ k: 'omega', n: 'الأوميجا', g: 'bf' }, { k: 'milga', n: 'ميلجا أدفانس', g: 'bf' }, { k: 'calmag', n: 'الكال ماج', g: 'ln' }, { k: 'd3', n: 'فيتامين D3', g: 'ln' }];
   /* omega after breakfast / vitamins after lunch: 1h after the meal's Apidra dose, or a fixed time when no dose was logged; once a day, only if not logged yet */
-  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, [['omega', 'الأوميجا', ['omega']], ['milga', 'ميلجا أدفانس', ['milga']]], 'بعد الفطور'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, [['calmag', 'الكال ماج', ['calmag', 'vit']], ['d3', 'فيتامين D3', ['d3', 'vit']]], 'بعد الغداء']].forEach(([k, on, at, h1, h2, items, when]) => {
+  [['omega', settings.suppOmega, settings.omegaAt || '10:30', 5, 11, SP.filter(x => x.g === 'bf').map(x => [x.k, x.n, [x.k]]), 'بعد الفطور'], ['vit', settings.suppVit, settings.vitAt || '15:30', 12, 17, SP.filter(x => x.g === 'ln').map(x => [x.k, x.n, (x.k === 'calmag' || x.k === 'd3') ? [x.k, 'vit'] : [x.k]]), 'بعد الغداء']].forEach(([k, on, at, h1, h2, items, when]) => {
     if (!on) return;
     const miss = items.filter(([, , keys]) => !recentAll.some(e => (e.supp || []).some(x => keys.includes(x)) && sday(Date.parse(e.ts)) === today)).map(x => x[1]);
     if (!miss.length) return;
