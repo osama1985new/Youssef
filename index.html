@@ -1780,12 +1780,12 @@ input,select,textarea{font-size:max(16px,1em)}
 
     <h3>جهاز قياس مستمر</h3>
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
-    <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطور وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
+    <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطار وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>المكملات</h3>
     <p class="hint">أسماء المكملات هنا هي نفسها اللي بتظهر في صفحة التسجيل. غيّر الاسم أو أضف/احذف، ويتحفظ تلقائيًا.</p>
     <div id="suppmgr" class="suppmgr"></div>
-    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span id="ssuppo-t">تنبيه بعد الفطور</span></label>
-    <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطور</label><input id="somegat" type="time"></div>
+    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span id="ssuppo-t">تنبيه بعد الفطار</span></label>
+    <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطار</label><input id="somegat" type="time"></div>
     <label class="cgmrow"><input type="checkbox" id="ssuppv"><span id="ssuppv-t">تنبيه بعد الغداء</span></label>
     <div class="field"><label for="svitat">وقت بديل إن لم يُسجَّل الغداء</label><input id="svitat" type="time"></div>
     <p class="hint">يصل التنبيه بعد الوجبة بساعة (من جرعة أبيدرا المسجَّلة)، ومرة واحدة في اليوم، ولا يصل إن سجّلتها. وإن لم تُسجَّل جرعة، يصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
@@ -2324,10 +2324,10 @@ function applySupps(){
   if(sl){sl.innerHTML=SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false"><i class="sk"></i><span>'+esc(x[1])+'</span></button>'}).join(''); setSupp(keep); refreshSuppChips()}
   if(!_spNoMgr)spMgr(); spTxt();
 }
-function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطور: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
+function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطار: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
 function spMgr(){
   var el=$('#suppmgr'); if(!el)return; if(el.contains(document.activeElement)&&document.activeElement.tagName==='INPUT')return;
-  el.innerHTML=suppList().map(function(x,i){return '<div class="spr" data-i="'+i+'"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطور</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><button type="button" class="spx" aria-label="حذف">✕</button></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
+  el.innerHTML=suppList().map(function(x,i){return '<div class="spr" data-i="'+i+'"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><button type="button" class="spx" aria-label="حذف">✕</button></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
 }
 function spSave(L,keep){settings.supps=L; persistSettings(); _spSig=''; _spNoMgr=!!keep; try{applySupps()}finally{_spNoMgr=false} try{render()}catch(_){}}
 document.addEventListener('change',function(e){var r=e.target.closest&&e.target.closest('#suppmgr .spr'); if(!r||role==='view')return; var i=Number(r.dataset.i), L=JSON.parse(JSON.stringify(suppList())); if(!L[i])return;
