@@ -1656,7 +1656,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
     </div>
     <p class="msg" id="khint" hidden></p>
-    <div class="field" id="tdf" hidden><label for="tdt">يوم ووقت جرعة الترسيبا</label><input id="tdt" type="datetime-local"><p class="small" style="margin:4px 0 0">غيّر اليوم لو الجرعة كانت أمس.</p></div>
+    <div class="field" id="tdf" hidden><label for="tdt">يوم ووقت جرعة الترسيبا</label><input id="tdt" type="datetime-local"></div>
     <details class="more">
       <summary>ملاحظة</summary>
       <div class="stack" style="margin-top:8px">
@@ -2605,8 +2605,8 @@ function renderCare(E){
 }
 function injHint(){
   var el=$('#injhint'), msgs=[];
-  if($('#needle').value==='reuse'&&num($('#a').value)>0)msgs.push('سن قلم أبيدرا للاستخدام مرة واحدة. غيّره إن أمكن.');
-  if($('#needleT').value==='reuse'&&num($('#t').value)>0)msgs.push('سن قلم ترسيبا للاستخدام مرة واحدة. غيّره لو تقدر.');
+  if($('#needle').value==='reuse'&&num($('#a').value)>0)msgs.push('هذا نفس سن قلم أبيدرا المستخدم. يُفضَّل تغييره.');
+  if($('#needleT').value==='reuse'&&num($('#t').value)>0)msgs.push('هذا نفس سن قلم ترسيبا المستخدم. يُفضَّل تغييره.');
   var site=$('#site').value;
   if(site){
     var inj=prep().filter(function(e){return (e.apidra>0||e.tresiba>0)&&e.site&&e.id!==editingId});
@@ -4408,7 +4408,9 @@ $('#f').addEventListener('submit',async function(ev){
   var liveItems=allMeal().filter(function(m){return (m.name&&m.name.trim())||m.fruit}), carbs=r1(mealCarbs(liveItems)), cx=unkItems(liveItems).length>0;
   if(!editingId&&!forceDup){
     var dup=entries.filter(function(e){var x=new Date(e.ts); return Math.abs(x-d)<=20*60000&&e.slot===slot&&((g!=null&&e.glucose===g)||(a>0&&e.apidra===a)||(t>0&&e.tresiba===t))})[0];
-    if(dup){err.innerHTML='يوجد تسجيل مشابه سُجّل الساعة '+timeStr(new Date(dup.ts))+'. ربما سجّله شخص آخر. <button type="button" class="link" id="dupok">سجّل على أي حال</button>'; return}
+    if(dup){err.textContent='يوجد تسجيل مشابه سُجّل الساعة '+timeStr(new Date(dup.ts))+'. ربما سجّله شخص آخر.'; return}
+    var trd=t>0?entries.filter(function(e){var x=new Date(e.ts); return e.tresiba>0&&lk(x)===lk(d)})[0]:null;
+    if(trd){err.textContent='جرعة ترسيبا مسجّلة بالفعل لهذا اليوم (الساعة '+timeStr(new Date(trd.ts))+'). لا يمكن تسجيلها مرتين.'; return}
   }
   var btn=$('#save'); btn.disabled=true;
   try{
