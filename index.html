@@ -1367,6 +1367,32 @@ input,select,textarea{font-size:max(16px,1em)}
 .rb:active,button.ghost:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){[data-tab]:not(.tabhide),#mlist>li.mi{animation:none}.rb,button.ghost{transition:none}}
 .toast.ok::before{content:'✓'; margin-inline-end:8px; font-weight:700}
+#newbox .nw{display:flex; flex-direction:column; gap:12px; padding:14px 14px 12px; margin:2px 0 6px; border:1px solid var(--line); border-radius:14px; background:color-mix(in srgb,var(--surface) 92%,var(--mgc,#2f8573) 8%)}
+#newbox .nwh,#newbox .nwf{display:flex; flex-direction:column; gap:6px}
+#newbox label{font-size:13px; color:var(--muted); font-weight:600}
+#newbox input[type=text]{width:100%; min-height:46px; border-radius:12px}
+#newbox .nwseg{display:grid; grid-template-columns:1fr 1fr; padding:4px; gap:4px; border:1px solid var(--line); border-radius:14px; background:var(--surface)}
+#newbox .nwseg button{border:0; border-radius:10px; min-height:40px; background:transparent; color:var(--muted); font-weight:600}
+#newbox .nwseg button[aria-pressed=true]{background:color-mix(in srgb,var(--mgc,#2f8573) 18%,var(--surface)); color:var(--ink); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--mgc,#2f8573) 55%,transparent)}
+#newbox .nwr{min-height:40px; display:flex; align-items:center; justify-content:center; margin:0; padding:6px 12px; border-radius:12px; background:var(--surface); border:1px dashed var(--line); font-size:15px; font-weight:700; text-align:center}
+#newbox .nwr:empty{display:none}
+#newbox .nwr.warn{font-weight:400; font-size:13px; color:var(--muted)}
+#newbox .nwadd{width:100%; min-height:48px}
+#newbox .nwnote{margin:0; text-align:center; font-size:12px; color:var(--muted)}
+#newbox .nwmine{border-top:1px solid var(--line); padding-top:8px}
+#newbox .nwmine>summary{font-size:14px; font-weight:600; padding:6px 0; color:var(--ink)}
+#nwul{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px}
+#nwul li{display:flex; flex-direction:column; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+#nwul .rowh{display:flex; justify-content:space-between; align-items:center; gap:8px}
+#nwul .rowh b{font-weight:700; overflow:hidden; text-overflow:ellipsis}
+#nwul .rowh small{color:var(--muted); white-space:nowrap}
+#nwul .acts{display:flex; gap:8px}
+#nwul .acts button{flex:1; min-height:38px; border:1px solid var(--line); border-radius:10px; background:transparent; font:inherit; font-size:14px; color:var(--ink)}
+#nwul .acts button.del{color:#b5532f}
+#nwul .ed{display:grid; grid-template-columns:2fr 1fr; gap:8px}
+#nwul .ed input{min-height:42px}
+#nwul .acts button{width:auto!important}
+#nwul .acts{flex-direction:row!important}
 </style>
 </head>
 <body>
@@ -1439,19 +1465,20 @@ input,select,textarea{font-size:max(16px,1em)}
           <ul class="svl" id="svl"></ul>
         </div>
       </details>      <details class="more" id="newbox">
-        <summary>صنف غير موجود في القائمة</summary>
+        <summary>إضافة صنف جديد</summary>
         <div class="nw">
-          <input id="nwn" type="text" list="nwlist" placeholder="اسم الصنف" autocomplete="off" maxlength="40">
+          <div class="nwh"><label for="nwn">اسم الصنف</label><input id="nwn" type="text" list="nwlist" placeholder="مثال: كحك بالعجوة" autocomplete="off" maxlength="40"></div>
           <datalist id="nwlist"></datalist>
-          <div class="nwseg" id="nwseg" role="group" aria-label="طريقة الإدخال"><button type="button" data-nm="a" aria-pressed="true">كارب الصنف</button><button type="button" data-nm="b" aria-pressed="false">من ملصق المنتج</button></div>
-          <div class="nwf" id="nwA"><label for="nwc">كارب الصنف كله (جم)</label><input id="nwc" type="text" inputmode="decimal" placeholder="اتركه فاضيًا لو لا تعرفه" autocomplete="off"></div>
+          <div class="nwseg" id="nwseg" role="group" aria-label="طريقة الإدخال"><button type="button" data-nm="a" aria-pressed="true">كارب الصنف</button><button type="button" data-nm="b" aria-pressed="false">من الملصق</button></div>
+          <div class="nwf" id="nwA"><label for="nwc">الكارب (جم)</label><input id="nwc" type="text" inputmode="decimal" placeholder="مثلاً 18" autocomplete="off"></div>
           <div class="nwf" id="nwB" hidden>
             <div class="two cen"><div class="field"><label for="nwc100">كارب لكل 100 جم</label><input id="nwc100" type="text" inputmode="decimal" placeholder="من الملصق" autocomplete="off"></div>
             <div class="field"><label for="nwg">الكمية (جم)</label><input id="nwg" type="text" inputmode="decimal" placeholder="مثلاً 40" autocomplete="off"></div></div>
           </div>
           <p class="nwr" id="nwr" aria-live="polite"></p>
-          <label class="cgmrow"><input type="checkbox" id="nws" checked><span>احفظه لأستخدمه لاحقًا</span></label>
-          <button type="button" class="ghost" id="nwadd">أضف إلى الوجبة</button>
+          <button type="button" class="primary nwadd" id="nwadd">إضافة</button>
+          <p class="nwnote">يُضاف للوجبة، ويُحفظ في قائمة الأصناف تحت «أضفتَها أنت».</p>
+          <details class="nwmine" id="nwmine"><summary>أصنافي المضافة <span id="nwcnt"></span></summary><ul id="nwul"></ul></details>
         </div>
       </details>
       <div hidden id="oldadd"><details class="more" id="pkbox">
@@ -1571,7 +1598,7 @@ input,select,textarea{font-size:max(16px,1em)}
       </div>
   </div>
   <div class="stack" id="medcard" data-tab="report">
-    <h3>الوزن والطول والضغط</h3>
+    <h3>بيانات الجسم</h3>
     <div class="two">
       <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
       <div class="field"><label for="sht">الطول (سم)</label><input id="sht" type="text" inputmode="decimal" placeholder="مثلاً 172"></div>
@@ -1581,7 +1608,6 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
     </div>
     <p class="bpst" id="bpst" aria-live="polite"></p>
-    <button type="button" class="ghost" id="bplog">سجّل قراءة الضغط الآن</button>
     <ul class="bpl" id="bpl"></ul>
     <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
     <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن الآن</label><div id="sage" class="agebox">—</div></div></div>
@@ -2155,6 +2181,7 @@ function placeExport(){
 }
 try{new MutationObserver(function(){placeExport()}).observe($('#report'),{childList:true})}catch(x){}
 function applyTab(){
+  if(typeof setDirty!=='undefined'&&setDirty&&tab!=='set'&&tab!=='report'){setDirty=false; try{syncSettingsInputs()}catch(_){} try{bpLive()}catch(_){}}
   document.querySelectorAll('[data-tab]').forEach(function(el){
     var t=el.dataset.tab;
     var show=(t==='all'||t===tab); if(role==='view'&&el.id==='hero')show=(tab==='log');
@@ -2884,10 +2911,10 @@ function nwMatch(){
 $('#nwseg').addEventListener('click',function(e){var b=e.target.closest('button[data-nm]'); if(!b)return; nwMode=b.dataset.nm; nwPaint()});
 ['nwc','nwc100','nwg'].forEach(function(i){$('#'+i).addEventListener('input',nwPaint)});
 $('#nwn').addEventListener('change',function(){nwMatch(); nwPaint()});
-$('#newbox').addEventListener('toggle',function(){if(this.open)nwFillList()});
+$('#newbox').addEventListener('toggle',function(){if(this.open){nwFillList(); nwMine()}});
 $('#nwadd').addEventListener('click',function(){
   var n=$('#nwn').value.trim(); if(!n){toast('اكتب اسم الصنف'); $('#nwn').focus(); return}
-  var save=$('#nws').checked&&role!=='view', item;
+  var save=role!=='view', item;
   if(nwMode==='a'){
     var raw=$('#nwc').value.trim(), c=raw===''?null:num(raw);
     if(raw!==''&&(isNaN(c)||c<0)){toast('اكتب الكارب رقمًا'); $('#nwc').focus(); return}
@@ -2903,9 +2930,42 @@ $('#nwadd').addEventListener('click',function(){
     if(save){settings.myFoods=(settings.myFoods||[]).filter(function(m){return m.n!==n}); settings.myFoods.push({n:n.slice(0,40),c:c1}); settings.myFoods=settings.myFoods.slice(-60); persistSettings(); addMyFoodsToDb(); rebuildFoodPick()}
   }
   ['nwn','nwc','nwc100','nwg'].forEach(function(i){$('#'+i).value=''}); nwPaint();
-  $('#newbox').open=false; renderMeal(); updateCalc(); toast('أُضيف '+n);
+  $('#newbox').open=false; renderMeal(); updateCalc(); toast('أُضيف '+n+(save?' إلى قائمة الأصناف':'')); nwMine();
 });
 nwPaint();
+
+/* manage the items the user added: rename / edit carb / delete */
+var nwEdit=-1;
+function nwMine(){
+  var ul=$('#nwul'); if(!ul)return;
+  var L=settings.myFoods||[]; $('#nwcnt').textContent=L.length?'('+L.length+')':'';
+  if(!L.length){ul.innerHTML='<li><span class="nwnote">لم تُضف أصنافًا بعد.</span></li>'; return}
+  ul.innerHTML=L.map(function(m,i){
+    var cl=fmt(Number(m.c)||0)+' جم '+(m.u?'للحصة':'لكل 100 جم');
+    if(i===nwEdit)return '<li data-i="'+i+'"><div class="ed"><input type="text" class="en" value="'+esc(m.n)+'" maxlength="40" aria-label="اسم الصنف"><input type="text" class="ec" inputmode="decimal" value="'+esc(fmt(Number(m.c)||0))+'" aria-label="الكارب"></div><div class="acts"><button type="button" data-a="save">حفظ</button><button type="button" data-a="cancel">إلغاء</button></div></li>';
+    return '<li data-i="'+i+'"><div class="rowh"><b>'+esc(m.n)+'</b><small>'+cl+'</small></div>'+(role==='view'?'':'<div class="acts"><button type="button" data-a="edit">تعديل</button><button type="button" class="del" data-a="del">حذف</button></div>')+'</li>';
+  }).join('');
+}
+function nwRefresh(){persistSettings(); addMyFoodsToDb(); rebuildFoodPick(); nwFillList(); nwMine()}
+$('#nwul').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-a]'); if(!b||role==='view')return;
+  var li=b.closest('li'), i=Number(li.dataset.i), L=settings.myFoods||[], m=L[i]; if(!m)return;
+  var a=b.dataset.a;
+  if(a==='edit'){nwEdit=i; nwMine(); var f=document.querySelector('#nwul .en'); if(f)f.focus()}
+  else if(a==='cancel'){nwEdit=-1; nwMine()}
+  else if(a==='del'){
+    if(!confirm('حذف «'+m.n+'» من أصنافك؟ السجلات القديمة لن تتغير.'))return;
+    var o=settings.foodOv||{}; delete o[m.n]; settings.foodOv=o;
+    L.splice(i,1); settings.myFoods=L; nwEdit=-1; nwRefresh(); toast('حُذف '+m.n)
+  }else if(a==='save'){
+    var nn=li.querySelector('.en').value.trim().slice(0,40), cc=num(li.querySelector('.ec').value);
+    if(!nn){toast('اكتب اسم الصنف'); return}
+    if(cc==null||isNaN(cc)||cc<0){toast('اكتب الكارب رقمًا'); return}
+    if(L.some(function(x,j){return j!==i&&x.n===nn})){toast('يوجد صنف بنفس الاسم'); return}
+    if(nn!==m.n){var o2=settings.foodOv||{}; if(o2[m.n]){o2[nn]=o2[m.n]; delete o2[m.n]; settings.foodOv=o2}}
+    m.n=nn; m.c=cc; nwEdit=-1; nwRefresh(); toast('حُفظ التعديل')
+  }
+});
 function addMyFoodsToDb(){
   DB=DB.filter(function(f){return f.g!=='أصنافي'});
   (settings.myFoods||[]).forEach(function(m){
@@ -2931,15 +2991,15 @@ function rebuildFoodPick(){
   var tf=topFoods(); if(tf.length){h+='<optgroup label="الأكثر استخدامًا في '+(GROUPS.filter(function(x){return x[0]===curGrp()})[0]||[0,''])[1]+'">'+tf.map(function(f){return '<option value="'+f.i+'">'+esc(foodLabel(f))+'</option>'}).join('')+'</optgroup>'}
   var ord=MEALCAT[curGrp()]||[], rank={}; ord.forEach(function(c,i){rank[c]=i});
   var order=DB.map(function(f,i){return i}).sort(function(a,z){
-    var ra=rank[DB[a].g]==null?999:rank[DB[a].g], rz=rank[DB[z].g]==null?999:rank[DB[z].g];
+    var ra=DB[a].g==='أصنافي'?-1:rank[DB[a].g]==null?999:rank[DB[a].g], rz=DB[z].g==='أصنافي'?-1:rank[DB[z].g]==null?999:rank[DB[z].g];
     return ra!==rz?ra-rz:a-z});
   var sepDone=false;
   order.forEach(function(i){
     var f=DB[i];
     if(f.g!==cur){
       if(open)h+='</optgroup>';
-      if(!sepDone&&rank[f.g]==null&&ord.length){h+='<option disabled>──── أقسام أخرى ────</option>'; sepDone=true}
-      h+='<optgroup label="'+esc(f.g)+'">'; cur=f.g; open=true}
+      if(!sepDone&&rank[f.g]==null&&f.g!=='أصنافي'&&ord.length){h+='<option disabled>──── أقسام أخرى ────</option>'; sepDone=true}
+      h+='<optgroup label="'+esc(f.g==='أصنافي'?'أضفتَها أنت':f.g)+'">'; cur=f.g; open=true}
     h+='<option value="'+i+'">'+esc(foodLabel(f))+'</option>';
   });
   $('#foodpick').innerHTML=h+'</optgroup>';
@@ -3473,23 +3533,14 @@ function bpPaint(){
   ul.innerHTML=L.map(function(r){var k=bpClass(r.s,r.d), d=new Date(r.t); return '<li><span><b>'+r.s+'/'+r.d+'</b> <small>'+dayFull(d)+'</small></span><span class="bpst '+(k?k.c:'')+'" style="margin:0;min-height:0;font-size:14px">'+(k?k.t:'')+'</span></li>'}).join('');
 }
 ['sbps','sbpd'].forEach(function(i){$('#'+i).addEventListener('input',bpLive)});
-$('#bplog').addEventListener('click',function(){
-  if(role==='view'){toast('للعرض فقط'); return}
-  var sy=num($('#sbps').value), di=num($('#sbpd').value);
-  if(!(sy>=60&&sy<=260&&di>=30&&di<=160&&sy>di)){toast('اكتب الضغط الكبير والصغير بشكل صحيح'); return}
-  if(mode==='cloud'&&!settingsLoaded){refresh(); toast('الإعدادات قيد التحميل. جرّب بعد لحظة'); return}
-  settings.bpLog=(settings.bpLog||[]).concat([{t:new Date().toISOString(),s:Math.round(sy),d:Math.round(di)}]).slice(-60);
-  settings.bps=Math.round(sy); settings.bpd=Math.round(di);
-  persistSettings(); bpPaint(); try{render()}catch(_){}
-  var k=bpClass(sy,di); toast('سُجّل الضغط '+Math.round(sy)+'/'+Math.round(di)+(k?' · '+k.t:''));
-});
 function onSetChange(){
   if(mode==='cloud'&&!settingsLoaded){refresh(); return}
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   var at={bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
-  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات');
+  if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){at.bpLog=(at.bpLog||[]).concat([{t:new Date().toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
+  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){}
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('هل تبدأ علبة شرائط جديدة من اليوم؟ سيبدأ العداد من صفر.'))return;
@@ -3538,7 +3589,7 @@ function reportInfo(){
   if(s.bps&&s.bpd){var bk=bpClass(s.bps,s.bpd); t.push(['ضغط الدم',s.bps+'/'+s.bpd+' <small>mmHg</small>'+(bk?' <small>· '+bk.t+'</small>':'')])}
   var h='<h3>بيانات أساسية</h3>';
   if(t.length)h+='<dl class="rsum">'+t.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'}).join('')+'</dl>'+(s.bodyDate?'<p class="cap">تاريخ القياس: '+dayFull(new Date(s.bodyDate+'T12:00:00'))+(s.wt&&s.ht?'. يُقيَّم مؤشر الكتلة للمراهقين بمنحنيات النمو عند الطبيب.':'')+'</p>':'');
-  else h+='<p class="cap">الوزن والطول والضغط: لم تُسجَّل بعد.</p>';
+  else h+='<p class="cap">بيانات الجسم: لم تُسجَّل بعد.</p>';
   var vl=s.visitLast?new Date(s.visitLast):null, vn=s.visitNext?new Date(s.visitNext):null;
   if(vl||vn||s.visitNote){
     h+='<h3>زيارة الطبيب</h3><dl class="rsum">'+(vl?'<div><dt>آخر زيارة</dt><dd><small>'+dayFull(vl)+' · '+timeStr(vl)+'</small></dd></div>':'')+(vn?'<div><dt>الزيارة القادمة</dt><dd><small>'+dayFull(vn)+' · '+timeStr(vn)+(vn<now?' <span class="st-late">(فات ميعادها)</span>':'')+'</small></dd></div>':'')+'</dl>'+(s.visitNote?'<p class="cap">ملاحظات الطبيب: '+esc(s.visitNote)+'</p>':'');
