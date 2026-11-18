@@ -440,7 +440,7 @@ async function runCron(host, force) {
   if (!due.length) return { sent };
   const v = await getVapid();
   for (const [type, title, body] of due) {
-    const mark = type.startsWith('stock') ? await redis(['SET', 'ysg:sent:' + type, '1', 'NX', 'EX', '864000']) : await redis(['SET', 'ysg:sent:' + type + ':' + today, '1', 'NX', 'EX', '172800']);
+    const mark = type.startsWith('stock') ? await redis(['SET', 'ysg:sent:' + type, '1', 'NX', 'EX', '864000']) : await redis(['SET', 'ysg:sent:' + type + ':' + today + (['fast', 'bed', 'tres', 'trY'].includes(type) ? ':h' + Math.floor(now / 3600e3) : ''), '1', 'NX', 'EX', '172800']);
     if (mark !== 'OK') continue;
     for (const sb of subs) await pushTo(sb, { t: title, b: body, tag: type.split(':')[0] }, v, host);
     sent.push(type.split(':')[0]);
