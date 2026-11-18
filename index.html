@@ -1381,21 +1381,39 @@ input,select,textarea{font-size:max(16px,1em)}
 #newbox .nwnote{margin:0; text-align:center; font-size:12px; color:var(--muted)}
 #newbox .nwmine{border-top:1px solid var(--line); padding-top:8px}
 #newbox .nwmine>summary{font-size:14px; font-weight:600; padding:6px 0; color:var(--ink)}
-#nwul{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px}
-#nwul li{display:flex; flex-direction:column; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
-#nwul .rowh{display:flex; justify-content:space-between; align-items:center; gap:8px}
-#nwul .rowh b{font-weight:700; overflow:hidden; text-overflow:ellipsis}
-#nwul .rowh small{color:var(--muted); white-space:nowrap}
-#nwul .acts{display:flex; gap:8px}
-#nwul .acts button{flex:1; min-height:38px; border:1px solid var(--line); border-radius:10px; background:transparent; font:inherit; font-size:14px; color:var(--ink)}
-#nwul .acts button.del{color:#b5532f}
-#nwul .ed{display:grid; grid-template-columns:2fr 1fr; gap:8px}
-#nwul .ed input{min-height:42px}
-#nwul .acts button{width:auto!important}
-#nwul .acts{flex-direction:row!important}
+#newbox .nwul,.nwul{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px}
+#newbox .nwul li,.nwul li{display:flex; flex-direction:column; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+#newbox .nwul .rowh,.nwul .rowh{display:flex; justify-content:space-between; align-items:center; gap:8px}
+#newbox .nwul .rowh,.nwul .rowh b{font-weight:700; overflow:hidden; text-overflow:ellipsis}
+#newbox .nwul .rowh,.nwul .rowh small{color:var(--muted); white-space:nowrap}
+#newbox .nwul .acts,.nwul .acts{display:flex; gap:8px}
+#newbox .nwul .acts,.nwul .acts button{flex:1; min-height:38px; border:1px solid var(--line); border-radius:10px; background:transparent; font:inherit; font-size:14px; color:var(--ink)}
+#newbox .nwul .acts,.nwul .acts button.del{color:#b5532f}
+#newbox .nwul .ed,.nwul .ed{display:grid; grid-template-columns:2fr 1fr; gap:8px}
+#newbox .nwul .ed,.nwul .ed input{min-height:42px}
+#newbox .nwul .acts,.nwul .acts button{width:auto!important}
+#newbox .nwul .acts,.nwul .acts{flex-direction:row!important}
 .two>#tbox,.two>.field.a,.two>.field.t{grid-column:1/-1}
 #tbox .stepper,.field.a .stepper{width:100%}
 #tbox .stepper input,.field.a .stepper input{min-width:0; font-size:28px!important}
+.mml{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.mml>li{display:flex; flex-direction:column; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+.mml .rowh{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.mml .rowh small{color:var(--muted)}
+.mml .acts,.mmed .acts{display:flex; gap:8px}
+.mml .acts button{flex:1; min-height:38px; border:1px solid var(--line); border-radius:10px; background:transparent; font:inherit; font-size:14px; color:var(--ink); width:auto}
+.mml .acts button.del{color:#b5532f}
+.mmed label{font-size:13px; color:var(--muted); font-weight:600}
+.mmed input[type=text]{width:100%; min-height:44px; border-radius:10px}
+.mmh,.mmr{display:grid; grid-template-columns:minmax(0,2.2fr) minmax(0,.9fr) minmax(0,1.1fr) 34px; gap:6px; align-items:center}
+.mmh{font-size:11px; color:var(--muted); padding:0 2px}
+.mmr input{min-height:42px; padding:4px 6px; text-align:center}
+.mmr .in{text-align:right}
+.mmx{border:0; background:transparent; color:#b5532f; font-size:16px; min-height:38px}
+.mmu{font-size:11px; color:var(--muted); margin:-2px 2px 2px}
+.mmed .acts .primary{flex:1.4}
+.mmed .acts button{min-height:44px}
+.mml .mmed .acts .primary{background:var(--accent,#2f8573)!important; color:#fff!important; border-color:transparent!important; font-weight:700}
 </style>
 </head>
 <body>
@@ -1481,7 +1499,7 @@ input,select,textarea{font-size:max(16px,1em)}
           <p class="nwr" id="nwr" aria-live="polite"></p>
           <button type="button" class="primary nwadd" id="nwadd">إضافة</button>
           <p class="nwnote">يُضاف للوجبة، ويُحفظ في قائمة الأصناف تحت «أضفتَها أنت».</p>
-          <details class="nwmine" id="nwmine"><summary>أصنافي المضافة <span id="nwcnt"></span></summary><ul id="nwul"></ul></details>
+          <details class="nwmine" id="nwmine"><summary>أصنافي المضافة <span id="nwcnt"></span></summary><ul class="nwul" id="nwul"></ul></details>
         </div>
       </details>
       <div hidden id="oldadd"><details class="more" id="pkbox">
@@ -1729,6 +1747,12 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="swtxt"><b>تذكيرات على هذا الهاتف</b><span id="pushst" class="small"></span></div>
       <label class="sw"><input type="checkbox" id="pushsw" aria-label="إشعارات الهاتف"><i></i></label>
     </div>
+
+    <h3>وجباتي وأصنافي</h3>
+    <p class="cap">عدّل أو احذف وجباتك الجاهزة وأصنافك المضافة. السجلات القديمة لا تتغير.</p>
+    <div id="mmgr" class="mmgr"></div>
+    <p class="cap" style="margin-top:6px">أصنافك المضافة</p>
+    <ul class="nwul" id="nwul2"></ul>
 
     <h3>الحساب</h3>
     <p class="small">اخرج من البرنامج على هذا الهاتف، وسيطلب الرقم السري مجددًا عند الدخول القادم.</p>
@@ -2946,21 +2970,22 @@ nwPaint();
 /* manage the items the user added: rename / edit carb / delete */
 var nwEdit=-1;
 function nwMine(){
-  var ul=$('#nwul'); if(!ul)return;
   var L=settings.myFoods||[]; $('#nwcnt').textContent=L.length?'('+L.length+')':'';
-  if(!L.length){ul.innerHTML='<li><span class="nwnote">لم تُضف أصنافًا بعد.</span></li>'; return}
-  ul.innerHTML=L.map(function(m,i){
+  var h;
+  if(!L.length){h='<li><span class="nwnote">لم تُضف أصنافًا بعد.</span></li>'}
+  else h=L.map(function(m,i){
     var cl=fmt(Number(m.c)||0)+' جم '+(m.u?'للحصة':'لكل 100 جم');
     if(i===nwEdit)return '<li data-i="'+i+'"><div class="ed"><input type="text" class="en" value="'+esc(m.n)+'" maxlength="40" aria-label="اسم الصنف"><input type="text" class="ec" inputmode="decimal" value="'+esc(fmt(Number(m.c)||0))+'" aria-label="الكارب"></div><div class="acts"><button type="button" data-a="save">حفظ</button><button type="button" data-a="cancel">إلغاء</button></div></li>';
     return '<li data-i="'+i+'"><div class="rowh"><b>'+esc(m.n)+'</b><small>'+cl+'</small></div>'+(role==='view'?'':'<div class="acts"><button type="button" data-a="edit">تعديل</button><button type="button" class="del" data-a="del">حذف</button></div>')+'</li>';
   }).join('');
+  [].forEach.call(document.querySelectorAll('.nwul'),function(ul){ul.innerHTML=h});
 }
 function nwRefresh(){persistSettings(); addMyFoodsToDb(); rebuildFoodPick(); nwFillList(); nwMine()}
-$('#nwul').addEventListener('click',function(e){
-  var b=e.target.closest('button[data-a]'); if(!b||role==='view')return;
+document.addEventListener('click',function(e){
+  var b=e.target.closest('.nwul button[data-a]'); if(!b||role==='view')return;
   var li=b.closest('li'), i=Number(li.dataset.i), L=settings.myFoods||[], m=L[i]; if(!m)return;
   var a=b.dataset.a;
-  if(a==='edit'){nwEdit=i; nwMine(); var f=document.querySelector('#nwul .en'); if(f)f.focus()}
+  if(a==='edit'){nwEdit=i; nwMine(); var f=document.querySelector('.nwul .en'); if(f)f.focus()}
   else if(a==='cancel'){nwEdit=-1; nwMine()}
   else if(a==='del'){
     if(!confirm('حذف «'+m.n+'» من أصنافك؟ السجلات القديمة لن تتغير.'))return;
@@ -2973,6 +2998,72 @@ $('#nwul').addEventListener('click',function(e){
     if(L.some(function(x,j){return j!==i&&x.n===nn})){toast('يوجد صنف بنفس الاسم'); return}
     if(nn!==m.n){var o2=settings.foodOv||{}; if(o2[m.n]){o2[nn]=o2[m.n]; delete o2[m.n]; settings.foodOv=o2}}
     m.n=nn; m.c=cc; nwEdit=-1; nwRefresh(); toast('حُفظ التعديل')
+  }
+});
+
+/* ====== saved-meals manager (settings): rename, change group, edit / remove / add items, delete ====== */
+var mmI=-1, mmD=null;
+var MMG=[['bf','فطار'],['ln','غداء'],['dn','عشاء'],['sn','سناك']];
+function mmTot(items){return r1((items||[]).reduce(function(a,m){return m.x?a:a+(Number(m.q)||1)*(Number(m.c)||0)},0))}
+function mmRow(m,j){
+  return '<div class="mmr" data-j="'+j+'"><input type="text" class="in" value="'+esc(m.n||'')+'" maxlength="60" placeholder="اسم البند" aria-label="اسم البند"><input type="text" class="iq" inputmode="decimal" value="'+esc(fmt(Number(m.q)||1))+'" aria-label="الكمية"><input type="text" class="ic" inputmode="decimal" value="'+(m.x?'':esc(fmt(Number(m.c)||0)))+'" placeholder="؟" aria-label="الكارب للوحدة"><button type="button" class="mmx" data-mm="rm" aria-label="حذف البند">✕</button></div>'
+    +(m.u?'<div class="mmu">'+esc(m.u)+(m.d?' · '+esc(m.d):'')+'</div>':'');
+}
+function mmRender(force){
+  var box=$('#mmgr'); if(!box)return;
+  if(mmI>=0&&!force)return;
+  var L=settings.meals||[];
+  if(!L.length){box.innerHTML='<p class="nwnote">لا توجد وجبات محفوظة بعد.</p>'; return}
+  box.innerHTML='<ul class="mml">'+L.map(function(m,i){
+    var gl=(MMG.filter(function(x){return x[0]===m.g})[0]||[0,''])[1];
+    if(i===mmI&&mmD){
+      return '<li class="mmed" data-i="'+i+'"><label>اسم الوجبة</label><input type="text" id="mmn" value="'+esc(mmD.n)+'" maxlength="40">'
+        +'<label>تظهر في</label><div class="nwseg" id="mmg">'+MMG.map(function(x){return '<button type="button" data-g="'+x[0]+'" aria-pressed="'+(mmD.g===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
+        +'<div class="mmh"><span>البند</span><span>الكمية</span><span>كارب/وحدة</span><span></span></div>'
+        +'<div id="mmrows">'+mmD.items.map(mmRow).join('')+'</div>'
+        +'<button type="button" class="ghost" data-mm="add">+ بند</button>'
+        +'<div class="acts"><button type="button" class="primary" data-mm="save">حفظ</button><button type="button" data-mm="cancel">إلغاء</button></div></li>';
+    }
+    return '<li data-i="'+i+'"><div class="rowh"><b>'+esc(m.n)+'</b><small>'+gl+' · '+m.items.length+' بنود · '+fmt(mmTot(m.items))+' جم</small></div>'
+      +(role==='view'?'':'<div class="acts"><button type="button" data-mm="edit">تعديل</button><button type="button" class="del" data-mm="del">حذف</button></div>')+'</li>';
+  }).join('')+'</ul>';
+}
+function mmSyncDraft(){
+  var li=document.querySelector('#mmgr .mmed'); if(!li||!mmD)return;
+  mmD.n=$('#mmn').value;
+  mmD.items=[].map.call(li.querySelectorAll('.mmr'),function(r,k){
+    var o=mmD.items[k]||{}, c=r.querySelector('.ic').value.trim();
+    return Object.assign({},o,{n:r.querySelector('.in').value.trim(),q:r.querySelector('.iq').value,c:c,_x:c===''});
+  });
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('#mmgr button'); if(!b||role==='view')return;
+  var L=settings.meals||[];
+  if(b.dataset.g){mmSyncDraft(); mmD.g=b.dataset.g; mmRender(true); return}
+  var a=b.dataset.mm; if(!a)return;
+  if(a==='edit'){mmI=Number(b.closest('li').dataset.i); var m=L[mmI]; mmD={n:m.n,g:m.g||'ln',items:JSON.parse(JSON.stringify(m.items||[]))}; mmRender(true)}
+  else if(a==='cancel'){mmI=-1; mmD=null; mmRender(true)}
+  else if(a==='del'){var i=Number(b.closest('li').dataset.i); if(!confirm('حذف الوجبة «'+L[i].n+'»؟ السجلات القديمة لن تتغير.'))return; L.splice(i,1); settings.meals=L; persistSettings(); mmRender(true); try{renderPresets(); paintSaved()}catch(_){} toast('حُذفت الوجبة')}
+  else if(a==='add'){mmSyncDraft(); mmD.items.push({n:'',q:'1',c:'',_x:true}); mmRender(true); var rs=document.querySelectorAll('#mmrows .in'); if(rs.length)rs[rs.length-1].focus()}
+  else if(a==='rm'){mmSyncDraft(); var j=Number(b.closest('.mmr').dataset.j); mmD.items.splice(j,1); mmRender(true)}
+  else if(a==='save'){
+    mmSyncDraft();
+    var nn=(mmD.n||'').trim().slice(0,40); if(!nn){toast('اكتب اسم الوجبة'); return}
+    if(L.some(function(x,k){return k!==mmI&&x.n===nn})){toast('يوجد وجبة بنفس الاسم'); return}
+    var out=[], bad=null;
+    mmD.items.forEach(function(it){
+      if(bad)return; if(!it.n){bad='اكتب اسم كل بند أو احذفه'; return}
+      var q=num(it.q); if(q==null||isNaN(q)||q<=0||q>50){bad='كمية «'+it.n+'» غير صحيحة'; return}
+      var o={n:it.n.slice(0,60),q:r4(q)};
+      if(it._x||it.c===''){o.x=1; o.c=0}
+      else{var c=num(it.c); if(c==null||isNaN(c)||c<0){bad='كارب «'+it.n+'» غير صحيح'; return} o.c=c}
+      if(it.u)o.u=it.u; if(it.d)o.d=it.d; if(it.x===2&&o.x==null)o.x=2;
+      out.push(o);
+    });
+    if(bad){toast(bad); return}
+    if(!out.length){toast('الوجبة لازم يكون فيها بند واحد على الأقل'); return}
+    L[mmI]={n:nn,g:mmD.g,items:out.slice(0,20)}; settings.meals=L; mmI=-1; mmD=null;
+    persistSettings(); mmRender(true); try{renderPresets(); paintSaved()}catch(_){} toast('حُفظ التعديل');
   }
 });
 function addMyFoodsToDb(){
@@ -3549,7 +3640,7 @@ function onSetChange(){
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   var at={bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){at.bpLog=(at.bpLog||[]).concat([{t:new Date().toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
-  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){}
+  settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){} try{mmRender(); nwMine()}catch(_){}
 }
 $('#stripnew').addEventListener('click',function(){
   if(settings.stripStart&&!confirm('هل تبدأ علبة شرائط جديدة من اليوم؟ سيبدأ العداد من صفر.'))return;
@@ -3840,7 +3931,7 @@ var _mfSig='';
 function render(){try{var sg0=JSON.stringify([settings.myFoods||[],settings.foodOv||{},(typeof entries!=='undefined'?entries.length:0)]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
   try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
-  try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
+  try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{mmRender(); nwMine()}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
   rangeNote();
 }
@@ -4258,6 +4349,15 @@ function openFromNotif(tag){
   else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); if(b==='trY'){var yd=new Date(Date.now()-864e5); yd.setHours(22,0,0,0); $('#tdt').value=toLocalInput(yd)} showForm(); focusId('t')}
   else if(b==='med'||b.indexOf('sp_')===0){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}
   else if(b==='g-low'){go('add'); setMode('read'); focusId('g')}
+  else if(b==='apd'||b==='nodose'||b==='hypo15'||b==='hypo30'||b==='low2h'){
+    var tt=Number(String(tag).split(':')[1]), E2=(typeof entries!=='undefined'?entries:[]), en=null;
+    E2.forEach(function(e){if(en)return; var d=Math.abs(new Date(e.ts).getTime()-tt); if(d<90e3)en=e});
+    if(b==='nodose'&&en){go('add'); setMode('read'); startEdit(en.id); showFocusA(); return}
+    go('add'); setMode(b==='apd'?'meal':'read');
+    var AF={bf_before:'bf_after',ln_before:'ln_after',dn_before:'dn_after'}, sl='other';
+    if(b==='apd'&&en){sl=AF[en.slot]||(function(){var h=new Date(en.ts).getHours(); return h<12?'bf_after':h<17?'ln_after':'dn_after'})()}
+    var so=$('#slot'); if([].some.call(so.options,function(o){return o.value===sl}))so.value=sl; foodGrpManual=false; try{so.dispatchEvent(new Event('change'))}catch(_){} syncInj(); showForm(); focusId('g');
+  }
   else if(b.indexOf('visit')===0){gotoVisit()}
   else if(b==='g-high'){
     var E=(typeof entries!=='undefined'?entries:[]), hi=null, tmax=0;
