@@ -3033,7 +3033,7 @@ function mmRow(m,j){
     +(m.u?'<div class="mmu">'+esc(m.u)+(m.d?' · '+esc(m.d):'')+'</div>':'');
 }
 var mmHost=null;
-function mmBar(){var md=$('#mealmgr'); if(!md)return; var a=(settings.meals||[]).length,b=(settings.myFoods||[]).length; md.hidden=!(a+b)||role==='view'; var ct=$('#mmcnt'); if(ct)ct.textContent=(a+b)?'('+(a+b)+')':''}
+function mmBar(){var md=$('#mealmgr'); if(!md)return; var a=(settings.meals||[]).length,b=(settings.myFoods||[]).length; md.hidden=!(a+b)||role==='view'; var ct=$('#mmcnt'); if(ct)ct.textContent=''}
 function mmListHtml(L,editHere){
   if(!L.length)return '<p class="nwnote">لا توجد وجبات محفوظة بعد.</p>';
   return '<ul class="mml">'+L.map(function(m,i){
