@@ -1504,6 +1504,7 @@ input,select,textarea{font-size:max(16px,1em)}
 .sdc .acts{display:flex!important; flex-direction:row!important}
 .sdc .acts button{flex:1 1 0!important; width:auto!important}
 .spr .spl{white-space:nowrap; flex:1 1 auto}
+body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-index:70}
 </style>
 </head>
 <body>
@@ -3779,7 +3780,7 @@ function readSettings(){
 }
 var setDirty=false;
 function markDirty(v){setDirty=v; updateSaveBar()}
-function updateSaveBar(){var b=$('#savebar'); if(!b)return; b.hidden=!(setDirty&&authed&&(tab==='set'||tab==='report'))}
+function updateSaveBar(){var b=$('#savebar'); if(!b)return; b.hidden=!(setDirty&&authed&&(tab==='set'||tab==='report')); document.body.classList.toggle('hasSave',!b.hidden)}
 /* ====== blood pressure: reference classification + log (informational, not a diagnosis) ====== */
 function bpClass(sy,di){
   if(!(sy>0&&di>0))return null;
