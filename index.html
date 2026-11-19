@@ -1492,7 +1492,7 @@ input,select,textarea{font-size:max(16px,1em)}
 .spr .spm{flex:1 0 100%; display:flex; align-items:center; gap:10px; margin-top:-2px}
 .spr .spc{width:104px!important; flex:0 0 auto; min-height:38px; font-size:13.5px; text-align:center}
 .spr .spl{flex:1; font-size:13px; color:var(--muted)}
-.spr .spb,.spr .spe{width:auto!important; min-height:34px; padding:0 6px; font-size:13px}
+.spr .spb,.spr .spm2,.spr .spe{width:auto!important; min-height:34px; padding:0 6px; font-size:13px}
 .rcv{display:flex; flex-direction:column; gap:10px; margin-bottom:16px}
 .rcr{display:flex; align-items:center; justify-content:space-between; gap:10px}
 .rcr>span{font-size:14.5px}
@@ -1812,6 +1812,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field"><label for="sstockt">عدد أقلام ترسيبا</label><input id="sstockt" type="text" inputmode="decimal" placeholder="0"></div>
     </div>
     <div class="two cen"><button type="button" class="ghost" data-addpen="A">+ قلم أبيدرا</button><button type="button" class="ghost" data-addpen="T">+ قلم ترسيبا</button></div>
+    <div class="two cen"><button type="button" class="ghost" data-addpen="A-">− قلم أبيدرا</button><button type="button" class="ghost" data-addpen="T-">− قلم ترسيبا</button></div>
     <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل نفاده بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
     <div class="small" id="stocktxt"></div>
     <h3>شرائط قياس السكر</h3>
@@ -2350,7 +2351,7 @@ function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+l+' �
 function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطار: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
 function spMgr(){
   var el=$('#suppmgr'); if(!el)return; if(el.contains(document.activeElement)&&document.activeElement.tagName==='INPUT')return;
-  el.innerHTML=suppList().map(function(x,i){return '<div class="spr" data-i="'+i+'"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><button type="button" class="spx" aria-label="حذف">✕</button><div class="spm"><input type="text" inputmode="numeric" class="spc" value="'+(x.pc>0?x.pc:'')+'" placeholder="حبوب العلبة" aria-label="حبوب في العلبة" maxlength="4"><span class="spl">'+suppLeftTxt(x)+'</span>'+(x.pc>0?'<button type="button" class="link spb">+ علبة</button><button type="button" class="link spe">ضبط</button>':'')+'</div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
+  el.innerHTML=suppList().map(function(x,i){return '<div class="spr" data-i="'+i+'"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><button type="button" class="spx" aria-label="حذف">✕</button><div class="spm"><input type="text" inputmode="numeric" class="spc" value="'+(x.pc>0?x.pc:'')+'" placeholder="حبوب العلبة" aria-label="حبوب في العلبة" maxlength="4"><span class="spl">'+suppLeftTxt(x)+'</span>'+(x.pc>0?'<button type="button" class="link spb">+ علبة</button><button type="button" class="link spm2">− علبة</button><button type="button" class="link spe">ضبط</button>':'')+'</div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
 }
 function spSave(L,keep){settings.supps=L; persistSettings(); _spSig=''; _spNoMgr=!!keep; try{applySupps()}finally{_spNoMgr=false} try{render()}catch(_){}}
 document.addEventListener('change',function(e){var r=e.target.closest&&e.target.closest('#suppmgr .spr'); if(!r||role==='view')return; var i=Number(r.dataset.i), L=JSON.parse(JSON.stringify(suppList())); if(!L[i])return;
@@ -2360,8 +2361,9 @@ document.addEventListener('change',function(e){var r=e.target.closest&&e.target.
   else return; spSave(L,true)});
 document.addEventListener('click',function(e){
   if(role==='view')return; var b=e.target.closest&&e.target.closest('#suppmgr button'); if(!b)return; var L=JSON.parse(JSON.stringify(suppList()));
-  if(b.classList.contains('spb')||b.classList.contains('spe')){var j=Number(b.closest('.spr').dataset.i), it=L[j]; if(!it||!(it.pc>0))return; var cur=suppLeft(it);
+  if(b.classList.contains('spb')||b.classList.contains('spm2')||b.classList.contains('spe')){var j=Number(b.closest('.spr').dataset.i), it=L[j]; if(!it||!(it.pc>0))return; var cur=suppLeft(it);
     if(b.classList.contains('spb')){it.base=(cur||0)+it.pc; it.at=toLocalInput(new Date())}
+    else if(b.classList.contains('spm2')){if(!cur){return} it.base=Math.max(0,cur-it.pc); it.at=toLocalInput(new Date())}
     else {var v=prompt('كم حبة متبقية الآن في «'+it.n+'»؟',String(cur==null?0:cur)); if(v===null)return; var nv=Math.round(num(v)); if(!(nv>=0)||nv>5000)return; it.base=nv; it.at=toLocalInput(new Date())}
     spSave(L); return}
   if(b.id==='spadd'){if(L.length>=8)return; L.push({k:'s'+Date.now().toString(36).slice(-7),n:'مكمل جديد',g:''}); spSave(L); var ins=document.querySelectorAll('#suppmgr .spn'); if(ins.length){var li=ins[ins.length-1]; li.focus(); li.select()}}
@@ -2503,7 +2505,7 @@ function setMode(m){
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
   var ap=e.target.closest&&e.target.closest('[data-addpen]');
-  if(ap){if(role==='view')return; var kk=ap.dataset.addpen, pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; ch['stock'+kk]=Math.round((lf+300)/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); render(); toast('أُضيف قلم '+(kk==='A'?'أبيدرا':'ترسيبا')); return}
+  if(ap){if(role==='view')return; var raw=ap.dataset.addpen, mn=raw.slice(-1)==='-', kk=raw.charAt(0), pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; if(mn&&lf<=0){toast('لا يوجد قلم لإنقاصه'); return} ch['stock'+kk]=Math.round(Math.max(0,lf+(mn?-300:300))/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); render(); toast((mn?'أُنقص قلم ':'أُضيف قلم ')+(kk==='A'?'أبيدرا':'ترسيبا')); return}
   if(mb){recvDlg(); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
