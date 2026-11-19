@@ -1720,19 +1720,6 @@ input,select,textarea{font-size:max(16px,1em)}
       </div>
   </div>
   <div class="stack" id="medcard" data-tab="report">
-    <h3>بيانات الجسم</h3>
-    <div class="two">
-      <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
-      <div class="field"><label for="sht">الطول (سم)</label><input id="sht" type="text" inputmode="decimal" placeholder="مثلاً 172"></div>
-    </div>
-    <div class="two">
-      <div class="field"><label for="sbps">الضغط الانقباضي (الكبير)</label><input id="sbps" type="text" inputmode="numeric" placeholder="مثلاً 115"></div>
-      <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
-    </div>
-    <p class="bpst" id="bpst" aria-live="polite"></p>
-    <ul class="bpl" id="bpl"></ul>
-    <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
-    <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن الآن</label><div id="sage" class="agebox">—</div></div></div>
     <h3>زيارة الطبيب</h3>
     <div class="field"><label for="vlast">آخر زيارة (التاريخ والوقت)</label><input id="vlast" type="datetime-local"></div>
     <div class="field"><label for="vnext">الزيارة القادمة (التاريخ والوقت)</label><input id="vnext" type="datetime-local"></div>
@@ -1749,7 +1736,20 @@ input,select,textarea{font-size:max(16px,1em)}
     <div id="ckwrap" class="stack"></div>
     <button type="button" class="ghost" id="ckadd">+ أضف فحص</button>
 
-  </div>
+  <h3>بيانات الجسم</h3>
+    <div class="two">
+      <div class="field"><label for="swt">الوزن (كجم)</label><input id="swt" type="text" inputmode="decimal" placeholder="مثلاً 62"></div>
+      <div class="field"><label for="sht">الطول (سم)</label><input id="sht" type="text" inputmode="decimal" placeholder="مثلاً 172"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="sbps">الضغط الانقباضي (الكبير)</label><input id="sbps" type="text" inputmode="numeric" placeholder="مثلاً 115"></div>
+      <div class="field"><label for="sbpd">الضغط الانبساطي (الصغير)</label><input id="sbpd" type="text" inputmode="numeric" placeholder="مثلاً 75"></div>
+    </div>
+    <p class="bpst" id="bpst" aria-live="polite"></p>
+    <ul class="bpl" id="bpl"></ul>
+    <div class="field"><label for="bodyd">تاريخ القياس</label><input id="bodyd" type="date"></div>
+    <div class="two cen"><div class="field"><label for="sbirth">تاريخ الميلاد</label><input id="sbirth" type="date"></div><div class="field"><label>السن الآن</label><div id="sage" class="agebox">—</div></div></div>
+    </div>
   <section class="report" id="report" data-tab="report" hidden></section>
 
   <!-- ===== screen 4: settings ===== -->
@@ -1798,14 +1798,6 @@ input,select,textarea{font-size:max(16px,1em)}
     <h3>جهاز قياس مستمر</h3>
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
     <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطار وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
-    <h3>المكملات</h3>
-    <p class="hint">أسماء المكملات هنا هي نفسها اللي بتظهر في صفحة التسجيل. غيّر الاسم أو أضف/احذف، ويتحفظ تلقائيًا.</p>
-    <div id="suppmgr" class="suppmgr"></div>
-    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span id="ssuppo-t">تنبيه بعد الفطار</span></label>
-    <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطار</label><input id="somegat" type="time"></div>
-    <label class="cgmrow"><input type="checkbox" id="ssuppv"><span id="ssuppv-t">تنبيه بعد الغداء</span></label>
-    <div class="field"><label for="svitat">وقت بديل إن لم يُسجَّل الغداء</label><input id="svitat" type="time"></div>
-    <p class="hint">يصل التنبيه بعد الوجبة بساعة (من جرعة أبيدرا المسجَّلة)، ومرة واحدة في اليوم، ولا يصل إن سجّلتها. وإن لم تُسجَّل جرعة، يصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
     <h3>الأقلام المفتوحة</h3>
     <p class="hint">اكتب تاريخ فتح كل قلم، وسنُذكّرك قبل مرور 28 يومًا على فتحه.</p>
     <div class="two cen">
@@ -1837,6 +1829,14 @@ input,select,textarea{font-size:max(16px,1em)}
     <div id="needlebox" class="stripbox"></div>
     <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
 
+    <h3>المكملات</h3>
+    <p class="hint">أسماء المكملات هنا هي نفسها اللي بتظهر في صفحة التسجيل. غيّر الاسم أو أضف/احذف، ويتحفظ تلقائيًا.</p>
+    <div id="suppmgr" class="suppmgr"></div>
+    <label class="cgmrow"><input type="checkbox" id="ssuppo"><span id="ssuppo-t">تنبيه بعد الفطار</span></label>
+    <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطار</label><input id="somegat" type="time"></div>
+    <label class="cgmrow"><input type="checkbox" id="ssuppv"><span id="ssuppv-t">تنبيه بعد الغداء</span></label>
+    <div class="field"><label for="svitat">وقت بديل إن لم يُسجَّل الغداء</label><input id="svitat" type="time"></div>
+    <p class="hint">يصل التنبيه بعد الوجبة بساعة (من جرعة أبيدرا المسجَّلة)، ومرة واحدة في اليوم، ولا يصل إن سجّلتها. وإن لم تُسجَّل جرعة، يصل في الوقت البديل (الافتراضي 10:30 للأوميجا و3:30 للفيتامينات).</p>
     <h3>الكيتون</h3>
     <p class="small">يحدد الطبيب هذه الأرقام في خطته. إن تركتها فارغة فالمعتمد تقريبًا: فوق 300 لمدة 3 ساعات.</p>
     <div class="two">
@@ -1855,6 +1855,13 @@ input,select,textarea{font-size:max(16px,1em)}
     <p class="small">اخرج من البرنامج على هذا الهاتف، وسيطلب الرقم السري مجددًا عند الدخول القادم.</p>
     <button type="button" class="ghost" id="logout" hidden>تسجيل الخروج</button>
 
+    <h3>الأمان والمتابعة</h3>
+    <p class="small" id="secstat"></p>
+    <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
+    <div class="field"><label for="authView">رقم للمتابعة فقط <em>(اختياري. إن تُرك فارغًا يُلغى)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="أرسله للطبيب أو لأي شخص"></div>
+    <p class="err" id="secerr" role="alert"></p>
+    <button type="button" class="ghost" id="authSave">حفظ الأرقام</button>
+    <p class="small">الرقم الثاني يفتح السجل والتقرير فقط، دون تسجيل أو تعديل أو حذف. يكتب كل هاتف الرقم مرة واحدة فقط.</p>
     <h3>نسخة احتياطية</h3>
     <p class="small">نزّل نسخة من كل القراءات والإعدادات واحتفظ بها (في الملفات أو واتساب). يمكنك استرجاعها إذا حدثت أي مشكلة.</p>
     <div class="two">
@@ -1870,13 +1877,6 @@ input,select,textarea{font-size:max(16px,1em)}
     </div>
     <p class="small" id="bkmsg" role="status"></p>
 
-    <h3>الأمان والمتابعة</h3>
-    <p class="small" id="secstat"></p>
-    <div class="field"><label for="authEdit">الرقم السري للتعديل <em>(للأب والأم ويوسف)</em></label><input id="authEdit" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4 أرقام على الأقل"></div>
-    <div class="field"><label for="authView">رقم للمتابعة فقط <em>(اختياري. إن تُرك فارغًا يُلغى)</em></label><input id="authView" type="password" inputmode="numeric" autocomplete="new-password" placeholder="أرسله للطبيب أو لأي شخص"></div>
-    <p class="err" id="secerr" role="alert"></p>
-    <button type="button" class="ghost" id="authSave">حفظ الأرقام</button>
-    <p class="small">الرقم الثاني يفتح السجل والتقرير فقط، دون تسجيل أو تعديل أو حذف. يكتب كل هاتف الرقم مرة واحدة فقط.</p>
     <p style="text-align:center;font-size:12px;color:var(--muted);margin:14px 0 0">إصدار 14-11 (كارب)</p>
   </section>
 
