@@ -329,10 +329,12 @@ async function runCron(host, force) {
   const visitSoon = vn && vn.slice(0, 10) >= c.key && vn.slice(0, 10) <= cairo(now + 24 * 3600e3).key;
   const today = sday(now), recentAll = await recentEntries(now), E = recentAll.filter(e => sday(Date.parse(e.ts)) === today);
   const hasRead = sl => E.some(e => e.slot === sl && e.glucose != null);
+  /* any glucose reading inside a time window (Cairo hours; after midnight counts as 24+) ends the matching reminder */
+  const anyIn = (h1, h2) => E.some(e => { if (e.glucose == null) return false; const h = cairo(Date.parse(e.ts)).h, hh = h < 4 ? h + 24 : h; return hh >= h1 && hh < h2; });
   const due = [];
   if (!settings.cgm) {
-    if (morning && !hasRead('fast')) due.push(['fast', 'قراءة الصيام', 'لم تُسجَّل اليوم بعد']);
-    if (night && !hasRead('bed')) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
+    if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['fast', 'قراءة الصيام', 'لم تُسجَّل اليوم بعد']);
+    if (night && !hasRead('bed') && !anyIn(21, 28)) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
   }
   if (night && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لم تُسجَّل اليوم بعد']);
   if (vn && vn > c.stamp) {
