@@ -1819,6 +1819,7 @@ input,select,textarea{font-size:max(16px,1em)}
       <div class="field"><label for="sstocka">عدد أقلام أبيدرا</label><input id="sstocka" type="text" inputmode="decimal" placeholder="0"></div>
       <div class="field"><label for="sstockt">عدد أقلام ترسيبا</label><input id="sstockt" type="text" inputmode="decimal" placeholder="0"></div>
     </div>
+    <div class="two cen"><button type="button" class="ghost" data-addpen="A">+ قلم أبيدرا</button><button type="button" class="ghost" data-addpen="T">+ قلم ترسيبا</button></div>
     <div class="two cen one"><div class="field"><label for="sstockd">نبّهني قبل نفاده بـ (يوم)</label><input id="sstockd" type="text" inputmode="numeric" placeholder="14"></div></div>
     <div class="small" id="stocktxt"></div>
     <h3>شرائط قياس السكر</h3>
@@ -2501,6 +2502,8 @@ function setMode(m){
 }
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
+  var ap=e.target.closest&&e.target.closest('[data-addpen]');
+  if(ap){if(role==='view')return; var kk=ap.dataset.addpen, pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; ch['stock'+kk]=Math.round((lf+300)/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); render(); toast('أُضيف قلم '+(kk==='A'?'أبيدرا':'ترسيبا')); return}
   if(mb){recvDlg(); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
