@@ -2062,7 +2062,7 @@ function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var h='';
   if(authed&&role!=='view'&&(mode!=='cloud'||settingsLoaded)){var ch=false,nl=toLocalInput(new Date()); ['A','T'].forEach(function(k){if(settings['stock'+k]>0&&!settings['stockAt'+k]){settings['stockAt'+k]=nl; ch=true}}); if(ch)persistSettings()}
   [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(!i)return;
-    var total=settings['stock'+x[0]]*300, used=Math.max(0,total-i.left), cur=used%300, pct=total>0?Math.min(100,Math.round(used/total*100)):0, pn=Math.round(i.left/30)/10, lim=settings.stockDays||14, low=i.days!==null?i.days<=lim:i.left<=300;
+    var total=settings['stock'+x[0]]*300, used=Math.max(0,total-i.left), cur=used%300, pct=i.days===null?0:Math.max(0,Math.min(100,Math.round((1-i.days/30)*100))), pn=Math.round(i.left/30)/10, lim=settings.stockDays||14, low=i.days!==null?i.days<=lim:i.left<=300;
     h+='<div class="stripline"><b>'+x[1]+': '+pn+' قلم</b><span>القلم الحالي بقي '+Math.round(300-cur)+' وحدة'+(i.days!==null?' · المخزون يكفي '+i.days+' يومًا':'')+'</span></div><div class="stripbar'+(low?' low':'')+'"><i style="width:'+pct+'%"></i></div>';
   });
   el.innerHTML=h||'اكتب عدد الأقلام ليعمل الحساب.';
