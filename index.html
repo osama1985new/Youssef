@@ -2372,18 +2372,19 @@ function renderReadRem(E){
   var now=new Date(), h=now.getHours()+now.getMinutes()/60, h24=h<4?h+24:h, tk=lk(now);
   var T=(E||prep()).filter(function(e){return lk(e.d)===tk&&e.glucose!=null}), rows=[];
   var has=function(sl){return T.some(function(e){return e.slot===sl})};
+  var anyIn=function(a,b){return T.some(function(e){var hh=e.d.getHours(); hh=hh<4?hh+24:hh; return hh>=a&&hh<b})};
   var later=function(ref){return T.some(function(e){return e!==ref&&e.d>ref.d})};
   if(settings.cgm){el.hidden=true; el.innerHTML=''; return}
   var dis=lsGet('ysg:rrdis',{}); if(dis.k!==tk)dis={k:tk,s:[]}; var isDis=function(sl){return (dis.s||[]).indexOf(sl)>=0};
   var TA=(E||prep()).filter(function(e){return lk(e.d)===tk});
-  if(h>=6&&!has('fast')&&!isDis('fast'))rows.push(['لم تُسجَّل قراءة الصائم اليوم بعد','fast']);
+  if(h>=6&&!has('fast')&&!anyIn(4,11)&&!isDis('fast'))rows.push(['لم تُسجَّل قراءة الصائم اليوم بعد','fast']);
   var bb=TA.filter(function(e){return e.slot==='bf_before'}).pop();
   var lunchStarted=TA.some(function(e){return e.slot==='ln_before'});
   if(bb&&!has('bf_after')&&!later(bb)&&!isDis('bf_after')&&!lunchStarted&&h24<14&&now-bb.d>=2*36e5)rows.push(['مضت ساعتان على الفطار. لم تُسجَّل قراءة ما بعد الفطار بعد','bf_after']);
   var lb=TA.filter(function(e){return e.slot==='ln_before'}).pop(), db=TA.filter(function(e){return e.slot==='dn_before'}).pop();
   if(lb&&!has('ln_after')&&!later(lb)&&!isDis('ln_after')&&!TA.some(function(e){return e.slot==='dn_before'})&&h24<20&&now-lb.d>=2*36e5)rows.push(['مضت ساعتان على الغداء. لم تُسجَّل قراءة ما بعد الغداء','ln_after']);
   if(db&&!has('dn_after')&&!later(db)&&!has('bed')&&!isDis('dn_after')&&h24<23&&now-db.d>=2*36e5)rows.push(['مضت ساعتان على العشاء. لم تُسجَّل قراءة ما بعد العشاء','dn_after']);
-  if((h>=22||h<4)&&!has('bed')&&!has('dn_after')&&!isDis('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
+  if((h>=22||h<4)&&!has('bed')&&!has('dn_after')&&!anyIn(21,28)&&!isDis('bed'))rows.push(['لم تُسجَّل قراءة قبل النوم بعد','bed']);
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button><button type="button" class="link" data-remdis="'+r[1]+'" style="color:var(--muted)">تجاهل</button></span></div>'}).join('');
 }
@@ -3754,7 +3755,7 @@ function onSetChange(){
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
   var at={supps:settings.supps||null,bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
-  if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){at.bpLog=(at.bpLog||[]).concat([{t:new Date().toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
+  if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){var bdt=s.bodyDate?new Date(s.bodyDate+'T12:00:00'):null; if(!bdt||isNaN(bdt)||bdt>new Date())bdt=new Date(); at.bpLog=(at.bpLog||[]).concat([{t:bdt.toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){} try{mmRender(); nwMine()}catch(_){}
 }
 $('#stripnew').addEventListener('click',function(){
@@ -4043,7 +4044,12 @@ accordion($('#set'),false); accordion($('#medcard'),false); accordion($('#rcard'
 
 /* ---------- render all ---------- */
 var _mfSig='';
-function render(){try{applySupps()}catch(_){} setTimeout(function(){try{if(entries.length||mode!=='cloud')stockPopup()}catch(_){}},700); try{var sg0=JSON.stringify([settings.myFoods||[],settings.foodOv||{},(typeof entries!=='undefined'?entries.length:0)]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
+function fixBpDate(){
+  if(role==='view'||!authed||(mode==='cloud'&&!settingsLoaded))return; var L=settings.bpLog||[], x=L[L.length-1]; if(!x||!settings.bodyDate)return;
+  if(!(x.s===settings.bps&&x.d===settings.bpd))return; var bd=new Date(settings.bodyDate+'T12:00:00'); if(isNaN(bd)||bd>new Date())return;
+  if(dayKey(new Date(x.t))===settings.bodyDate)return; x.t=bd.toISOString(); persistSettings();
+}
+function render(){try{applySupps()}catch(_){} try{fixBpDate()}catch(_){} setTimeout(function(){try{if(entries.length||mode!=='cloud')stockPopup()}catch(_){}},700); try{var sg0=JSON.stringify([settings.myFoods||[],settings.foodOv||{},(typeof entries!=='undefined'?entries.length:0)]); if(sg0!==_mfSig){_mfSig=sg0; addMyFoodsToDb(); rebuildFoodPick()}}catch(_){}
   try{refreshSuppChips(); updateAplan(); penLeftTxt(); stockTxt(); var sg=$('#sage'); if(sg)sg.textContent=ageTxt()||'—'}catch(_){} 
   var E=prep();
   try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{mmRender(); nwMine()}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
@@ -4437,8 +4443,8 @@ function clearNotifs(){
   function on(e,k){return lk(new Date(e.ts))===k}
   var lastG=0; E.forEach(function(e){if(e.glucose!=null){var t=new Date(e.ts).getTime(); if(t>lastG)lastG=t}});
   var done={
-    fast:E.some(function(e){return on(e,tk)&&e.slot==='fast'&&e.glucose!=null}),
-    bed:E.some(function(e){return on(e,tk)&&e.slot==='bed'&&e.glucose!=null}),
+    fast:E.some(function(e){var hh=new Date(e.ts).getHours(); return on(e,tk)&&e.glucose!=null&&(e.slot==='fast'||(hh>=4&&hh<11))}),
+    bed:E.some(function(e){var hh=new Date(e.ts).getHours(); hh=hh<4?hh+24:hh; return on(e,tk)&&e.glucose!=null&&(e.slot==='bed'||hh>=21)}),
     tres:E.some(function(e){return on(e,tk)&&e.tresiba>0}),
     trY:E.some(function(e){return on(e,yk)&&e.tresiba>0})||E.some(function(e){return on(e,tk)&&e.tresiba>0}),
     sp:SUPPS.length&&SUPPS.every(function(x){return suppDoneToday(x[0])}),
