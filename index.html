@@ -2420,6 +2420,7 @@ function renderReadRem(E){
   el.hidden=!rows.length;
   el.innerHTML=rows.map(function(r){return '<div class="rr"><span>'+esc(r[0])+'</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-remslot="'+r[1]+'">سجّل الآن</button><button type="button" class="link" data-remdis="'+r[1]+'" style="color:var(--muted)">تجاهل</button></span></div>'}).join('');
 }
+function setStockInputs(){['A','T'].forEach(function(k){var el=$('#sstock'+k.toLowerCase()); if(el)el.value=settings['stock'+k]==null?'':settings['stock'+k]})}
 function recvDlg(){
   var rows=[['A','أقلام أبيدرا'],['T','أقلام ترسيبا']].map(function(x){return {k:x[0],n:x[1],q:0,t:'p'}}).concat(suppList().filter(function(x){return x.pc>0}).map(function(x){return {k:x.k,n:x.n+' (علب)',q:0,t:'s'}}));
   var d=document.createElement('div'); d.className='sdlg'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true');
@@ -2433,7 +2434,7 @@ function recvDlg(){
       rows.forEach(function(r){ if(!r.q)return;
         if(r.t==='p'){var i=penStock(r.k,E), left=i?i.left:0; ch['stock'+r.k]=Math.round((left+r.q*300)/300*100)/100; ch['stockAt'+r.k]=nl}
         else {var it=L.filter(function(x){return x.k===r.k})[0]; if(it){var c=suppLeft(it); it.base=(c||0)+r.q*it.pc; it.at=nl; sc=true}}});
-      if(sc)ch.supps=L; settings=Object.assign({},settings,ch); persistSettings(); _spSig=''; d.remove(); render(); toast('تم. سنُذكّرك الشهر القادم'); return}
+      if(sc)ch.supps=L; settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); _spSig=''; d.remove(); render(); toast('تم. سنُذكّرك الشهر القادم'); return}
   });
   document.body.appendChild(d);
 }
@@ -2505,7 +2506,7 @@ function setMode(m){
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
   var ap=e.target.closest&&e.target.closest('[data-addpen]');
-  if(ap){if(role==='view')return; var raw=ap.dataset.addpen, mn=raw.slice(-1)==='-', kk=raw.charAt(0), pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; if(mn&&lf<=0){toast('لا يوجد قلم لإنقاصه'); return} ch['stock'+kk]=Math.round(Math.max(0,lf+(mn?-300:300))/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); render(); toast((mn?'أُنقص قلم ':'أُضيف قلم ')+(kk==='A'?'أبيدرا':'ترسيبا')); return}
+  if(ap){if(role==='view')return; var raw=ap.dataset.addpen, mn=raw.slice(-1)==='-', kk=raw.charAt(0), pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; if(mn&&lf<=0){toast('لا يوجد قلم لإنقاصه'); return} ch['stock'+kk]=Math.round(Math.max(0,lf+(mn?-300:300))/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); render(); toast((mn?'أُنقص قلم ':'أُضيف قلم ')+(kk==='A'?'أبيدرا':'ترسيبا')); return}
   if(mb){recvDlg(); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
