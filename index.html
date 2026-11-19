@@ -2062,7 +2062,7 @@ function stockTxt(){
   var el=$('#stocktxt'); if(!el)return; var h='';
   if(authed&&role!=='view'&&(mode!=='cloud'||settingsLoaded)){var ch=false,nl=toLocalInput(new Date()); ['A','T'].forEach(function(k){if(settings['stock'+k]>0&&!settings['stockAt'+k]){settings['stockAt'+k]=nl; ch=true}}); if(ch)persistSettings()}
   [['A','أبيدرا'],['T','ترسيبا']].forEach(function(x){var i=penStock(x[0]); if(!i)return;
-    var total=settings['stock'+x[0]]*300, used=Math.max(0,total-i.left), cur=used%300, pct=Math.max(i.left>0?4:0,Math.round((300-cur)/300*100)), pn=Math.round(i.left/30)/10, lim=settings.stockDays||14, low=i.days!==null?i.days<=lim:i.left<=300;
+    var total=settings['stock'+x[0]]*300, used=Math.max(0,total-i.left), cur=used%300, pct=total>0?Math.min(100,Math.round(used/total*100)):0, pn=Math.round(i.left/30)/10, lim=settings.stockDays||14, low=i.days!==null?i.days<=lim:i.left<=300;
     h+='<div class="stripline"><b>'+x[1]+': '+pn+' قلم</b><span>القلم الحالي بقي '+Math.round(300-cur)+' وحدة'+(i.days!==null?' · المخزون يكفي '+i.days+' يومًا':'')+'</span></div><div class="stripbar'+(low?' low':'')+'"><i style="width:'+pct+'%"></i></div>';
   });
   el.innerHTML=h||'اكتب عدد الأقلام ليعمل الحساب.';
@@ -2507,7 +2507,7 @@ function setMode(m){
 document.addEventListener('click',function(e){
   var mb=e.target.closest&&e.target.closest('[data-med]');
   var ap=e.target.closest&&e.target.closest('[data-addpen]');
-  if(ap){if(role==='view')return; var raw=ap.dataset.addpen, mn=raw.slice(-1)==='-', kk=raw.charAt(0), pi=penStock(kk,prep()), lf=pi?pi.left:0, ch={}; if(mn&&lf<=0){toast('لا يوجد قلم لإنقاصه'); return} ch['stock'+kk]=Math.round(Math.max(0,lf+(mn?-300:300))/300*100)/100; ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); render(); toast((mn?'أُنقص قلم ':'أُضيف قلم ')+(kk==='A'?'أبيدرا':'ترسيبا')); return}
+  if(ap){if(role==='view')return; var raw=ap.dataset.addpen, mn=raw.slice(-1)==='-', kk=raw.charAt(0), pi=penStock(kk,prep()), lf=pi?pi.left:0, cn=+settings['stock'+kk]||0, usd=Math.max(0,cn*300-lf), ch={}; if(mn&&lf<=0){toast('لا يوجد قلم لإنقاصه'); return} ch['stock'+kk]=Math.round(Math.max(mn?usd/300:0,cn+(mn?-1:1))*100)/100; if(!settings['stockAt'+kk])ch['stockAt'+kk]=toLocalInput(new Date()); settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); render(); toast((mn?'أُنقص قلم ':'أُضيف قلم ')+(kk==='A'?'أبيدرا':'ترسيبا')); return}
   if(mb){recvDlg(); return}
   var vb=e.target.closest&&e.target.closest('[data-visit]');
   if(vb){
