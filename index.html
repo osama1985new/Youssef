@@ -2568,9 +2568,9 @@ function syncCorr(){
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
   if(imode==='tres'&&lastMode!=='tres'&&!editingId){
     if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
-    
   }
   lastMode=imode;
+  try{$('#tamf').hidden=!(imode==='tres'&&role!=='view'); paintTam()}catch(_){}
   renderModeHint();
   $('#calc').hidden=imode!=='meal'||isSnack(); var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
@@ -3565,7 +3565,7 @@ function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); retu
 function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
 function applySnack(){
   var sn=isSnack(), pe=document.querySelector('.p-extra'), c=$('#calc'), pi=document.querySelector('.p-ins');
-  if(pe)pe.hidden=sn||(imode==='corr'&&!editingId); if(c)c.hidden=sn;
+  if(pe)pe.hidden=sn||(imode==='corr'&&!editingId); if(c)c.hidden=sn||imode!=='meal';
   var hideIns=sn&&!settings.carbMode;
   if(pi&&hideIns)pi.hidden=true;
   if(!hideIns&&pi&&imode==='meal')pi.hidden=false;
@@ -4194,7 +4194,7 @@ function render(){try{applySupps()}catch(_){} try{fixBpDate()}catch(_){} setTime
   var E=prep();
   try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{mmRender(); nwMine()}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
-  rangeNote(); try{renderModeHint()}catch(_){}
+  rangeNote(); try{syncInj(); updateCalc(); var _c=$('#calc'); if(_c&&imode!=='meal')_c.hidden=true; var _tm=$('#tamf'); if(_tm)_tm.hidden=!(imode==='tres'&&role!=='view'); paintTam()}catch(_){}
 }
 
 /* ---------- events ---------- */
