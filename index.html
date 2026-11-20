@@ -2214,6 +2214,13 @@ async function refresh(){
     go(bs[n].dataset.go);
   },{passive:true});
 })();
+(function(){
+  var lb=document.createElement('label'); lb.setAttribute('aria-hidden','true'); lb.style.cssText='position:fixed;left:-120px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+  var cb=document.createElement('input'); cb.type='checkbox'; cb.setAttribute('switch',''); cb.tabIndex=-1; lb.appendChild(cb); document.body.appendChild(lb);
+  function hapt(){try{if(navigator.vibrate)navigator.vibrate(8)}catch(_){} try{lb.click()}catch(_){}}
+  window._hapt=hapt;
+  document.addEventListener('click',function(e){var t=e.target; if(!t||!t.closest||!e.isTrusted)return; if(t.closest('button,[data-go],[data-mode],.chip,summary')&&!t.closest('button:disabled'))hapt()},true);
+})();
 async function start(first){
   try{
     var j=await api(); mode='cloud'; applyServer(j); ready();
