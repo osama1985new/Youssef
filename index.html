@@ -1505,6 +1505,7 @@ input,select,textarea{font-size:max(16px,1em)}
 .sdc .acts button{flex:1 1 0!important; width:auto!important}
 .spr .spl{white-space:nowrap; flex:1 1 auto}
 body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-index:70}
+.tamrow{display:flex;gap:8px}.tamrow .chip{flex:1}.tamrow .chip[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:var(--accent);color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -1655,6 +1656,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
       </div>
     </div>
         <div class="hint" id="thint" hidden></div>
+    <div class="field" id="tamf" hidden><label>موعد الترسيبا</label><div class="tamrow"><button type="button" class="chip" data-tam="0" aria-pressed="false">مساءً</button><button type="button" class="chip" data-tam="1" aria-pressed="false">صباحًا</button></div><p class="small">التنبيهات تتبع الموعد ده.</p></div>
     <div class="injrow" id="injrow" hidden>
       <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
@@ -2376,7 +2378,10 @@ function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),fun
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
 function isNight(){var h=new Date().getHours(); return h>=22||h<4}
-function defMode(){return isNight()?(tresToday().length?'read':'tres'):(defaultSlot()==='bed'?'read':'meal')}
+function paintTam(){[].forEach.call(document.querySelectorAll('[data-tam]'),function(b){b.setAttribute('aria-pressed',(b.dataset.tam==='1')===!!settings.tresAm?'true':'false')})}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tam]'); if(!b||role==='view')return; settings=Object.assign({},settings,{tresAm:b.dataset.tam==='1'}); persistSettings(); paintTam(); try{renderTresRem()}catch(_){} toast(b.dataset.tam==='1'?'الترسيبا صباحًا — التنبيهات صباحًا':'الترسيبا مساءً — التنبيهات مساءً')});
+function tresWin(){var h=new Date().getHours(); return settings.tresAm?(h>=6&&h<22):isNight()}
+function defMode(){return (isNight()&&!settings.tresAm)?(tresToday().length?'read':'tres'):(defaultSlot()==='bed'?'read':'meal')}
 function updateModeButtons(){
   var tb=document.querySelector('#modebar [data-mode=tres]'), sb=document.querySelector('#modebar [data-mode=nofood]');
   if(tb)tb.hidden=false;
@@ -2454,7 +2459,7 @@ function renderVisitRem(){
 }
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var T=tresToday();
-  if(!isNight()||role==='view'){el.hidden=true; return}
+  if(!tresWin()||role==='view'){el.hidden=true; return}
   if(T.length){el.hidden=true; el.innerHTML=''; return}
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا اليوم سُجّلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>لم تُسجَّل ترسيبا اليوم بعد</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
@@ -2500,7 +2505,7 @@ function setMode(m){
   keepSlot=null; if(m==='corr'||m==='nofood')$('#slot').value='other'; if(m==='tres')$('#slot').value='bed';
   setSlotOptions(); if(m==='read'&&PREMEAL.indexOf(curSlot())>=0)$('#slot').value='other';
   if(m==='corr'||m==='read'||m==='tres'){mealItems=[]; ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''}); renderMeal()}
-  try{var tf=$('#tdf'); tf.hidden=!(imode==='tres'&&!editingId); if(!tf.hidden)$('#tdt').value=toLocalInput(new Date())}catch(_){}
+  try{var tf=$('#tdf'); tf.hidden=!(imode==='tres'&&!editingId); $('#tamf').hidden=!(imode==='tres'&&role!=='view'); paintTam(); if(!tf.hidden)$('#tdt').value=toLocalInput(new Date())}catch(_){}
   try{applySnack()}catch(_){} syncInj(); renderHint(prep()); updateCalc();
 }
 document.addEventListener('click',function(e){
@@ -3806,7 +3811,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={supps:settings.supps||null,bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
+  var at={supps:settings.supps||null,bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null,tresAm:settings.tresAm===true}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){var bdt=s.bodyDate?new Date(s.bodyDate+'T12:00:00'):null; if(!bdt||isNaN(bdt)||bdt>new Date())bdt=new Date(); at.bpLog=(at.bpLog||[]).concat([{t:bdt.toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){} try{mmRender(); nwMine()}catch(_){}
 }
