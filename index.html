@@ -1506,7 +1506,10 @@ input,select,textarea{font-size:max(16px,1em)}
 .spr .spl{white-space:nowrap; flex:1 1 auto}
 body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-index:70}
 .tamrow{display:flex;gap:8px}.tamrow .chip{flex:1}.tamrow .chip[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:var(--accent);color:var(--accent);font-weight:600}
-#ptr{position:fixed; top:calc(env(safe-area-inset-top,0px) + 8px); left:50%; transform:translate(-50%,-40px); opacity:0; z-index:80; padding:8px 16px; border-radius:999px; background:var(--ink); color:var(--bg); font-size:14px; pointer-events:none; transition:opacity .15s}
+#ptr{position:fixed; top:calc(env(safe-area-inset-top,0px) + 8px); left:50%; transform:translate(-50%,-40px); opacity:0; z-index:80; width:34px; height:34px; border-radius:50%; background:var(--surface,#fff); box-shadow:0 2px 10px rgba(0,0,0,.18); pointer-events:none; transition:opacity .15s}
+#ptr::after{content:''; position:absolute; inset:7px; border-radius:50%; border:3px solid var(--accent,#6b5aa8); border-top-color:transparent; transform:rotate(var(--rot,0deg))}
+#ptr.spin::after{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -2171,13 +2174,13 @@ async function refresh(){
     if(y0==null)return; dy=e.touches[0].clientY-y0;
     if((window.scrollY||document.documentElement.scrollTop)>0){y0=null; reset(); return}
     if(dy<=0){reset(); return}
-    var p=Math.min(dy,110); el.textContent=dy>=80?'اترك للتحديث':'اسحب للتحديث'; el.style.opacity=String(Math.min(1,dy/60)); el.style.transform='translate(-50%,'+(p*0.5-20)+'px)';
+    var p=Math.min(dy,110); el.classList.remove('spin'); el.style.setProperty('--rot',(dy*3)+'deg'); el.style.opacity=String(Math.min(1,dy/60)); el.style.transform='translate(-50%,'+(p*0.5-20)+'px)';
   },{passive:true});
   document.addEventListener('touchend',function(){
     if(y0==null)return; var go=dy>=80; y0=null; dy=0;
     if(!go){reset(); return}
-    busy=true; el.textContent='جارٍ التحديث…'; el.style.transform='translate(-50%,30px)';
-    Promise.resolve(refresh()).then(function(){toast('تم التحديث')}).catch(function(){}).then(function(){busy=false; reset()});
+    busy=true; el.classList.add('spin'); el.style.opacity='1'; el.style.transform='translate(-50%,30px)';
+    Promise.resolve(refresh()).catch(function(){}).then(function(){busy=false; el.classList.remove('spin'); reset()});
   },{passive:true});
 })();
 async function start(first){
