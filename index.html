@@ -2201,7 +2201,7 @@ async function refresh(){
   var x0=null,y0=null,t0=0;
   document.addEventListener('touchstart',function(e){
     x0=null; if(e.touches.length!==1||document.querySelector('.sdlg')||!authed)return;
-    var t=e.target; if(t.closest&&t.closest('input,textarea,select,[contenteditable],.chart,table,.scrollx,#tabs'))return;
+    var t=e.target; if(t.closest&&t.closest('input,textarea,select,[contenteditable],#tabs'))return;
     for(var n=t;n&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+4&&/(auto|scroll)/.test(getComputedStyle(n).overflowX))return}
     x0=e.touches[0].clientX; y0=e.touches[0].clientY; t0=Date.now();
   },{passive:true});
@@ -2474,8 +2474,8 @@ function recSite(kind){
 }
 function renderModeHint(){
   var mh=$('#modehint'); if(!mh)return; var txt='';
-  if(imode==='tres'){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
-  else if($('#a').offsetParent!==null){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
+  if(imode==='tres'&&num($('#t').value)>0){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
+  else if(imode!=='tres'&&num($('#a').value)>0){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
   mh.textContent=txt; mh.hidden=!txt;
 }
 function nextSite(){
@@ -2568,7 +2568,7 @@ function syncCorr(){
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
   if(imode==='tres'&&lastMode!=='tres'&&!editingId){
     if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
-    var ns=nextSite(); if(!$('#needleT').value)$('#needleT').value='new'; if(!$('#site').value&&ns.next)$('#site').value=ns.next;
+    
   }
   lastMode=imode;
   renderModeHint();
