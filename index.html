@@ -2389,7 +2389,7 @@ function applyTab(){
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false); updateSaveBar();
-  placeExport(); moveTabInd();
+  placeExport(); moveTabInd(); try{renderModeHint()}catch(_){}
 }
 var TAB_ORD=['add','log','report','set'];
 function go(t){
@@ -2475,7 +2475,7 @@ function recSite(kind){
 function renderModeHint(){
   var mh=$('#modehint'); if(!mh)return; var txt='';
   if(imode==='tres'){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
-  else if(num($('#a').value)>0){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
+  else if($('#a').offsetParent!==null){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
   mh.textContent=txt; mh.hidden=!txt;
 }
 function nextSite(){
@@ -4194,7 +4194,7 @@ function render(){try{applySupps()}catch(_){} try{fixBpDate()}catch(_){} setTime
   var E=prep();
   try{clearNotifs()}catch(_){} try{setTimeout(backfillMeals,600)}catch(_){} try{mmRender(); nwMine()}catch(_){} try{bpPaint()}catch(_){} renderMedRem(); renderStore(); renderBanner(E); renderCare(E); if(!modeTouched&&!editingId&&imode!==defMode()){imode=defMode(); lastMode=null; syncInj()} renderHero(E); renderTresRem(); renderVisitRem(); renderReadRem(E); renderStrips(); renderChart(E); renderLog(E); renderHint(E); gmsg(); renderPresets(); updateCalc();
   if(!$('#report').hidden)buildReport();
-  rangeNote();
+  rangeNote(); try{renderModeHint()}catch(_){}
 }
 
 /* ---------- events ---------- */
