@@ -2458,7 +2458,7 @@ function renderVisitRem(){
    :'<div class="rr"><span>فات موعد الطبيب ('+dayLong(new Date(vn))+'). هل ذهبت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">نعم</button><button type="button" class="link" data-visit="skip">لا</button></span></div>';
 }
 function renderTresRem(){
-  var el=$('#tresrem'); if(!el)return; var T=tresToday();
+  var el=$('#tresrem'); if(!el)return; var T=settings.tresAm?prep().filter(function(e){return e.tresiba>0&&Date.now()-e.d.getTime()<18*36e5}):tresToday();
   if(!tresWin()||role==='view'){el.hidden=true; return}
   if(T.length){el.hidden=true; el.innerHTML=''; return}
   el.hidden=false; el.classList.toggle('done',T.length>0);
