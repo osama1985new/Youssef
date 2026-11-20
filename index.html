@@ -2472,6 +2472,12 @@ function recSite(kind){
   var ranked=kind==='t'?rg(['th_r','th_l']).concat(rg(['ar_r','ar_l']),rg(['ab_r','ab_l'])):rg(PREF).concat(rg(SEC));
   return {E:E,cnt:cnt,last:last,ranked:ranked,next:ranked[0]};
 }
+function renderModeHint(){
+  var mh=$('#modehint'); if(!mh)return; var txt='';
+  if(imode==='tres'){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
+  else if(num($('#a').value)>0){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
+  mh.textContent=txt; mh.hidden=!txt;
+}
 function nextSite(){
   var r=recSite('t'), L=prep().filter(function(e){return e.tresiba>0&&e.site});
   return {last:L.length?(SITE_LABEL[L[L.length-1].site]||''):'',needle:L.length?L[L.length-1].needleT:'',next:L.length?r.next:''};
@@ -2565,8 +2571,7 @@ function syncCorr(){
     var ns=nextSite(); if(!$('#needleT').value)$('#needleT').value='new'; if(!$('#site').value&&ns.next)$('#site').value=ns.next;
   }
   lastMode=imode;
-  var mh=$('#modehint'), ns2=imode==='tres'?nextSite():null;
-  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة: '+ns2.last+(ns2.needle==='reuse'?' · بنفس السن':ns2.needle==='new'?' · بسن جديد':'');
+  renderModeHint();
   $('#calc').hidden=imode!=='meal'||isSnack(); var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
 var modeTouched=false;
@@ -2614,10 +2619,10 @@ function slotLink(){
   autoSup.forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled)b.setAttribute('aria-pressed','false')}); autoSup=[];
   (SLOT_SUPP[sl]||[]).forEach(function(x){var b=document.querySelector('#supp .chip[data-supp="'+x+'"]'); if(b&&!b.disabled&&b.getAttribute('aria-pressed')!=='true'){b.setAttribute('aria-pressed','true'); autoSup.push(x)}});
 }
-function syncInj(){try{slotLink()}catch(_){} updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+function syncInj(){try{slotLink()}catch(_){} try{renderModeHint()}catch(_){} updateAplan(); syncCorr(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#needle').addEventListener('change',function(){injHint()}); $('#needleT').addEventListener('change',function(){injHint()}); $('#site').addEventListener('change',function(){injHint()});
 ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).addEventListener('input',syncCorr)});
-function syncInjKey(){updateAplan(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
+function syncInjKey(){try{renderModeHint()}catch(_){} updateAplan(); var on=num($('#a').value)>0||num($('#t').value)>0; $('#injrow').hidden=!on; $('#needleAwrap').hidden=!(num($('#a').value)>0); $('#needleTwrap').hidden=!(num($('#t').value)>0); if(num($('#t').value)>0&&!$('#ttime').value){var dv=$('#dt').value; $('#ttime').value=dv?dv.slice(11,16):''} if(!on)$('#injhint').hidden=true; else injHint()}
 $('#a').addEventListener('input',syncInjKey); $('#t').addEventListener('input',syncInjKey);
 function foodLabel(f){
   if(f.ov&&f.ov.u)return f.n+' — 1 '+f.ov.u+(f.ov.w>0?' ('+f.ov.w+' جم)':'')+' — '+fmt(f.ov.c)+' جم كارب';
