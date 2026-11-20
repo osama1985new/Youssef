@@ -337,7 +337,7 @@ async function runCron(host, force) {
     if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['fast', 'قراءة الصيام', 'لم تُسجَّل اليوم بعد']);
     if (night && !hasRead('bed') && !anyIn(21, 28)) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
   }
-  if ((settings.tresAm ? (c.h >= 6 && c.h < 22) : night) && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لم تُسجَّل اليوم بعد']);
+  if ((settings.tresAm ? (c.h >= 6 && c.h < 22 && !recentAll.some(e => e.tresiba > 0 && now - Date.parse(e.ts) < 18 * 3600e3)) : (night && !E.some(e => e.tresiba > 0)))) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لم تُسجَّل اليوم بعد']);
   if (vn && vn > c.stamp) {
     const vd = vn.slice(0, 10), vt = t12(vn.slice(11, 16));
     if (vd === c.key && c.h >= 8 && c.h < 11) due.push(['visit:' + vd, 'زيارة الطبيب', 'اليوم الساعة ' + vt]);
