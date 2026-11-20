@@ -2449,6 +2449,16 @@ function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .ch
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
+var _ac=null;
+function sndOn(){return true}
+function sndUnlock(){try{if(!sndOn())return; var C=window.AudioContext||window.webkitAudioContext; if(!C)return; if(!_ac)_ac=new C(); if(_ac.state==='suspended')_ac.resume()}catch(_){}}
+function snd(kind){
+  try{ if(!sndOn())return; sndUnlock(); if(!_ac)return;
+    var seq=kind==='low'?[[523,0,.22],[392,.2,.34]]:kind==='done'?[[660,0,.28]]:[[523,0,.16],[784,.14,.3]], t0=_ac.currentTime+0.02;
+    seq.forEach(function(n){var o=_ac.createOscillator(), g=_ac.createGain(); o.type='sine'; o.frequency.value=n[0]; o.connect(g); g.connect(_ac.destination);
+      g.gain.setValueAtTime(0.0001,t0+n[1]); g.gain.exponentialRampToValueAtTime(0.11,t0+n[1]+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+n[2]+0.18); o.start(t0+n[1]); o.stop(t0+n[2]+0.2)});
+  }catch(_){}
+}
 function isNight(){var h=new Date().getHours(); return h>=22||h<4}
 function paintTam(){[].forEach.call(document.querySelectorAll('[data-tam]'),function(b){b.setAttribute('aria-pressed',(b.dataset.tam==='1')===!!settings.tresAm?'true':'false')})}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tam]'); if(!b||role==='view')return; settings=Object.assign({},settings,{tresAm:b.dataset.tam==='1'}); persistSettings(); paintTam(); try{renderTresRem()}catch(_){} toast(b.dataset.tam==='1'?'الترسيبا صباحًا — التنبيهات صباحًا':'الترسيبا مساءً — التنبيهات مساءً')});
@@ -2517,7 +2527,7 @@ function recvDlg(){
       rows.forEach(function(r){ if(!r.q)return;
         if(r.t==='p'){var i=penStock(r.k,E), left=i?i.left:0; ch['stock'+r.k]=Math.round((left+r.q*300)/300*100)/100; ch['stockAt'+r.k]=nl}
         else {var it=L.filter(function(x){return x.k===r.k})[0]; if(it){var c=suppLeft(it); it.base=(c||0)+r.q*it.pc; it.at=nl; sc=true}}});
-      if(sc)ch.supps=L; settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); _spSig=''; d.remove(); render(); toast('تم. سنُذكّرك الشهر القادم'); return}
+      if(sc)ch.supps=L; settings=Object.assign({},settings,ch); persistSettings(); setStockInputs(); _spSig=''; d.remove(); render(); snd('done'); toast('تم. سنُذكّرك الشهر القادم'); return}
   });
   document.body.appendChild(d);
 }
@@ -4558,7 +4568,7 @@ $('#f').addEventListener('submit',async function(ev){
     var trd=t>0?entries.filter(function(e){var x=new Date(e.ts); return e.tresiba>0&&lk(x)===lk(d)})[0]:null;
     if(trd){err.textContent='جرعة ترسيبا مسجّلة بالفعل لهذا اليوم (الساعة '+timeStr(new Date(trd.ts))+'). لا يمكن تسجيلها مرتين.'; return}
   }
-  var btn=$('#save'); btn.disabled=true;
+  var btn=$('#save'); btn.disabled=true; sndUnlock();
   try{
     var docNew={id:editingId||undefined,ts:d.toISOString(),slot:slot,glucose:g,apidra:a>0?a:null,tresiba:t>0?t:null,carbs:carbs>0?carbs:null,cx:cx?true:undefined,meal:items,note:note,needle:a>0?($('#needle').value||null):null,needleT:t>0?($('#needleT').value||null):null,site:(a>0||t>0)?($('#site').value||null):null,supp:supp,tresibaTime:t>0?(pad(d.getHours())+':'+pad(d.getMinutes())):null,corr:(a>0&&!items.length)?$('#corr').checked:false,ketT:ket.t,ketV:ket.v}; await addEntry(docNew); forceDup=false; var undoId=editingId?null:docNew.id;
     ['g','a','t','n','m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
@@ -4566,6 +4576,7 @@ $('#f').addEventListener('submit',async function(ev){
     mealItems=[]; renderMeal(); tAsked=false; $('#slot').value=defaultSlot();
     setNow(); if(cx)toast('حُفظ. تنبيه: كارب الوجبة غير مكتمل لوجود صنف مجهول الكارب'); else if(undoId)showUndo(undoId,lastQueued); else toast(lastQueued?'حُفظ على الهاتف وسيُرسل عند عودة الإنترنت':'تم التعديل'); render(); if(wasEdit)go('log');
     if(g!=null&&(g<settings.low||g>settings.high))window.scrollTo({top:0,behavior:'smooth'});
+    snd(g!=null&&g<settings.low?'low':'ok');
     try{if(!wasEdit)checkRepeat(docNew,items)}catch(_){}
   }catch(e){
     err.textContent=e&&e.code==='auth'?'تغيّر الرقم السري. أغلق الصفحة وافتحها من جديد.':'تعذّر الحفظ. تأكّد من الإنترنت وحاول مرة أخرى.';
