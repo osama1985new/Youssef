@@ -223,7 +223,7 @@ body.ro #set>.acct{display:block!important}
 .supp .lbl{margin:0}
 .chip{min-height:40px; padding:6px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit; font-size:14.5px; cursor:pointer}
 .chip[aria-pressed=true]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface)); font-weight:600}
-.editbar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1px solid var(--accent); font-size:14px; font-weight:500}
+.editbar{display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1px solid var(--accent); font-size:14px; font-weight:500}
 
 .scalerow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
 .scalerow input{min-height:44px; font-size:16px; text-align:center}
@@ -1510,6 +1510,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 #ptr::after{content:''; position:absolute; inset:7px; border-radius:50%; border:3px solid var(--accent,#6b5aa8); border-top-color:transparent; transform:rotate(var(--rot,0deg))}
 #ptr.spin::after{animation:ptrspin .8s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
+#modehint{color:#b3392f; font-weight:700}
 </style>
 </head>
 <body>
@@ -1659,7 +1660,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
       </div>
     </div>
         <div class="hint" id="thint" hidden></div>
-    <div class="field" id="tamf" hidden><label>موعد الترسيبا</label><div class="tamrow"><button type="button" class="chip" data-tam="0" aria-pressed="false">مساءً</button><button type="button" class="chip" data-tam="1" aria-pressed="false">صباحًا</button></div><p class="small">التنبيهات تتبع الموعد ده.</p></div>
+    <div class="field" id="tamf" hidden><label>موعد الترسيبا</label><div class="tamrow"><button type="button" class="chip" data-tam="0" aria-pressed="false">مساءً</button><button type="button" class="chip" data-tam="1" aria-pressed="false">صباحًا</button></div></div>
     <div class="injrow" id="injrow" hidden>
       <div class="field" id="needleAwrap"><label for="needle">سن قلم أبيدرا</label><select id="needle"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
@@ -1689,7 +1690,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
       </div>
     </details>
     </div>
-    <div class="editbar" id="editbar" hidden><span>تعدّل تسجيلًا قديمًا</span><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
+    <div class="editbar" id="editbar" hidden><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
     <button class="primary" id="save" type="submit">حفظ التسجيل</button>
   </form>
@@ -2183,6 +2184,23 @@ async function refresh(){
     Promise.resolve(refresh()).catch(function(){}).then(function(){busy=false; el.classList.remove('spin'); reset()});
   },{passive:true});
 })();
+(function(){
+  var x0=null,y0=null,t0=0;
+  document.addEventListener('touchstart',function(e){
+    x0=null; if(e.touches.length!==1||document.querySelector('.sdlg')||!authed)return;
+    var t=e.target; if(t.closest&&t.closest('input,textarea,select,[contenteditable],.chart,table,.scrollx,#tabs'))return;
+    for(var n=t;n&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+4&&/(auto|scroll)/.test(getComputedStyle(n).overflowX))return}
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; t0=Date.now();
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0==null)return; var c=e.changedTouches[0], dx=c.clientX-x0, dy=c.clientY-y0; x0=null;
+    if(Math.abs(dx)<90||Math.abs(dy)>Math.abs(dx)*0.5||Date.now()-t0>700)return;
+    var bs=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}); if(bs.length<2)return;
+    var i=-1; bs.forEach(function(b,k){if(b.dataset.go===tab)i=k}); if(i<0)return;
+    var n=i+(dx>0?1:-1); if(n<0||n>=bs.length)return;
+    go(bs[n].dataset.go);
+  },{passive:true});
+})();
 async function start(first){
   try{
     var j=await api(); mode='cloud'; applyServer(j); ready();
@@ -2430,7 +2448,7 @@ function recSite(kind){
 }
 function nextSite(){
   var r=recSite('t'), L=prep().filter(function(e){return e.tresiba>0&&e.site});
-  return {last:L.length?(SITE_LABEL[L[L.length-1].site]||''):'',next:L.length?r.next:''};
+  return {last:L.length?(SITE_LABEL[L[L.length-1].site]||''):'',needle:L.length?L[L.length-1].needleT:'',next:L.length?r.next:''};
 }
 function renderReadRem(E){
   var el=$('#readrem'); if(!el)return; if(role==='view'){el.hidden=true; return}
@@ -2522,7 +2540,7 @@ function syncCorr(){
   }
   lastMode=imode;
   var mh=$('#modehint'), ns2=imode==='tres'?nextSite():null;
-  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة ترسيبا كانت في: '+ns2.last+'. وُضع المكان التالي للتدوير، غيّره إن أردت.';
+  mh.hidden=!(ns2&&ns2.last); if(ns2&&ns2.last)mh.textContent='آخر حقنة: '+ns2.last+(ns2.needle==='reuse'?' · بنفس السن':ns2.needle==='new'?' · بسن جديد':'');
   $('#calc').hidden=imode!=='meal'||isSnack(); var ib=$('#icrbox'); if(ib&&imode!=='meal')ib.hidden=true;
 }
 var modeTouched=false;
@@ -3596,7 +3614,7 @@ function updateCalc(){
   else if(cc&&cc.u>0)corrH='<div class="calc corr"><p class="eyebrow">جرعة التصحيح (جدول الطبيب)</p><p class="calcbig">'+fmt(cc.u)+'<small>وحدة أبيدرا</small></p></div>';
   if(total==null&&!corrH&&!hiG&&!(fixedM&&before)&&!(icr&&ui.length&&before)){el.innerHTML=''; return}
   h+='</div>'+corrH;
-  el.innerHTML=h; el.hidden=isSnack();
+  el.innerHTML=h; el.hidden=isSnack()||imode!=='meal';
 }
 
 /* ---------- report ---------- */
