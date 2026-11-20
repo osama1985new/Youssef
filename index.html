@@ -1515,10 +1515,6 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 
 .hero .big .num{color:var(--st,var(--ink)); transition:color .4s}
 @media (prefers-reduced-motion: no-preference){
-  body.slN [data-tab]:not(.tabhide){animation:slIn .26s cubic-bezier(.22,.8,.3,1)}
-  body.slP [data-tab]:not(.tabhide){animation:slInP .26s cubic-bezier(.22,.8,.3,1)}
-  @keyframes slIn{from{opacity:0; transform:translateX(-28px)}to{opacity:1; transform:none}}
-  @keyframes slInP{from{opacity:0; transform:translateX(28px)}to{opacity:1; transform:none}}
   body.barin .stripbar i{animation:barGrow .7s cubic-bezier(.22,.8,.3,1); transform-origin:right center}
   @keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
   .row.fresh{animation:freshRow 2.4s ease-out}
