@@ -143,6 +143,7 @@ function cleanSettings(s) {
     items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); if (x && x.d) o.d = T(x.d, 40); if (x && (x.x === 1 || x.x === 2)) o.x = x.x; return o; }).filter(x => x.n && x.q !== null && x.c !== null)
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
+  out.tresAm = s.tresAm === true;
   out.carbMode = s.carbMode === true;
   out.supps = Array.isArray(s.supps) ? s.supps.slice(0, 8).map(x => ({ k: /^[a-z0-9]{1,12}$/.test(String(x && x.k)) ? String(x.k) : null, n: T(x && x.n, 24), g: x && (x.g === 'bf' || x.g === 'ln') ? x.g : '', pc: x && x.pc != null && N(x.pc, 1000) != null ? Math.round(N(x.pc, 1000)) : null, base: x && x.base != null && N(x.base, 5000) != null ? Math.round(N(x.base, 5000)) : null, at: x && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(x.at || '')) ? String(x.at) : null })).filter(x => x.k && x.n) : null;
   if (out.supps && !out.supps.length) out.supps = null;
@@ -336,7 +337,7 @@ async function runCron(host, force) {
     if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['fast', 'قراءة الصيام', 'لم تُسجَّل اليوم بعد']);
     if (night && !hasRead('bed') && !anyIn(21, 28)) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
   }
-  if (night && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لم تُسجَّل اليوم بعد']);
+  if ((settings.tresAm ? (c.h >= 6 && c.h < 22) : night) && !E.some(e => e.tresiba > 0)) due.push(['tres', 'ترسيبا', 'جرعة ترسيبا لم تُسجَّل اليوم بعد']);
   if (vn && vn > c.stamp) {
     const vd = vn.slice(0, 10), vt = t12(vn.slice(11, 16));
     if (vd === c.key && c.h >= 8 && c.h < 11) due.push(['visit:' + vd, 'زيارة الطبيب', 'اليوم الساعة ' + vt]);
@@ -380,7 +381,7 @@ async function runCron(host, force) {
     if (ok) due.push(['sp_' + k, 'المكملات', 'حان وقت ' + miss.join(' و') + ' ' + when + '. لم يُسجَّل اليوم بعد']);
   });
   /* yesterday's Tresiba missing */
-  if (c.h >= 8 && c.h < 11) {
+  if (!settings.tresAm && c.h >= 8 && c.h < 11) {
     const yk = sday(now - 24 * 3600e3), Y = recentAll.filter(e => sday(Date.parse(e.ts)) === yk);
     if (Y.length && !Y.some(e => e.tresiba > 0)) due.push(['trY', 'ترسيبا', 'جرعة ترسيبا أمس لم تُسجَّل']);
   }
