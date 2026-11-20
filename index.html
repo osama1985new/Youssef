@@ -2483,6 +2483,7 @@ function syncCorr(){
   var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
+  var pr=document.querySelector('.p-read'); if(pr)pr.hidden=(imode==='tres'&&!$('#g').value);
   document.querySelector('.p-ins').hidden=!showIns||(isSnack()&&!settings.carbMode);
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
