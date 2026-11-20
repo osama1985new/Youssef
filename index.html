@@ -1512,6 +1512,22 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 @keyframes ptrspin{to{transform:rotate(360deg)}}
 #modehint{color:#b3392f; font-weight:700}
 #tdf{display:none!important}
+
+.hero .big .num{color:var(--st,var(--ink)); transition:color .4s}
+@media (prefers-reduced-motion: no-preference){
+  body.slN [data-tab]:not(.tabhide){animation:slIn .26s cubic-bezier(.22,.8,.3,1)}
+  body.slP [data-tab]:not(.tabhide){animation:slInP .26s cubic-bezier(.22,.8,.3,1)}
+  @keyframes slIn{from{opacity:0; transform:translateX(-28px)}to{opacity:1; transform:none}}
+  @keyframes slInP{from{opacity:0; transform:translateX(28px)}to{opacity:1; transform:none}}
+  body.barin .stripbar i{animation:barGrow .7s cubic-bezier(.22,.8,.3,1); transform-origin:right center}
+  @keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .row.fresh{animation:freshRow 2.4s ease-out}
+  @keyframes freshRow{0%{opacity:0; transform:translateY(-8px); background:color-mix(in srgb,var(--accent) 22%,var(--surface))}30%{opacity:1; transform:none}100%{background:transparent}}
+  button:not(:disabled){transition:transform .12s ease}
+  button:not(:disabled):active{transform:scale(.96)}
+  .tabs div{position:relative}
+  #tabind{position:absolute; top:0; left:0; height:3px; border-radius:0 0 3px 3px; background:var(--accent); transition:transform .3s cubic-bezier(.22,.8,.3,1),width .3s,opacity .2s; pointer-events:none}
+}
 </style>
 </head>
 <body>
@@ -2301,7 +2317,7 @@ $('#gbtn').addEventListener('click',function(){
 $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#gbtn').click()}});
 
 async function addEntry(doc){
-  doc.id=doc.id||newId();
+  doc.id=doc.id||newId(); window._freshId=doc.id; setTimeout(function(){window._freshId=null},4000);
   if(mode==='cloud'){
     lastQueued=false;
     try{await api({action:'add',entry:doc,src:lsGet('ysg-pushep','')})}
@@ -2361,6 +2377,12 @@ function placeExport(){
   else if(!wide&&exportAcc.parentNode===rp){var k=rc.querySelectorAll(':scope>details.acc'); rc.insertBefore(exportAcc,k[1]||null)}
 }
 try{new MutationObserver(function(){placeExport()}).observe($('#report'),{childList:true})}catch(x){}
+function moveTabInd(){
+  var d=document.querySelector('#tabs div'); if(!d)return; var ind=document.getElementById('tabind'); if(!ind){ind=document.createElement('i'); ind.id='tabind'; d.appendChild(ind)}
+  var b=d.querySelector('button[data-go="'+tab+'"]'); if(!b||getComputedStyle(b).display==='none'||getComputedStyle(d).flexDirection==='column'){ind.style.opacity='0'; return}
+  ind.style.opacity='1'; ind.style.width=(b.offsetWidth*0.4)+'px'; ind.style.transform='translateX('+(b.offsetLeft+b.offsetWidth*0.3)+'px)';
+}
+window.addEventListener('resize',function(){try{moveTabInd()}catch(_){}});
 function applyTab(){
   if(typeof setDirty!=='undefined'&&setDirty&&tab!=='set'&&tab!=='report'){setDirty=false; try{syncSettingsInputs()}catch(_){} try{bpLive()}catch(_){}}
   document.querySelectorAll('[data-tab]').forEach(function(el){
@@ -2371,9 +2393,16 @@ function applyTab(){
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false); updateSaveBar();
-  placeExport();
+  placeExport(); moveTabInd();
 }
-function go(t){tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport()}
+var TAB_ORD=['add','log','report','set'];
+function go(t){
+  var dir=TAB_ORD.indexOf(t)-TAB_ORD.indexOf(tab), same=(t===tab); tab=t; applyTab(); window.scrollTo({top:0}); if(t==='report')buildReport();
+  if(!same&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    var b=document.body; b.classList.remove('slN','slP'); void b.offsetWidth; b.classList.add(dir>0?'slN':'slP'); b.classList.add('barin');
+    clearTimeout(window._slT); window._slT=setTimeout(function(){b.classList.remove('slN','slP','barin')},700);
+  }
+}
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
 
 /* ---------- static UI ---------- */
@@ -2781,12 +2810,17 @@ function renderHero(E){
   var last=gs[gs.length-1];
   var ap=T.reduce(function(s,e){return s+(e.apidra>0?e.apidra:0)},0), tr=T.reduce(function(s,e){return s+(e.tresiba>0?e.tresiba:0)},0);
   var st=last?status(last.glucose):null;
-  var h=$('#hero'); h.dataset.s=st?st[0]:'none';
+  var h=$('#hero'); h.dataset.s=st?st[0]:'none'; var _pv=window._heroPrev;
   h.innerHTML=
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
     '<p class="meta">'+(last?esc(slotLbl(last))+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+(last?heroGauge(last.glucose)+heroSpark(E):'')+
     '<div class="tiles"><div class="a"><span>وحدات أبيدرا اليوم</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا اليوم</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات اليوم</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
+  try{var nm=h.querySelector('.num'), nv=last?Number(last.glucose):null;
+    if(nm&&nv!=null&&window._heroPrev!=null&&window._heroPrev!==nv&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+      var fr=window._heroPrev, t0=performance.now(), dur=600; (function stp(now){var k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3); nm.textContent=fmt(Math.round(fr+(nv-fr)*e)); if(k<1)requestAnimationFrame(stp); else nm.textContent=fmt(nv)})(t0)
+    }
+    window._heroPrev=nv}catch(_){}
 }
 
 /* ---------- chart ---------- */
@@ -2918,7 +2952,7 @@ function renderLog(E){
     html+='<details class="day" data-k="'+k+'"'+((openDays[k]!==undefined?openDays[k]:di===0)?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">لا توجد تسجيلات في هذا اليوم</p></li>');
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
-      html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
+      html+='<li class="row g-'+rowGroup(e.slot)+(window._freshId&&e.id===window._freshId?' fresh':'')+'"><div class="when"><b>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico((e.d.getHours()>=4&&e.d.getHours()<15)?'syr':'moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
