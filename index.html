@@ -1906,6 +1906,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 var $=function(s){return document.querySelector(s)};
 var SLOTS=[['fast','صائم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
+function slotLbl(e){return (e.slot==='bed'&&e.tresiba>0&&!(e.glucose!=null)&&!(e.apidra>0))?'ترسيبا':(SLOT_LABEL[e.slot]||'')}
 function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','رجل يمين'],['th_l','رجل شمال'],['ar_r','ذراع يمين'],['ar_l','ذراع شمال']];
@@ -2572,7 +2573,7 @@ function renderBanner(E){
   if(!authed||!last||!(last.glucose<settings.low||last.glucose>settings.high)||Date.now()-last.d.getTime()>6*36e5||lsGet(LS_D,'')===last.id){el.hidden=true; return}
   var low=last.glucose<settings.low, wasHidden=el.hidden;
   el.dataset.k=low?'low':'high';
-  el.innerHTML='<div><b>تنبيه: القراءة '+fmt(last.glucose)+' '+(low?'أقل من '+settings.low:'أعلى من '+settings.high)+'</b><p>'+esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d)+'</p><p>'+adviceFor(last.glucose)+'</p></div><button type="button" data-dismiss="'+esc(last.id)+'">حسنًا، اطّلعت</button>';
+  el.innerHTML='<div><b>تنبيه: القراءة '+fmt(last.glucose)+' '+(low?'أقل من '+settings.low:'أعلى من '+settings.high)+'</b><p>'+esc(slotLbl(last))+' · '+relDay(last.d)+' '+timeStr(last.d)+'</p><p>'+adviceFor(last.glucose)+'</p></div><button type="button" data-dismiss="'+esc(last.id)+'">حسنًا، اطّلعت</button>';
   if(wasHidden&&shownAlertId!==last.id){try{if(navigator.vibrate)navigator.vibrate([250,120,250])}catch(e){}}
   shownAlertId=last.id; el.hidden=false;
 }
@@ -2737,7 +2738,7 @@ function renderHero(E){
   h.innerHTML=
     '<div class="hero-top"><div><p class="eyebrow">آخر قراءة</p><p class="big"><span class="num">'+(last?fmt(last.glucose):'—')+'</span><span class="unit">mg/dL</span></p></div>'+
     (st?'<span class="pill '+st[0]+'">'+st[1]+'</span>':'')+'</div>'+
-    '<p class="meta">'+(last?esc(SLOT_LABEL[last.slot]||'')+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+(last?heroGauge(last.glucose)+heroSpark(E):'')+
+    '<p class="meta">'+(last?esc(slotLbl(last))+' · '+relDay(last.d)+' '+timeStr(last.d):'سجّل أول قراءة من النموذج أدناه.')+'</p>'+(last?heroGauge(last.glucose)+heroSpark(E):'')+
     '<div class="tiles"><div class="a"><span>وحدات أبيدرا اليوم</span><b>'+fmt(ap)+'</b></div><div class="t"><span>وحدات ترسيبا اليوم</span><b>'+fmt(tr)+'</b></div><div class="r"><span>عدد قراءات اليوم</span><b>'+gs.filter(function(e){return lk(e.d)===tk}).length+'</b></div></div>'+(suppToday(T)?'<p class="suppline">'+suppToday(T)+'</p>':'');
 }
 
@@ -2870,9 +2871,9 @@ function renderLog(E){
     html+='<details class="day" data-k="'+k+'"'+((openDays[k]!==undefined?openDays[k]:di===0)?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">لا توجد تسجيلات في هذا اليوم</p></li>');
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
-      html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(SLOT_LABEL[e.slot]||'')+'</b><span>'+timeStr(e.d)+'</span></div>'+
+      html+='<li class="row g-'+rowGroup(e.slot)+'"><div class="when"><b>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
-        '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico('moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
+        '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico((e.d.getHours()>=4&&e.d.getHours()<15)?'syr':'moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">'+ico('ut')+'الأكل: '+mt+'</p>':'')+
         ((extraText(e)||e.ketT||e.note)?'<div class="notes">'+(extraText(e)?'<p class="note">'+(e.site?ico('pin'):'')+extraText(e)+'</p>':'')+(e.ketT?'<p class="note ket-'+ketLevel(e.ketT,e.ketV)[0]+'">'+esc(ketText(e))+'</p>':'')+(e.note?'<p class="note">'+esc(e.note)+'</p>':'')+'</div>':'')+'</li>';
@@ -3718,7 +3719,7 @@ function buildReport(){
       G2.forEach(function(e){
         var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
         var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (دون طعام)':'',e.note||''].filter(Boolean).join(' · ');
-        h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(SLOT_LABEL[e.slot]||'')+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra)+'<small class="dtm">'+timeStr(e.d)+'</small>':'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+'<small class="dtm">'+(e.tresibaTime?hm(e.tresibaTime):timeStr(e.d))+'</small>':'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
+        h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(slotLbl(e))+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra)+'<small class="dtm">'+timeStr(e.d)+'</small>':'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+'<small class="dtm">'+(e.tresibaTime?hm(e.tresibaTime):timeStr(e.d))+'</small>':'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
       });
       h+='</tbody></table></div></div>';
     });
@@ -3985,7 +3986,7 @@ function askIntent(q){
 }
 var MED_DEF='هذا عرض لأرقام مسجَّلة فقط. تفسيرها طبيًا وأي قرار في الجرعات أو العلاج يحدده الطبيب، ويمكنك عرض التقرير عليه.';
 function sinceDays(n){var m=new Date(Date.now()-SHIFT); m.setHours(0,0,0,0); var a=m.getTime()+SHIFT-(n-1)*DAY; return prep().filter(function(e){return e.d.getTime()>=a&&e.d.getTime()<=Date.now()+36e5})}
-function slotName(e){return SLOT_LABEL[e.slot]||''}
+function slotName(e){return slotLbl(e)}
 function ansHigh(){
   var tk=lk(new Date()), all=prep().slice().sort(function(a,b){return a.d-b.d}), T=all.filter(function(e){return lk(e.d)===tk&&e.glucose!=null});
   if(!T.length)return {obs:['لم تُسجَّل قراءات سكر اليوم بعد.'],med:MED_DEF};
@@ -4252,7 +4253,7 @@ async function buildDoctorPdf(E,r){
       var bg=st==='low'?'#FBE3E1':st==='high'?'#FCEBD3':'#E6F4EC', fg=st==='low'?'#B3261E':st==='high'?'#A85A00':'#1E7F47';
       rr(x,yy,CH_W,CH_H,6,bg);
       var vt=String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''), vf=19; cx.font='700 '+vf+'px '+FF; while(vf>12&&cx.measureText(vt).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(vt,x+CH_W/2,yy+16,vf,700,fg,'center');
-      var sl=SLOT_LABEL[e.slot]||'', fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
+      var sl=slotLbl(e), fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
     });
     if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
     /* only correction doses (the fixed doses are in the top tiles) */
@@ -4350,7 +4351,7 @@ function buildXlsx(E,r){
     pushRow([cell(0,sum.join('   |   '),2)].concat(Array.apply(null,Array(NC-1)).map(function(_,i){return cell(i+1,'',2)})),22); merges.push('A'+ri+':'+col(NC-1)+ri);
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose)[0]:'', gst=st==='low'?5:st==='high'?6:4;
-      pushRow([cell(0,(function(x){return pad(x.getDate())+'/'+pad(x.getMonth()+1)+'/'+x.getFullYear()})(new Date(e.d.getTime()-SHIFT)),3),cell(1,timeStr(e.d),3),cell(2,SLOT_LABEL[e.slot]||'',3),
+      pushRow([cell(0,(function(x){return pad(x.getDate())+'/'+pad(x.getMonth()+1)+'/'+x.getFullYear()})(new Date(e.d.getTime()-SHIFT)),3),cell(1,timeStr(e.d),3),cell(2,slotLbl(e),3),
         cell(3,e.glucose==null?'':e.glucose,gst),cell(4,e.apidra>0?e.apidra:'',4),cell(5,e.tresiba>0?e.tresiba:'',4),
         cell(6,(e.meal||[]).map(function(m){return m.n+(m.u?' — '+qtxt(m.q,m.u):(m.q!==1?' ×'+fmt(m.q):''))+(m.x===1?' (كارب غير معروف)':m.x===2?' (كارب غير مؤكد)':'')}).join(' + '),9),cell(7,e.cx?(e.carbs>0?e.carbs+'+ (ناقص)':'ناقص'):(e.carbs>0?e.carbs:''),4),
         cell(8,e.corr&&e.apidra>0?'نعم':'',3),cell(9,e.note||'',9)]);
