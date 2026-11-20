@@ -1545,7 +1545,6 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
       <button type="button" data-mode="read" aria-pressed="false">قراءة</button>
       <button type="button" data-mode="tres" aria-pressed="false">ترسيبا</button>
     </div>
-    <p class="small" id="modehint" hidden></p>
     <div class="panel p-read">
       <h3>قراءة السكر</h3>
       <div class="two">
@@ -1662,6 +1661,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
       <div class="field" id="needleTwrap" hidden><label for="needleT">سن قلم ترسيبا</label><select id="needleT"><option value="" disabled selected>اختر…</option><option value="new">سن جديد</option><option value="reuse">نفس السن</option></select></div>
       <div class="field"><label for="site">مكان الحقن</label><select id="site"><option value="" disabled selected>اختر…</option></select></div>
     </div>
+    <p class="small" id="modehint" hidden></p>
     <input type="checkbox" id="nodose" hidden><input type="checkbox" id="corr" hidden>
     <p class="msg high" id="injhint" hidden></p>
     </div>
@@ -3542,7 +3542,7 @@ function updateCalc(){
   var hiG=g!=null&&g>settings.high;
   var fixedM=!settings.carbMode;
   $('#a').placeholder='0';
-  el.hidden=isSnack();
+  el.hidden=isSnack()||imode!=='meal';
   if(!(before&&(has||fixedM))&&!hiG){el.innerHTML=''; return}
   var h='<div class="calc"><p class="eyebrow">'+(fixedM?'الجرعة الثابتة المحدّدة من الطبيب':'أبيدرا المقترحة')+'</p>';
   if(g!=null&&g>0&&g<settings.low){
