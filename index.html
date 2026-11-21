@@ -3003,7 +3003,7 @@ function renderHint(E){
   var showT=true;
   if(showT){
     var tr=E.filter(function(e){return e.tresiba>0&&lk(e.d)===tk});
-    if(tr.length){
+    if(tr.length&&imode==='tres'){
       var s=tr.reduce(function(a,e){return a+e.tresiba},0);
       var _lt=tr[tr.length-1], _lh=_lt.tresibaTime?Number(String(_lt.tresibaTime).slice(0,2)):_lt.d.getHours(); h+='<p><b class="warn">سُجّلت اليوم:</b> ترسيبا - '+((_lh>=4&&_lh<16)?'صباحًا':'مساءً')+'، '+fmt(s)+' وحدة، الساعة '+(tr[tr.length-1].tresibaTime?hm(tr[tr.length-1].tresibaTime):timeStr(tr[tr.length-1].d))+'. تأكّد أنك لا تكرر الجرعة.</p>';
     }
