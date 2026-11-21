@@ -212,6 +212,7 @@ details.more summary{cursor:pointer; color:var(--accent); font-weight:600; font-
 body.ro .edt,body.ro .del,body.ro #carebar,body.ro #tabs [data-go=add],body.ro #medcard{display:none!important}
 body.ro #set>:not(.acct){display:none!important}
 body.ro #set>.acct{display:block!important}
+body.ro #set>.msd{display:grid!important}
 .ro-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 .care{border:1px solid var(--high); background:color-mix(in srgb, var(--high) 10%, var(--surface)); border-radius:14px; padding:10px 14px; font-size:14px; display:flex; flex-direction:column; gap:6px}
 .care p{margin:0; line-height:1.5}
@@ -1528,6 +1529,35 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 .msub{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.msub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px}.msub>summary::-webkit-details-marker{display:none}.msub>summary::after{content:"";width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;margin-inline-end:3px}.msub[open]>summary::after{transform:rotate(-135deg)}.msub[open]>summary{border-bottom:1px solid var(--line)}.msub>.msb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:14px}.acc>.accb>.msub{margin:0}
 body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:transparent}body.ro .msub.lo>summary{display:none}body.ro .msub.lo>.msb{padding:0}
 .msub>summary>.ic{width:19px;height:19px;stroke:color-mix(in srgb,var(--accent) 70%,var(--ink));stroke-width:1.9;margin-inline-end:2px}.msub>summary{justify-content:flex-start}.msub>summary::after{margin-inline-start:auto}
+#themesel{min-width:132px;max-width:46%;font:inherit;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:44px}
+
+@media (min-width:760px){
+  .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  body[data-t=add] .wrap>#hero,body[data-t=add] .wrap>#carebar,body[data-t=add] .wrap>#readrem,body[data-t=add] .wrap>#tresrem{grid-column:1/-1!important;grid-row:auto!important}
+  body[data-t=add] .wrap>#f{grid-column:1/-1!important;grid-row:auto!important;display:block!important;column-count:2;column-gap:20px}
+  #f>*{break-inside:avoid;margin-bottom:12px}
+  #f>h2,#f>.modebar,#f>.editbar,#f>.err,#f>#save{column-span:all}
+  body[data-t=log] .wrap>#hero{grid-column:1/-1!important;grid-row:3!important}
+  body[data-t=log] .wrap>#chartcard{grid-column:1!important;grid-row:4!important}
+  body[data-t=log] .wrap>#logsec{grid-column:2!important;grid-row:4!important}
+  body[data-t=set] .wrap>#set{max-width:none!important}
+  body[data-t=report] .wrap>.msd{grid-column:1/-1!important;grid-row:3!important}
+  body.msl-report[data-t=report] .wrap>#rcard,body.msl-report[data-t=report] .wrap>#medcard,body.msl-report[data-t=report] .wrap>#report{grid-column:1/-1!important;grid-row:auto!important}
+  .msd{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+  .msn{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+  .msg{display:flex;flex-direction:column;gap:6px}
+  .msgh{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--muted);font-size:13px;padding:2px 6px}
+  .msgh .ic{width:17px;height:17px;margin:0;stroke:currentColor}
+  .msi{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;font:inherit;font-weight:600;text-align:start;cursor:pointer;color:var(--ink)}
+  .msi,.msi span{font-size:14.5px!important;font-weight:600!important}
+  .msi .ic{width:19px;height:19px;margin:0;stroke:color-mix(in srgb,var(--accent) 70%,var(--ink));stroke-width:1.9}
+  .msi.on{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:var(--accent)}
+  .msp{min-width:0}
+  .msp>.acc{display:none}.msp>.acc.on{display:block}
+  .msp>.acc>summary,.msp .msub>summary{display:none}
+  .msp .acc>.accb>.msub{display:none;border:0;background:transparent}.msp .acc>.accb>.msub.on{display:block}
+  .msp .msub>.msb{padding:0;border:0}
+}
 </style>
 </head>
 <body>
@@ -1879,6 +1909,10 @@ body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:tran
     <div class="swrow">
       <div class="swtxt"><b>الأصوات</b></div>
       <label class="sw"><input type="checkbox" id="sndsw" aria-label="الأصوات"><i></i></label>
+    </div>
+    <div class="swrow">
+      <div class="swtxt"><b>المظهر</b></div>
+      <select id="themesel" aria-label="المظهر"><option value="auto">حسب الهاتف</option><option value="light">فاتح</option><option value="dark">داكن</option></select>
     </div>
 
     <h3>الحساب</h3>
@@ -3863,7 +3897,7 @@ function buildReport(){
     h+='</details>';
   });
   }
-  el.innerHTML=h; el.hidden=false; try{mergeAcc(el,['الجرعات الثابتة','جرعة ترسيبا','أماكن الحقن'],'الجرعات والحقن'); mergeAcc(el,['مؤشر التحكم في السكر','الرسومات والتحليل'],'التحكم والتحليل')}catch(_){} return true;
+  el.innerHTML=h; el.hidden=false; try{mergeAcc(el,['الجرعات الثابتة','جرعة ترسيبا','أماكن الحقن'],'الجرعات والحقن'); mergeAcc(el,['مؤشر التحكم في السكر','الرسومات والتحليل'],'التحكم والتحليل')}catch(_){} try{msRefresh('report')}catch(_){} return true;
 }
 
 /* ---------- settings ---------- */
@@ -4249,6 +4283,65 @@ mergeAcc($('#set'),['الحساب','الأمان والمتابعة','نسخة �
 [].forEach.call(document.querySelectorAll('#set .msub'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الأمان والمتابعة'||t==='نسخة احتياطية')d.classList.add('edonly'); if(t==='الحساب'){d.classList.add('lo'); d.open=false}})})();
 mergeAcc($('#rcard'),['الفترة والملخص','تقرير الطبيب'],'الفترة والتقرير');
 mergeAcc($('#medcard'),['التحليل التراكمي (HbA1c)','الفحوصات الدورية','بيانات الجسم'],'التحاليل والقياسات');
+var _thR=null;
+function applyTheme(m){
+  try{
+    var r=document.documentElement; if(m==='light'||m==='dark')r.setAttribute('data-theme',m); else r.removeAttribute('data-theme');
+    if(!_thR){_thR=[]; [].forEach.call(document.styleSheets,function(ss){var rs; try{rs=ss.cssRules}catch(_){return} [].forEach.call(rs,function(ru){var mt=ru.media&&ru.media.mediaText; if(mt&&/prefers-color-scheme\s*:\s*dark/.test(mt))_thR.push([ru,mt])})})}
+    _thR.forEach(function(p){p[0].media.mediaText=(m==='dark')?p[1].replace(/\(\s*prefers-color-scheme\s*:\s*dark\s*\)/g,'all'):(m==='light')?'not all':p[1]});
+    var dk=m==='dark'||(m!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+    var tc=document.querySelector('meta[name=theme-color]'); if(tc)tc.setAttribute('content',dk?'#0E161C':'#F3F6F8');
+    var cs=document.querySelector('meta[name=color-scheme]'); if(cs)cs.setAttribute('content',m==='dark'?'dark':m==='light'?'light':'light dark');
+  }catch(_){}
+}
+(function(){var m='auto'; try{m=localStorage.getItem('ysg-theme')||'auto'}catch(_){} if(m!=='light'&&m!=='dark')m='auto'; applyTheme(m);
+  var sel=$('#themesel'); if(sel){sel.value=m; sel.addEventListener('change',function(){var v=sel.value; try{localStorage.setItem('ysg-theme',v)}catch(_){} applyTheme(v)})}
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){var v='auto'; try{v=localStorage.getItem('ysg-theme')||'auto'}catch(_){} if(v==='auto')applyTheme('auto')})}catch(_){}
+})();
+
+/* ===== landscape / wide: menus on the right, details on the left ===== */
+var MSQ=window.matchMedia?matchMedia('(min-width:760px)'):{matches:false}, MS={report:null,set:null}, MSLAST={report:null,set:null};
+function msTitle(el){var sm=el.querySelector(':scope>summary'); return sm?sm.textContent.trim():''}
+function msIc(t,sub){var n=(sub&&t==='الحساب')?'logout':EXACTIC[t]; return n?ico(n):''}
+function msOff(page){var st=MS[page]; if(!st)return;
+  st.moved.forEach(function(m){ if(m.ph.parentNode){m.ph.parentNode.insertBefore(m.acc,m.ph); m.ph.remove(); m.acc.open=m.open; m.acc.classList.remove('on'); [].forEach.call(m.acc.querySelectorAll(':scope>.accb>.msub'),function(d,k){d.classList.remove('on'); if(m.subs&&m.subs[k]!==undefined)d.open=m.subs[k]})} else m.acc.remove()});
+  st.box.remove(); MS[page]=null; document.body.classList.remove('msl-'+page)}
+function msSel(page,i,j){var st=MS[page]; if(!st)return;
+  var a=null; [].forEach.call(st.pane.children,function(x){var on=Number(x.dataset.mi)===i; x.classList.toggle('on',on); if(on)a=x});
+  var subs=a?[].slice.call(a.querySelectorAll(':scope>.accb>.msub')):[]; if(subs.length&&(j==null||!subs[j]))j=0;
+  subs.forEach(function(d,k){d.classList.toggle('on',k===j)});
+  [].forEach.call(st.nav.querySelectorAll('.msi'),function(b){var on=Number(b.dataset.i)===i&&(b.dataset.j===undefined||Number(b.dataset.j)===j); b.classList.toggle('on',on); if(on)b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current')});
+  MSLAST[page]={t:a?msTitle(a):'',s:(subs[j]?msTitle(subs[j]):'')}}
+function msOn(page){
+  if(MS[page])return;
+  var ro=document.body.classList.contains('ro'), moved=[];
+  (page==='report'?['rcard','medcard','report']:['set']).forEach(function(id){var r=$('#'+id); if(!r)return; if(ro&&id==='medcard')return;
+    [].slice.call(r.children).forEach(function(c){ if(!c.classList.contains('acc')||c.hidden)return; if(ro&&id==='set'&&!c.classList.contains('acct'))return; moved.push({acc:c,src:id})})});
+  if(!moved.length)return;
+  var box=document.createElement('div'); box.className='msd'; box.id='msd-'+page; if(page==='report'){box.setAttribute('data-tab','report'); box.classList.toggle('tabhide',tab!=='report'||!authed)}
+  var nav=document.createElement('nav'); nav.className='msn'; var pane=document.createElement('div'); pane.className='msp'; box.appendChild(nav); box.appendChild(pane);
+  var nh='', idx=0, jdx=null, L=MSLAST[page];
+  moved.forEach(function(m,i){var a=m.acc, t=msTitle(a), subs=[].slice.call(a.querySelectorAll(':scope>.accb>.msub'));
+    m.ph=document.createComment('ms'); a.parentNode.insertBefore(m.ph,a); m.open=a.open; m.subs=subs.map(function(d){return d.open});
+    a.setAttribute('data-mi',i); a.open=true; subs.forEach(function(d){d.open=true});
+    if(L&&L.t===t){idx=i; jdx=null; subs.forEach(function(d,k){if(msTitle(d)===L.s)jdx=k})}
+    if(subs.length){nh+='<div class="msg"><div class="msgh">'+msIc(t)+'<span>'+esc(t)+'</span></div>'+subs.map(function(d,k){if(ro&&d.classList.contains('edonly'))return ''; var st=msTitle(d); return '<button type="button" class="msi" data-i="'+i+'" data-j="'+k+'">'+msIc(st,true)+'<span>'+esc(st)+'</span></button>'}).join('')+'</div>'}
+    else nh+='<button type="button" class="msi msit" data-i="'+i+'">'+msIc(t)+'<span>'+esc(t)+'</span></button>';
+    pane.appendChild(a)});
+  nav.innerHTML=nh;
+  if(page==='report'){var an=$('#rcard'); an.parentNode.insertBefore(box,an)} else $('#set').appendChild(box);
+  MS[page]={box:box,moved:moved,nav:nav,pane:pane};
+  nav.addEventListener('click',function(e){var b=e.target.closest('.msi'); if(b)msSel(page,Number(b.dataset.i),b.dataset.j===undefined?null:Number(b.dataset.j))});
+  box.addEventListener('change',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr'))))return; markDirty(true)});
+  box.addEventListener('input',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr'))))return; markDirty(true)});
+  document.body.classList.add('msl-'+page); msSel(page,idx,jdx)}
+function msSync(){['set','report'].forEach(function(p){if(MSQ.matches)msOn(p); else msOff(p)})}
+function msRefresh(page){if(!MSQ.matches)return; msOff(page); msOn(page)}
+function msReveal(el){['report','set'].forEach(function(p){var st=MS[p]; if(!st||!el||!st.pane.contains(el))return; var a=el.closest('.acc'), sd=el.closest('.msub'); if(a)msSel(p,Number(a.dataset.mi),sd?[].indexOf.call(a.querySelectorAll(':scope>.accb>.msub'),sd):null)})}
+try{MSQ.addEventListener('change',msSync)}catch(_){try{MSQ.addListener(msSync)}catch(__){}}
+var _msro=document.body.classList.contains('ro'); try{new MutationObserver(function(){var r=document.body.classList.contains('ro'); if(r===_msro)return; _msro=r; if(MSQ.matches){msRefresh('set'); msRefresh('report')}}).observe(document.body,{attributes:true,attributeFilter:['class']})}catch(_){}
+window.addEventListener('beforeprint',function(){['set','report'].forEach(msOff)}); window.addEventListener('afterprint',msSync);
+setTimeout(msSync,0);
 (function(){var sw=$('#sndsw'); if(!sw)return; sw.checked=sndOn(); var st=$('#sndst'); function p(){} p(); sw.addEventListener('change',function(){try{localStorage.setItem('ysg-snd',sw.checked?'1':'0')}catch(_){} p(); if(sw.checked)snd('tick')})})();
 [].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='الهاتف'){d.classList.add('acct')} if(t==='الأقلام المفتوحة')d.hidden=true});
 
