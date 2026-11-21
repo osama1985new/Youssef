@@ -1527,6 +1527,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 .nwsug{display:flex;flex-direction:column;gap:2px;margin:-4px 0 6px}.nwsug small{color:var(--muted);font-size:12px}.nwsug button{border:0;background:transparent;text-align:start;padding:6px 4px;min-height:34px;font-size:13px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line)}.nwsug button b{font-weight:600}.nwsug button span{color:var(--muted);font-size:12px}
 .msub{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.msub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px}.msub>summary::-webkit-details-marker{display:none}.msub>summary::after{content:"";width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;margin-inline-end:3px}.msub[open]>summary::after{transform:rotate(-135deg)}.msub[open]>summary{border-bottom:1px solid var(--line)}.msub>.msb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:14px}.acc>.accb>.msub{margin:0}
 body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:transparent}body.ro .msub.lo>summary{display:none}body.ro .msub.lo>.msb{padding:0}
+.msub>summary>.ic{width:19px;height:19px;stroke:color-mix(in srgb,var(--accent) 70%,var(--ink));stroke-width:1.9;margin-inline-end:2px}.msub>summary{justify-content:flex-start}.msub>summary::after{margin-inline-start:auto}
 </style>
 </head>
 <body>
@@ -2953,13 +2954,16 @@ var ICONS={
  down:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
- note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>'
+ note:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>',
+ phone:'<rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'
 };
+var EXACTIC={'التنبيهات والقياس':'bell','الجرعات':'syr','المخزون':'box','الهاتف':'phone','الحساب':'user','حدود التنبيه':'target','جهاز قياس مستمر':'act','الكيتون':'drop','نظام الجرعات':'syr','تصحيح السكر المرتفع':'target','مخزون الأقلام':'box','شرائط قياس السكر':'drop','أسنان الأقلام':'syr','المكملات':'pill','الأمان والمتابعة':'shield','نسخة احتياطية':'down','الفترة والتقرير':'cal','زيارة الطبيب':'cal','التحاليل والقياسات':'act','تقرير متابعة السكر':'clip','التحكم والتحليل':'chart','الجرعات والحقن':'syr','الفترة والملخص':'cal','تقرير الطبيب':'down','مؤشر التحكم في السكر':'target','الرسومات والتحليل':'chart','الجرعات الثابتة':'syr','جرعة ترسيبا':'syr','أماكن الحقن':'pin','التحليل التراكمي (HbA1c)':'drop','الفحوصات الدورية':'clip','بيانات الجسم':'act'};
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تقرير الطبيب','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
-  var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic])');
-  for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null;
+  var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic]),details.msub>summary:not([data-ic])');
+  for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null; if(EXACTIC[t]&&h.tagName==='SUMMARY'){ var _sub=h.parentNode.classList.contains('msub'); hit=(_sub&&t==='الحساب')?'logout':EXACTIC[t]; h.insertAdjacentHTML('afterbegin',ico(hit)); continue}
     for(var j=0;j<H3ICON.length;j++){if(t.indexOf(H3ICON[j][0])===0||t.indexOf(H3ICON[j][0])>=0&&H3ICON[j][0].length>6){hit=H3ICON[j][1]; break}}
     if(hit)h.insertAdjacentHTML('afterbegin',ico(hit))}
 }
@@ -4239,7 +4243,8 @@ mergeAcc($('#set'),['حدود التنبيه','جهاز قياس مستمر','ا
 mergeAcc($('#set'),['نظام الجرعات','تصحيح السكر المرتفع'],'الجرعات');
 mergeAcc($('#set'),['مخزون الأقلام','شرائط قياس السكر','أسنان الأقلام','المكملات'],'المخزون');
 mergeAcc($('#set'),['الحساب','الأمان والمتابعة','نسخة احتياطية'],'الحساب');
-(function(){[].forEach.call(document.querySelectorAll('#set .msub'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الأمان والمتابعة'||t==='نسخة احتياطية')d.classList.add('edonly'); if(t==='الحساب'){d.classList.add('lo'); d.open=true}})})();
+(function(){function ol(){if(document.body.classList.contains('ro'))[].forEach.call(document.querySelectorAll('#set .msub.lo'),function(d){d.open=true})} try{new MutationObserver(ol).observe(document.body,{attributes:true,attributeFilter:['class']})}catch(_){} ol();
+[].forEach.call(document.querySelectorAll('#set .msub'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الأمان والمتابعة'||t==='نسخة احتياطية')d.classList.add('edonly'); if(t==='الحساب'){d.classList.add('lo'); d.open=false}})})();
 mergeAcc($('#rcard'),['الفترة والملخص','تقرير الطبيب'],'الفترة والتقرير');
 mergeAcc($('#medcard'),['التحليل التراكمي (HbA1c)','الفحوصات الدورية','بيانات الجسم'],'التحاليل والقياسات');
 (function(){var sw=$('#sndsw'); if(!sw)return; sw.checked=sndOn(); var st=$('#sndst'); function p(){} p(); sw.addEventListener('change',function(){try{localStorage.setItem('ysg-snd',sw.checked?'1':'0')}catch(_){} p(); if(sw.checked)snd('tick')})})();
