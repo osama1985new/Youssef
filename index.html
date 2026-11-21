@@ -2448,6 +2448,8 @@ function suppDoneToday(k){var td=lk(new Date()), ks=(k==='calmag'||k==='d3')?[k,
 function refreshSuppChips(){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){var k=b.dataset.supp, done=suppDoneToday(k); b.disabled=done; b.classList.toggle('done',done); if(done)b.setAttribute('aria-pressed','false'); var base=(SUPPS.filter(function(x){return x[0]===k})[0]||[])[1]; var sp=b.querySelector('span'); if(sp)sp.textContent=done?base+' · سُجّلت اليوم':base})}
 function setSupp(a){[].forEach.call(document.querySelectorAll('#supp .chip'),function(b){b.setAttribute('aria-pressed',(a||[]).indexOf(b.dataset.supp)>=0?'true':'false')})}
 var imode='meal', keepSlot=null, slotKey='';
+function trExtraHide(){return false}
+function trExtraHide_old(){try{return imode==='tres'&&!editingId&&!(isNight()&&suppList().some(function(x){return !suppDoneToday(x.k)}))}catch(_){return false}}
 function tresToday(){var tk=lk(new Date()); return prep().filter(function(e){return e.tresiba>0&&lk(e.d)===tk})}
 var _ac=null;
 function sndOn(){return true}
@@ -2587,7 +2589,7 @@ function syncCorr(){
   document.querySelector('.p-ins').hidden=!showIns||(isSnack()&&!settings.carbMode);
   $('#slot').closest('.field').hidden=(imode==='corr'||imode==='nofood'||imode==='tres');
   var af=document.querySelector('.field.a'); af.hidden=!(imode==='meal'||imode==='corr'); if(af.hidden&&$('#a').value)$('#a').value='';
-  var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId)||isSnack();
+  var px=document.querySelector('.p-extra'); if(px)px.hidden=(imode==='corr'&&!editingId)||isSnack()||trExtraHide();
   $('#tbox').hidden=!showT; if(!showT&&$('#t').value){$('#t').value=''; $('#needleT').value=''}
   if(imode==='tres'&&lastMode!=='tres'&&!editingId){
     if(!$('#t').value&&settings.plan>0)$('#t').value=String(settings.plan);
@@ -3588,7 +3590,7 @@ function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); retu
 function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
 function applySnack(){
   var sn=isSnack(), pe=document.querySelector('.p-extra'), c=$('#calc'), pi=document.querySelector('.p-ins');
-  if(pe)pe.hidden=sn||(imode==='corr'&&!editingId); if(c)c.hidden=sn||imode!=='meal';
+  if(pe)pe.hidden=sn||(imode==='corr'&&!editingId)||trExtraHide(); if(c)c.hidden=sn||imode!=='meal';
   var hideIns=sn&&!settings.carbMode;
   if(pi&&hideIns)pi.hidden=true;
   if(!hideIns&&pi&&imode==='meal')pi.hidden=false;
@@ -4555,7 +4557,7 @@ $('#f').addEventListener('submit',async function(ev){
   if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   var edE=editingId?entries.filter(function(x){return x.id===editingId})[0]:null;
-  if(t>0&&(!editingId||(edE&&lk(new Date(edE.ts))===lk(new Date())))){
+  if(t>0&&isNight()&&(!editingId||(edE&&lk(new Date(edE.ts))===lk(new Date())))){
     var pend=[].filter.call(document.querySelectorAll('#supp .chip'),function(b){return !b.disabled&&!b.closest('[hidden]')&&b.getAttribute('aria-pressed')!=='true'}).map(function(b){return (SUPPS.filter(function(x){return x[0]===b.dataset.supp})[0]||[])[1]||''});
     if(pend.length){err.textContent='قبل تسجيل ترسيبا علّم أنك أخذت: '+pend.join('، ')+'.'; var sb=$('#supp'); var dd=sb&&sb.closest('details'); if(dd)dd.open=true; if(sb&&sb.scrollIntoView)sb.scrollIntoView({block:'center',behavior:'smooth'}); return}
   }
