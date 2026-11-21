@@ -3901,7 +3901,8 @@ function buildReport(){
     h+='</details>';
   });
   }
-  el.innerHTML=h; el.hidden=false; try{mergeAcc(el,['الجرعات الثابتة','جرعة ترسيبا','أماكن الحقن'],'الجرعات والحقن'); mergeAcc(el,['مؤشر التحكم في السكر','الرسومات والتحليل'],'التحكم والتحليل')}catch(_){} try{msRefresh('report')}catch(_){} return true;
+  var _op={}; [].forEach.call(el.querySelectorAll('details'),function(d){var sm=d.querySelector(':scope>summary'); if(sm){var k=sm.textContent.trim(); if(k)_op[k]=d.open}});
+  el.innerHTML=h; el.hidden=false; try{mergeAcc(el,['الجرعات الثابتة','جرعة ترسيبا','أماكن الحقن'],'الجرعات والحقن'); mergeAcc(el,['مؤشر التحكم في السكر','الرسومات والتحليل'],'التحكم والتحليل')}catch(_){} try{[].forEach.call(el.querySelectorAll('details'),function(d){var sm=d.querySelector(':scope>summary'); if(!sm)return; var k=sm.textContent.trim(); if(k in _op)d.open=_op[k]})}catch(_){} try{msRefresh('report')}catch(_){} return true;
 }
 
 /* ---------- settings ---------- */
