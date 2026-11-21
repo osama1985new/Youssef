@@ -2454,6 +2454,13 @@ function sndOn(){return true}
 function sndUnlock(){try{if(!sndOn())return; var C=window.AudioContext||window.webkitAudioContext; if(!C)return; if(!_ac)_ac=new C(); if(_ac.state==='suspended')_ac.resume()}catch(_){}}
 function snd(kind){
   try{ if(!sndOn())return; sndUnlock(); if(!_ac)return;
+    if(kind!=='bub')kind='tick';
+    if(kind==='bub'||kind==='tick'){
+      var one=function(){var t0=_ac.currentTime+0.03,o=_ac.createOscillator(),g=_ac.createGain(),bub=kind==='bub',d=bub?.16:.06,v=bub?.14:.2;
+        o.type=bub?'sine':'triangle'; o.frequency.setValueAtTime(bub?420:300,t0); if(bub)o.frequency.exponentialRampToValueAtTime(900,t0+d);
+        o.connect(g); g.connect(_ac.destination); g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(v,t0+(bub?.015:.002)); g.gain.exponentialRampToValueAtTime(0.0001,t0+d); o.start(t0); o.stop(t0+d+0.05)};
+      if(_ac.state==='running')one(); else {var p0=_ac.resume(); if(p0&&p0.then)p0.then(one,function(){}); else one()}
+      return}
     var seq=kind==='low'?[[523,0,.22],[392,.2,.34]]:kind==='pull'?[[440,0,.08],[587,.07,.18]]:kind==='done'?[[660,0,.28]]:[[523,0,.16],[784,.14,.3]];
     var play=function(){var t0=_ac.currentTime+0.03;
       seq.forEach(function(n){var o=_ac.createOscillator(), g=_ac.createGain(); o.type='sine'; o.frequency.value=n[0]; o.connect(g); g.connect(_ac.destination);
@@ -2492,7 +2499,7 @@ function renderModeHint(){
   var mh=$('#modehint'); if(!mh)return; var txt='';
   if(imode==='tres'&&num($('#t').value)>0){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
   else if(imode!=='tres'&&num($('#a').value)>0){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
-  mh.textContent=txt; mh.hidden=!txt;
+  var was=mh.hidden||!mh.textContent; mh.textContent=txt; mh.hidden=!txt; if(txt&&was)snd('bub');
 }
 function nextSite(){
   var r=recSite('t'), L=prep().filter(function(e){return e.tresiba>0&&e.site});
@@ -4632,7 +4639,7 @@ function stockPopup(){
   _spDone=true; if(!rows.length)return; lsSet('ysg:stockpop',tk);
   var d=document.createElement('div'); d.className='sdlg'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true');
   d.innerHTML='<div class="sdc"><h3>مخزون اليوم</h3><dl>'+rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd></div>'}).join('')+'</dl><button type="button" class="primary">تمام</button></div>';
-  d.addEventListener('click',function(e){if(e.target===d||e.target.tagName==='BUTTON')d.remove()}); document.body.appendChild(d);
+  d.addEventListener('click',function(e){if(e.target===d||e.target.tagName==='BUTTON')d.remove()}); document.body.appendChild(d); snd('bub');
 }
 function gotoVisit(){
   go('report');
