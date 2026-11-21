@@ -1558,6 +1558,7 @@ body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:tran
   .msp .acc>.accb>.msub{display:none;border:0;background:transparent}.msp .acc>.accb>.msub.on{display:block}
   .msp .msub>.msb{padding:0;border:0}
 }
+body.smopen{overflow:hidden!important;overscroll-behavior:none}.smcard{overscroll-behavior:contain}
 </style>
 </head>
 <body>
@@ -2224,7 +2225,7 @@ async function refresh(){
   document.addEventListener('touchstart',function(e){
     var t=e.target; y0=null; dy=0;
     if(busy||e.touches.length!==1||(window.scrollY||document.documentElement.scrollTop)>0)return;
-    if(document.querySelector('.sdlg')||(t.closest&&t.closest('input,textarea,select,[contenteditable]')))return;
+    if(document.querySelector('.sdlg')||smOpen()||(t.closest&&t.closest('input,textarea,select,[contenteditable]')))return;
     y0=e.touches[0].clientY;
   },{passive:true});
   document.addEventListener('touchmove',function(e){
@@ -2243,7 +2244,7 @@ async function refresh(){
 (function(){
   var x0=null,y0=null,t0=0;
   document.addEventListener('touchstart',function(e){
-    x0=null; if(e.touches.length!==1||document.querySelector('.sdlg')||!authed)return;
+    x0=null; if(e.touches.length!==1||document.querySelector('.sdlg')||smOpen()||!authed)return;
     var t=e.target; if(t.closest&&t.closest('input,textarea,select,[contenteditable],#tabs'))return;
     for(var n=t;n&&n!==document.body;n=n.parentElement){if(n.scrollWidth>n.clientWidth+4&&/(auto|scroll)/.test(getComputedStyle(n).overflowX))return}
     x0=e.touches[0].clientX; y0=e.touches[0].clientY; t0=Date.now();
@@ -3802,7 +3803,10 @@ function siteMapHTML(E){
     (tot?'<div style="display:flex;justify-content:center">'+siteSvg(cnt,null)+'</div><p class="small" style="text-align:center">اللون الأغمق = استخدام أكثر · الإجمالي '+tot+' حقنة</p>':'<p class="small">لا توجد حقن مسجَّلة بمكان في هذه الفترة.</p>');
 }
 var siteNativeUntil=0, siteShieldT=0;
+var smAt=0;
+function smOpen(){var m=document.getElementById('sitemodal'); return !!(m&&!m.hidden)}
 function openSiteMap(kind){
+  if(!smOpen()){smAt=Date.now(); document.body.classList.add('smopen')}
   if(kind!=='a'&&kind!=='t')kind=imode==='tres'?'t':'a';
   var R=recSite(kind), E=R.E, cnt=R.cnt, last=R.last, ranked=R.ranked, next=R.next;
   var alts=ranked.slice(1,3).map(function(id){return SITE_LABEL[id]});
@@ -3821,7 +3825,7 @@ function openSiteMap(kind){
   $('#sitemodal').hidden=false;
 }
 function closeSiteMap(){
-  $('#sitemodal').hidden=true; siteNativeUntil=Date.now()+30000;
+  document.body.classList.remove('smopen'); $('#sitemodal').hidden=true; siteNativeUntil=Date.now()+30000;
   var sh=window.__siteShield; if(sh){sh.hidden=true; clearTimeout(siteShieldT); siteShieldT=setTimeout(function(){sh.hidden=false},30000)}
   var sl=$('#site'); try{sl.focus(); if(sl.showPicker)sl.showPicker()}catch(e){}
 }
@@ -4421,7 +4425,8 @@ function rangeNote(){
 })();
 $('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b){openSiteMap(b.dataset.smk); snd('tick')}});
 $('#smclose').addEventListener('click',closeSiteMap);
-$('#sitemodal').addEventListener('click',function(ev){if(ev.target===this)closeSiteMap()});
+var smPD=false; $('#sitemodal').addEventListener('pointerdown',function(ev){smPD=(ev.target===this)});
+$('#sitemodal').addEventListener('click',function(ev){if(ev.target===this&&smPD&&Date.now()-smAt>600)closeSiteMap(); smPD=false});
 $('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
