@@ -3614,7 +3614,7 @@ function presetGroupOrder(){
 var foodGrp=null, foodGrpManual=false;
 function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
 function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
-function paintG(){try{var gf=$('#g').closest('.field'), hg=(imode==='meal'||imode==='nofood'||isSnack())&&!editingId; gf.hidden=hg; if(hg&&$('#g').value)$('#g').value=''}catch(_){}}
+function paintG(){try{var gf=$('#g').closest('.field'); gf.hidden=false; var pr=document.querySelector('.p-read'); if(!pr)return; var sn=(imode==='nofood'||isSnack())&&!editingId; pr.hidden=sn||(imode==='tres'&&!$('#g').value); if(sn&&$('#g').value)$('#g').value=''}catch(_){}}
 function applySnack(){
   paintG();
   var sn=isSnack(), pe=document.querySelector('.p-extra'), c=$('#calc'), pi=document.querySelector('.p-ins');
