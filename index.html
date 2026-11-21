@@ -1529,7 +1529,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 .msub{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.msub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px}.msub>summary::-webkit-details-marker{display:none}.msub>summary::after{content:"";width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;margin-inline-end:3px}.msub[open]>summary::after{transform:rotate(-135deg)}.msub[open]>summary{border-bottom:1px solid var(--line)}.msub>.msb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:14px}.acc>.accb>.msub{margin:0}
 body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:transparent}body.ro .msub.lo>summary{display:none}body.ro .msub.lo>.msb{padding:0}
 .msub>summary>.ic{width:19px;height:19px;stroke:color-mix(in srgb,var(--accent) 70%,var(--ink));stroke-width:1.9;margin-inline-end:2px}.msub>summary{justify-content:flex-start}.msub>summary::after{margin-inline-start:auto}
-#themesel{min-width:132px;max-width:46%;font:inherit;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:44px}
+.themeblk{display:flex;flex-direction:column;gap:8px}.themeblk>b{font-size:15px}.themeseg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.themeseg button{min-height:46px;padding:8px 6px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}.themeseg button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent);color:var(--ink)}
 
 @media (min-width:760px){
   .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
@@ -1910,9 +1910,9 @@ body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:tran
       <div class="swtxt"><b>الأصوات</b></div>
       <label class="sw"><input type="checkbox" id="sndsw" aria-label="الأصوات"><i></i></label>
     </div>
-    <div class="swrow">
-      <div class="swtxt"><b>المظهر</b></div>
-      <select id="themesel" aria-label="المظهر"><option value="auto">حسب الهاتف</option><option value="light">فاتح</option><option value="dark">داكن</option></select>
+    <div class="themeblk">
+      <b>المظهر</b>
+      <div class="themeseg" id="themeseg" role="group" aria-label="المظهر"><button type="button" data-th="auto" aria-pressed="false">حسب الهاتف</button><button type="button" data-th="light" aria-pressed="false">فاتح</button><button type="button" data-th="dark" aria-pressed="false">داكن</button></div>
     </div>
 
     <h3>الحساب</h3>
@@ -4295,7 +4295,7 @@ function applyTheme(m){
   }catch(_){}
 }
 (function(){var m='auto'; try{m=localStorage.getItem('ysg-theme')||'auto'}catch(_){} if(m!=='light'&&m!=='dark')m='auto'; applyTheme(m);
-  var sel=$('#themesel'); if(sel){sel.value=m; sel.addEventListener('change',function(){var v=sel.value; try{localStorage.setItem('ysg-theme',v)}catch(_){} applyTheme(v)})}
+  var seg=$('#themeseg'); function pt(v){[].forEach.call(seg.querySelectorAll('button'),function(b){b.setAttribute('aria-pressed',b.dataset.th===v?'true':'false')})} if(seg){pt(m); seg.addEventListener('click',function(e){var b=e.target.closest('button'); if(!b)return; var v=b.dataset.th; try{localStorage.setItem('ysg-theme',v)}catch(_){} pt(v); applyTheme(v)})}
   try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){var v='auto'; try{v=localStorage.getItem('ysg-theme')||'auto'}catch(_){} if(v==='auto')applyTheme('auto')})}catch(_){}
 })();
 
