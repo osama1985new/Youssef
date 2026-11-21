@@ -4423,11 +4423,11 @@ function rangeNote(){
   sel.addEventListener('change',function(){shield.hidden=false; clearTimeout(siteShieldT)});
   window.__siteShield=shield;
 })();
-$('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b){openSiteMap(b.dataset.smk); snd('tick')}});
+$('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b){ev.stopImmediatePropagation(); ev.preventDefault(); openSiteMap(b.dataset.smk); snd('tick')}});
 $('#smclose').addEventListener('click',closeSiteMap);
 var smPD=false; $('#sitemodal').addEventListener('pointerdown',function(ev){smPD=(ev.target===this)});
 $('#sitemodal').addEventListener('click',function(ev){if(ev.target===this&&smPD&&Date.now()-smAt>600)closeSiteMap(); smPD=false});
-$('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
+document.addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t||!t.closest('#report,#msd-report'))return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk,#msd-report details.wk'),function(d){d.open=o})});
 /* ---------- compact doctor PDF (drawn on canvas, wrapped in a minimal PDF) ---------- */
 function u8(str){return new TextEncoder().encode(str)}
 function makePdf(jpegs,W,H){
@@ -4521,7 +4521,7 @@ async function buildDoctorPdf(E,r){
   var jpegs=await Promise.all(pages.map(function(c){return new Promise(function(res){c.toBlob(function(b){b.arrayBuffer().then(function(ab){res(new Uint8Array(ab))})},'image/jpeg',0.92)})}));
   return makePdf(jpegs,PW*SC,PH*SC);
 }
-$('#report').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-sk]'); if(!b)return; siteKind=b.dataset.sk; buildReport()});
+document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-sk]'); if(!b||!b.closest('#report,#msd-report'))return; siteKind=b.dataset.sk; buildReport()});
 $('#pdfview').addEventListener('click',async function(){
   var r=rangeInputs(); if(!r){toast('اختر فترة صحيحة'); return}
   var E=periodEntries(r); if(!E.length){toast('لا توجد تسجيلات في هذه الفترة'); return}
