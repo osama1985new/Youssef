@@ -1526,6 +1526,7 @@ body.hasSave .toast{bottom:calc(190px + env(safe-area-inset-bottom,0px)); z-inde
 }
 .nwsug{display:flex;flex-direction:column;gap:2px;margin:-4px 0 6px}.nwsug small{color:var(--muted);font-size:12px}.nwsug button{border:0;background:transparent;text-align:start;padding:6px 4px;min-height:34px;font-size:13px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line)}.nwsug button b{font-weight:600}.nwsug button span{color:var(--muted);font-size:12px}
 .msub{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.msub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px}.msub>summary::-webkit-details-marker{display:none}.msub>summary::after{content:"";width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;margin-inline-end:3px}.msub[open]>summary::after{transform:rotate(-135deg)}.msub[open]>summary{border-bottom:1px solid var(--line)}.msub>.msb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:14px}.acc>.accb>.msub{margin:0}
+body.ro .edonly{display:none!important}body.ro .msub.lo{border:0;background:transparent}body.ro .msub.lo>summary{display:none}body.ro .msub.lo>.msb{padding:0}
 </style>
 </head>
 <body>
@@ -4238,6 +4239,7 @@ mergeAcc($('#set'),['حدود التنبيه','جهاز قياس مستمر','ا
 mergeAcc($('#set'),['نظام الجرعات','تصحيح السكر المرتفع'],'الجرعات');
 mergeAcc($('#set'),['مخزون الأقلام','شرائط قياس السكر','أسنان الأقلام','المكملات'],'المخزون');
 mergeAcc($('#set'),['الحساب','الأمان والمتابعة','نسخة احتياطية'],'الحساب');
+(function(){[].forEach.call(document.querySelectorAll('#set .msub'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الأمان والمتابعة'||t==='نسخة احتياطية')d.classList.add('edonly'); if(t==='الحساب'){d.classList.add('lo'); d.open=true}})})();
 mergeAcc($('#rcard'),['الفترة والملخص','تقرير الطبيب'],'الفترة والتقرير');
 mergeAcc($('#medcard'),['التحليل التراكمي (HbA1c)','الفحوصات الدورية','بيانات الجسم'],'التحاليل والقياسات');
 (function(){var sw=$('#sndsw'); if(!sw)return; sw.checked=sndOn(); var st=$('#sndst'); function p(){} p(); sw.addEventListener('change',function(){try{localStorage.setItem('ysg-snd',sw.checked?'1':'0')}catch(_){} p(); if(sw.checked)snd('tick')})})();
