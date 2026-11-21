@@ -2499,7 +2499,7 @@ function renderModeHint(){
   var mh=$('#modehint'); if(!mh)return; var txt='';
   if(imode==='tres'&&num($('#t').value)>0){var ns=nextSite(); if(ns.last)txt='آخر حقنة: '+ns.last+(ns.needle==='reuse'?' · بنفس السن':ns.needle==='new'?' · بسن جديد':'')}
   else if(imode!=='tres'&&num($('#a').value)>0){var L=prep().filter(function(e){return e.apidra>0&&e.site&&e.id!==editingId}), l=L[L.length-1]; if(l)txt='آخر حقنة أبيدرا: '+(SITE_LABEL[l.site]||'')+(l.needle==='reuse'?' · بنفس السن':l.needle==='new'?' · بسن جديد':'')}
-  var was=mh.hidden||!mh.textContent; mh.textContent=txt; mh.hidden=!txt; if(txt&&was)snd('bub');
+  var was=mh.hidden||!mh.textContent; mh.textContent=txt; mh.hidden=!txt; if(txt&&was)snd('tick');
 }
 function nextSite(){
   var r=recSite('t'), L=prep().filter(function(e){return e.tresiba>0&&e.site});
@@ -4279,7 +4279,7 @@ function rangeNote(){
   sel.addEventListener('change',function(){shield.hidden=false; clearTimeout(siteShieldT)});
   window.__siteShield=shield;
 })();
-$('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b){openSiteMap(b.dataset.smk); snd('bub')}});
+$('#sitemodal').addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-smk]'); if(b){openSiteMap(b.dataset.smk); snd('tick')}});
 $('#smclose').addEventListener('click',closeSiteMap);
 $('#sitemodal').addEventListener('click',function(ev){if(ev.target===this)closeSiteMap()});
 $('#report').addEventListener('click',function(ev){var t=ev.target.closest&&ev.target.closest('[data-wk]'); if(!t)return; var o=t.dataset.wk==='open'; [].forEach.call(document.querySelectorAll('#report details.wk'),function(d){d.open=o})});
