@@ -3856,7 +3856,7 @@ function buildReport(){
     h+='</details>';
   });
   }
-  el.innerHTML=h; el.hidden=false; return true;
+  el.innerHTML=h; el.hidden=false; try{mergeAcc(el,['الجرعات الثابتة','جرعة ترسيبا','أماكن الحقن'],'الجرعات والحقن'); mergeAcc(el,['مؤشر التحكم في السكر','الرسومات والتحليل'],'التحكم والتحليل')}catch(_){} return true;
 }
 
 /* ---------- settings ---------- */
@@ -4231,13 +4231,14 @@ accordion($('#set'),false); accordion($('#medcard'),false); accordion($('#rcard'
 function mergeAcc(root,titles,name){
   if(!root)return; var src=[].slice.call(root.querySelectorAll(':scope>.acc')).filter(function(d){return titles.indexOf(d.querySelector('summary').textContent.trim())>=0}); if(src.length<2)return;
   var nd=document.createElement('details'); nd.className='acc'; var sm=document.createElement('summary'); sm.textContent=name; var body=document.createElement('div'); body.className='accb'; nd.appendChild(sm); nd.appendChild(body);
-  root.insertBefore(nd,src[0]);
-  src.forEach(function(d){var t=d.querySelector('summary').textContent.trim(), b=d.querySelector('.accb'); var sd=document.createElement('details'); sd.className='msub'; var ss=document.createElement('summary'); ss.textContent=t; var sb=document.createElement('div'); sb.className='msb'; sd.appendChild(ss); sd.appendChild(sb); while(b.firstChild)sb.appendChild(b.firstChild); body.appendChild(sd); d.remove()});
+  root.insertBefore(nd,src[0]); nd.open=src.some(function(d){return d.open});
+  src.forEach(function(d){var t=d.querySelector('summary').textContent.trim(), b=d.querySelector('.accb'); var sd=document.createElement('details'); sd.className='msub'; sd.open=d.open; var ss=document.createElement('summary'); ss.textContent=t; var sb=document.createElement('div'); sb.className='msb'; sd.appendChild(ss); sd.appendChild(sb); while(b.firstChild)sb.appendChild(b.firstChild); body.appendChild(sd); d.remove()});
 }
 mergeAcc($('#set'),['حدود التنبيه','جهاز قياس مستمر','الكيتون'],'التنبيهات والقياس');
 mergeAcc($('#set'),['نظام الجرعات','تصحيح السكر المرتفع'],'الجرعات');
 mergeAcc($('#set'),['مخزون الأقلام','شرائط قياس السكر','أسنان الأقلام','المكملات'],'المخزون');
 mergeAcc($('#set'),['الحساب','الأمان والمتابعة','نسخة احتياطية'],'الحساب');
+mergeAcc($('#rcard'),['الفترة والملخص','تقرير الطبيب'],'الفترة والتقرير');
 mergeAcc($('#medcard'),['التحليل التراكمي (HbA1c)','الفحوصات الدورية','بيانات الجسم'],'التحاليل والقياسات');
 (function(){var sw=$('#sndsw'); if(!sw)return; sw.checked=sndOn(); var st=$('#sndst'); function p(){} p(); sw.addEventListener('change',function(){try{localStorage.setItem('ysg-snd',sw.checked?'1':'0')}catch(_){} p(); if(sw.checked)snd('tick')})})();
 [].forEach.call(document.querySelectorAll('#set .acc'),function(d){var t=d.querySelector('summary').textContent.trim(); if(t==='الحساب'||t==='الهاتف'){d.classList.add('acct')} if(t==='الأقلام المفتوحة')d.hidden=true});
