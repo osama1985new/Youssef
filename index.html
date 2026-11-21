@@ -2463,8 +2463,8 @@ function snd(kind){
 }
 /* warm the audio engine on the very first touch so the first sound after opening the app is not lost (iOS starts audio suspended) */
 (function(){var done=false; function warm(){ if(done)return; done=true; try{sndUnlock(); if(_ac){var b=_ac.createBuffer(1,1,22050), s=_ac.createBufferSource(); s.buffer=b; s.connect(_ac.destination); s.start(0)}}catch(_){}
-  ['touchstart','pointerdown','click'].forEach(function(ev){document.removeEventListener(ev,warm,true)})}
-  ['touchstart','pointerdown','click'].forEach(function(ev){document.addEventListener(ev,warm,{capture:true,passive:true})})})();
+  ['touchstart','touchend','pointerdown','click'].forEach(function(ev){document.removeEventListener(ev,warm,true)})}
+  ['touchstart','touchend','pointerdown','click'].forEach(function(ev){document.addEventListener(ev,warm,{capture:true,passive:true})})})();
 function isNight(){var h=new Date().getHours(); return h>=22||h<4}
 function paintTam(){[].forEach.call(document.querySelectorAll('[data-tam]'),function(b){b.setAttribute('aria-pressed',(b.dataset.tam==='1')===!!settings.tresAm?'true':'false')})}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tam]'); if(!b||role==='view')return; settings=Object.assign({},settings,{tresAm:b.dataset.tam==='1'}); persistSettings(); paintTam(); try{renderTresRem()}catch(_){} toast(b.dataset.tam==='1'?'الترسيبا صباحًا — التنبيهات صباحًا':'الترسيبا مساءً — التنبيهات مساءً')});
