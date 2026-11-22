@@ -188,6 +188,62 @@ function cleanSettings(s) {
 
 
 const FOOD_PROMPT = 'This is a photo of a meal for a teenager with type 1 diabetes in Egypt. Identify each distinct food item visible. For each item give: name (short Egyptian-Arabic name), portion (short Arabic description of ONE unit, e.g. "رغيف بلدي صغير" or "معلقة كبيرة أرز"), qty (number of units visible, in steps of 0.5), carbs (estimated grams of carbohydrate in ONE unit, a number). Be realistic. If the image has no food return an empty items list and explain in note (Arabic). Reply with JSON only: {"items":[{"name":"","portion":"","qty":1,"carbs":0}],"note":""}. These are rough estimates that a person will review. Never give insulin dose advice.';
+
+// ---- FreeStyle Libre (LibreLinkUp) - on-demand latest reading. Unofficial API; credentials only via env vars. ----
+let _cgmCache = null;
+function cgmReady() { return !!(process.env.LIBRE_EMAIL && process.env.LIBRE_PASSWORD); }
+function cgmErr(code, extra) { const e = new Error(code); e.code = code; e.extra = extra; return e; }
+async function libreCall(base, path, headers, body) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch(base + path, { method: body ? 'POST' : 'GET', headers, body: body ? JSON.stringify(body) : undefined, signal: ctl.signal });
+    let j = null; try { j = await r.json(); } catch (e) {}
+    return { http: r.status, j };
+  } catch (e) { throw cgmErr('cgm_net'); } finally { clearTimeout(t); }
+}
+function parseLibreTs(s) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?$/i.exec(String(s || '').trim());
+  if (!m) return null;
+  let h = +m[4]; const ap = (m[7] || '').toUpperCase();
+  if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0;
+  return Date.UTC(+m[3], +m[1] - 1, +m[2], h, +m[5], +m[6]);
+}
+async function libreReading() {
+  if (!cgmReady()) throw cgmErr('cgm_not_configured');
+  if (_cgmCache && Date.now() - _cgmCache.at < 45000) return _cgmCache.v;
+  const crypto = require('crypto');
+  const H = { product: 'llu.android', version: process.env.LIBRE_VERSION || '4.16.0', 'content-type': 'application/json', 'cache-control': 'no-cache', accept: 'application/json' };
+  let base = 'https://api.libreview.io';
+  const body = { email: process.env.LIBRE_EMAIL, password: process.env.LIBRE_PASSWORD };
+  let r = await libreCall(base, '/llu/auth/login', H, body);
+  if (r.j && r.j.data && r.j.data.redirect && r.j.data.region) {
+    base = 'https://api-' + String(r.j.data.region).replace(/[^a-z0-9-]/gi, '') + '.libreview.io';
+    r = await libreCall(base, '/llu/auth/login', H, body);
+  }
+  const lj = r.j || {};
+  if (lj.status === 920 || (lj.data && lj.data.minimumVersion)) throw cgmErr('cgm_version');
+  if (lj.status !== 0 || !lj.data || !lj.data.authTicket || !lj.data.authTicket.token) throw cgmErr('cgm_login');
+  const token = lj.data.authTicket.token;
+  const uid = (lj.data.user && lj.data.user.id) || '';
+  const H2 = Object.assign({}, H, { authorization: 'Bearer ' + token });
+  if (uid) H2['account-id'] = crypto.createHash('sha256').update(String(uid)).digest('hex');
+  const c = await libreCall(base, '/llu/connections', H2);
+  const cj = c.j || {};
+  if (cj.status === 920) throw cgmErr('cgm_version');
+  const list = Array.isArray(cj.data) ? cj.data : [];
+  if (!list.length) throw cgmErr('cgm_noconn');
+  const pid = process.env.LIBRE_PATIENT_ID;
+  const conn = (pid && list.find(x => x.patientId === pid)) || list[0];
+  const gm = conn && conn.glucoseMeasurement;
+  const mg = gm && Number(gm.ValueInMgPerDl);
+  if (!gm || !(mg > 0)) throw cgmErr('cgm_noreading');
+  const tsMs = parseLibreTs(gm.FactoryTimestamp) || parseLibreTs(gm.Timestamp);
+  if (!tsMs) throw cgmErr('cgm_noreading');
+  const v = { ok: true, mg: Math.round(mg), ts: new Date(tsMs).toISOString(), ageMin: Math.max(0, Math.round((Date.now() - tsMs) / 60000)), trend: gm.TrendArrow == null ? null : Number(gm.TrendArrow) };
+  _cgmCache = { at: Date.now(), v };
+  return v;
+}
+
 async function analyzeFood(b64) {
   const key = process.env.ANTHROPIC_API_KEY || await redis(['GET', 'ysg:aikey']);
   if (!key) { const e = new Error('no_ai_key'); e.code = 'no_ai_key'; throw e; }
@@ -487,7 +543,7 @@ module.exports = async (req, res) => {
       }
       let settings = null;
       try { settings = settingsRaw ? JSON.parse(settingsRaw) : null; } catch (e) {}
-      return res.status(200).json({ entries, settings, role, protected: isProtected });
+      return res.status(200).json({ entries, settings, role, protected: isProtected, cgmReady: cgmReady() });
     }
     if (req.method === 'POST') {
       const b = req.body || {};
@@ -524,6 +580,10 @@ module.exports = async (req, res) => {
         if (!/^sk-ant-[A-Za-z0-9_\-]{10,300}$/.test(k)) return res.status(400).json({ error: 'bad_key' });
         await redis(['SET', 'ysg:aikey', k]);
         return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'cgm') {
+        try { return res.status(200).json(await libreReading()); }
+        catch (e) { return res.status(e.code === 'cgm_not_configured' ? 400 : 502).json({ error: e.code || 'cgm_fail' }); }
       }
       if (b.action === 'food') {
         const img = String(b.image || '');
