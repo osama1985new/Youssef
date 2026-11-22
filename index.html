@@ -1855,6 +1855,7 @@ body.smopen{overflow:hidden!important;overscroll-behavior:none}.smcard{overscrol
     <h3>جهاز قياس مستمر</h3>
     <div class="swrow"><div class="swtxt"><b>أستخدم جهاز قياس مستمر</b></div><label class="sw"><input type="checkbox" id="scgm" aria-label="أستخدم جهاز قياس مستمر"><i></i></label></div>
     <p class="hint" id="cgmst" hidden></p>
+    <div id="cgmbox" hidden><div class="field"><label for="ssensor">تاريخ تركيب السينسر</label><input id="ssensor" type="date"></div><p class="hint" id="cgmsen"></p><p class="hint" id="cgmlast"></p><p class="hint" id="cgmwarn" style="color:var(--bad,#f08b7a)" hidden></p></div>
     <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطار وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>الأقلام المفتوحة</h3>
     <p class="hint">اكتب تاريخ فتح كل قلم، وسنُذكّرك قبل مرور 28 يومًا على فتحه.</p>
@@ -2210,9 +2211,23 @@ var LS_Q='ysg-queue-v1', LS_SNAP='ysg-snap-v2';
 function qGet(){return lsGet(LS_Q,[])}
 function mergeQueue(){qGet().forEach(function(d){entries=entries.filter(function(e){return e.id!==d.id}).concat([d])})}
 var settingsLoaded=false;
-var cgmReady=false;
+var cgmReady=false, cgmInfo=null, SENSOR_DAYS=15;
+function cgmStat(){
+  var box=$('#cgmbox'); if(!box)return; var on=!!($('#scgm')&&$('#scgm').checked); box.hidden=!on; if(!on)return;
+  var sd=$('#ssensor')&&$('#ssensor').value||settings.sensorStart||'', se=$('#cgmsen'), ls=$('#cgmlast'), wr=$('#cgmwarn'), now=Date.now();
+  if(sd){var st=new Date(sd+'T00:00:00'), day=Math.floor((now-st.getTime())/864e5)+1, left=SENSOR_DAYS-day;
+    se.textContent=day<1?'السينسر لم يُركَّب بعد.':left<0?'انتهت مدة السينسر ('+SENSOR_DAYS+' يومًا). استبدله.':left===0?'اليوم آخر يوم للسينسر (اليوم '+SENSOR_DAYS+' من '+SENSOR_DAYS+').':'اليوم '+day+' من '+SENSOR_DAYS+'. المتبقي '+left+' يوم.'}
+  else se.textContent='اكتب تاريخ التركيب لتعرف المدة المتبقية.';
+  var ok=cgmInfo&&cgmInfo.ok, er=cgmInfo&&cgmInfo.err;
+  ls.textContent=ok?'آخر قراءة سُحبت: '+new Date(ok).toLocaleString('ar-EG',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'لم تُسحب قراءة من الحساس بعد.';
+  var w='';
+  if(er&&(!ok||er.at>ok))w=(CGM_MSG[er.c]||'فشلت آخر محاولة سحب.')+' راجع الربط.';
+  else if(ok&&now-ok>2*864e5)w='لم تُسحب قراءة منذ '+Math.floor((now-ok)/864e5)+' أيام. تأكد أن الربط ما زال يعمل.';
+  wr.textContent=w; wr.hidden=!w;
+}
 function cgmUI(early){
   var on=!!settings.cgm, b=$('#cgmbtn'), st=$('#cgmst');
+  if(!early)try{cgmStat()}catch(_){}
   if(early){try{var c=JSON.parse(localStorage.getItem('ysg-cgm-v1')||'null'); if(c){on=!!c.on; cgmReady=!!c.ready; if(b)b.hidden=!(on&&cgmReady&&!document.body.classList.contains('ro'))}}catch(_){} return}
   try{localStorage.setItem('ysg-cgm-v1',JSON.stringify({on:on,ready:cgmReady}))}catch(_){}
   if(b)b.hidden=!(on&&cgmReady&&role==='edit');
@@ -2225,6 +2240,7 @@ document.addEventListener('click',async function(e){
   try{
     var r=await api({action:'cgm'});
     if(r&&r.ok){
+      cgmInfo={ok:Date.now(),err:null}; try{cgmStat()}catch(_){}
       if(r.ageMin>10){toast('آخر قراءة قديمة (من '+r.ageMin+' دقيقة). لم تُكتب.')}
       else{var g=$('#g'); g.value=String(r.mg); g.dispatchEvent(new Event('input',{bubbles:true})); toast('تم سحب القراءة')}
     }else toast(CGM_MSG[r&&r.error]||'تعذّرت القراءة من الحساس.');
@@ -2232,6 +2248,7 @@ document.addEventListener('click',async function(e){
   b.disabled=false; b.textContent=t0;
 });
 document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='ssensor'){try{cgmStat()}catch(_){}return}
   if(!e.target||e.target.id!=='scgm')return;
   settings.cgm=!!e.target.checked; try{persistSettings()}catch(_){} cgmUI(); try{render()}catch(_){}
 });
@@ -2239,7 +2256,7 @@ cgmUI(true);
 function applyServer(j){
   if(!j.__snap)settingsLoaded=true;
   if(!j.__snap)lsSet(LS_SNAP,{entries:j.entries||[],settings:j.settings||null,role:j.role,protected:j.protected});
-  cgmReady=!!j.cgmReady; entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
+  cgmReady=!!j.cgmReady; if(j.cgmInfo)cgmInfo=j.cgmInfo; entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
   document.body.classList.toggle('ro',role==='view'); if(role==='view'&&tab==='add')tab='log'; renderSecurity();
   if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
   cgmUI();
@@ -3954,7 +3971,7 @@ function readChecks(){
 }
 function syncSettingsInputs(){
   if(setDirty)return;
-  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; paintDoseMode(!!settings.carbMode); $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
+  var a=document.activeElement; if($('#a1cd')!==a)$('#a1cd').value=settings.a1cDate||''; if($('#bodyd')!==a)$('#bodyd').value=settings.bodyDate||''; if($('#sbirth')!==a)$('#sbirth').value=settings.birth||''; $('#scgm').checked=!!settings.cgm; if($('#ssensor')&&$('#ssensor')!==a)$('#ssensor').value=settings.sensorStart||''; try{cgmStat()}catch(_){} paintDoseMode(!!settings.carbMode); $('#ssuppo').checked=!!settings.suppOmega; $('#ssuppv').checked=!!settings.suppVit; if($('#somegat')!==a)$('#somegat').value=settings.omegaAt||''; if($('#svitat')!==a)$('#svitat').value=settings.vitAt||''; if($('#spena')!==a)$('#spena').value=settings.penAStart||''; if($('#spent')!==a)$('#spent').value=settings.penTStart||''; penLeftTxt(); stockTxt(); $('#sage').textContent=ageTxt()||'—'; if($('#vlast')!==a)$('#vlast').value=settings.visitLast||''; if($('#vnext')!==a)$('#vnext').value=settings.visitNext||''; if($('#vnote')!==a)$('#vnote').value=settings.visitNote||'';
   if($('#sketexp')!==a)$('#sketexp').value=settings.ketExp||''; if($('#sstripd')!==a)$('#sstripd').value=dtv(settings.stripStart); if($('#sneedd')!==a)$('#sneedd').value=dtv(settings.needleStart);
   renderStrips();
   if(!a||!a.closest||!a.closest('#ckwrap'))renderChecks();
@@ -3974,7 +3991,7 @@ function readSettings(){
   });
   if(out.low>=out.high)bad=true;
   if(out.bps!=null&&out.bpd!=null&&out.bps<=out.bpd)bad=true;
-  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.carbMode=!!$('#scarb').checked; out.suppOmega=!!$('#ssuppo').checked; out.suppVit=!!$('#ssuppv').checked; out.omegaAt=$('#somegat').value||null; out.vitAt=$('#svitat').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
+  out.bodyDate=$('#bodyd').value||null; out.birth=$('#sbirth').value||null; out.penAStart=$('#spena').value||null; out.penTStart=$('#spent').value||null; out.cgm=!!$('#scgm').checked; out.sensorStart=$('#ssensor').value||null; out.carbMode=!!$('#scarb').checked; out.suppOmega=!!$('#ssuppo').checked; out.suppVit=!!$('#ssuppv').checked; out.omegaAt=$('#somegat').value||null; out.vitAt=$('#svitat').value||null; out.visitLast=$('#vlast').value||null; out.visitNext=$('#vnext').value||null; out.visitNote=($('#vnote').value.trim()||null);
   out.a1cDate=$('#a1cd').value||null; out.ketExp=$('#sketexp').value||null; out.stripStart=$('#sstripd').value||null; out.needleStart=$('#sneedd').value||null;
   var cks=readChecks(); if(cks===null)bad=true; else out.checks=cks;
   var scale=[];
