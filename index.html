@@ -4828,6 +4828,15 @@ function gotoVisit(){
 function openFromNotif(tag){
   var b=String(tag||'').split(':')[0]; if(!authed||role==='view')return;
   if(b==='fast'||b==='bed'){go('add'); setMode('read'); $('#slot').value=b; syncInj(); showForm(); focusId('g')}
+  else if(b==='cgmfast'||b==='cgmbed'||b==='cgmr1'||b==='cgmr2'){
+    var sl2=b==='cgmfast'?'fast':b==='cgmbed'?'bed':'other';
+    go('add'); setMode('read'); $('#slot').value=sl2; try{$('#slot').dispatchEvent(new Event('change'))}catch(_){} syncInj(); showForm();
+    if(!(settings.cgm&&cgmReady)){focusId('g'); return}
+    api({action:'cgm'}).then(function(r){
+      if(r&&r.ok&&r.ageMin<=10){var g=$('#g'); g.value=String(r.mg); g.dispatchEvent(new Event('input',{bubbles:true})); setTimeout(function(){var sv=$('#save'); if(sv&&!sv.disabled)sv.click()},50)}
+      else{toast(r&&r.ok?'آخر قراءة قديمة. اكتبها يدويًا.':'تعذّرت القراءة من الحساس.'); focusId('g')}
+    }).catch(function(x){toast(CGM_MSG[x&&x.code]||'تعذّرت القراءة من الحساس.'); focusId('g')});
+  }
   else if(b==='tres'||b==='trY'){go('add'); setMode('tres'); if(b==='trY'){var yd=new Date(Date.now()-864e5); yd.setHours(22,0,0,0); $('#tdt').value=toLocalInput(yd)} showForm(); focusId('t')}
   else if(b.indexOf('sp_')===0){go('add'); setMode('read'); showForm(); [0,200,600].forEach(function(d){setTimeout(function(){var x=document.querySelector('.p-extra'); if(x){x.hidden=false; x.scrollIntoView({block:'center',behavior:'smooth'}); var sp=$('#supp'); if(sp)sp.classList.add('pulse')}},d)}); setTimeout(function(){var sp=$('#supp'); if(sp)sp.classList.remove('pulse')},2600)}
   else if(b==='med'){go('report'); [0,300,800].forEach(function(d){setTimeout(function(){var m=$('#medcard'); if(m){m.scrollIntoView({block:'center'})}},d)})}

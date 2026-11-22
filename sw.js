@@ -54,7 +54,7 @@ self.addEventListener('push', e => {
         if (r.ok) msgs = (await r.json()).msgs || [];
       }
     } catch (err) {}
-    const ICON = { 'g-low': '🔻', 'g-high': '🔺', fast: '🌅', bed: '🌙', tres: '💉', trY: '💉', med: '💊', visit: '🩺', visitp: '🩺', visitdone: '🩺', ket: '🧪', ketd: '🧪', nodose: '💉', apd: '⏱️', hypo15: '⏱️', hypo30: '⏱️', low2h: '⏱️', strips: '📦', needles: '📦', stock: '📦', test: '✅' };
+    const ICON = { 'g-low': '🔻', 'g-high': '🔺', fast: '🌅', bed: '🌙', cgmfast: '🌅', cgmbed: '🌙', cgmr1: '🩸', cgmr2: '🩸', tres: '💉', trY: '💉', med: '💊', visit: '🩺', visitp: '🩺', visitdone: '🩺', ket: '🧪', ketd: '🧪', nodose: '💉', apd: '⏱️', hypo15: '⏱️', hypo30: '⏱️', low2h: '⏱️', strips: '📦', needles: '📦', stock: '📦', test: '✅' };
     const iconFor = tag => { const b = String(tag || '').split(':')[0]; if (ICON[b]) return ICON[b]; if (b.indexOf('sp_') === 0) return '💊'; if (b.indexOf('stock') === 0) return '📦'; return '🔔'; };
     if (!msgs.length) {
       /* several pushes can arrive for one batch: the first one already showed everything. Never show an empty "open the app" notice. */
