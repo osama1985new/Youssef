@@ -2211,8 +2211,10 @@ function qGet(){return lsGet(LS_Q,[])}
 function mergeQueue(){qGet().forEach(function(d){entries=entries.filter(function(e){return e.id!==d.id}).concat([d])})}
 var settingsLoaded=false;
 var cgmReady=false;
-function cgmUI(){
+function cgmUI(early){
   var on=!!settings.cgm, b=$('#cgmbtn'), st=$('#cgmst');
+  if(early){try{var c=JSON.parse(localStorage.getItem('ysg-cgm-v1')||'null'); if(c){on=!!c.on; cgmReady=!!c.ready; if(b)b.hidden=!(on&&cgmReady&&!document.body.classList.contains('ro'))}}catch(_){} return}
+  try{localStorage.setItem('ysg-cgm-v1',JSON.stringify({on:on,ready:cgmReady}))}catch(_){}
   if(b)b.hidden=!(on&&cgmReady&&role==='edit');
   if(st){var c=$('#scgm'); st.hidden=!(c&&c.checked); st.textContent=cgmReady?'الربط بالحساس: مفعّل.':'الربط بالحساس: غير مفعّل (يحتاج إعدادًا على Vercel).'}
 }
@@ -2229,7 +2231,8 @@ document.addEventListener('click',async function(e){
   }catch(x){toast(CGM_MSG[x&&x.code]||'تعذّرت القراءة من الحساس.')}
   b.disabled=false; b.textContent=t0;
 });
-document.addEventListener('change',function(e){if(e.target&&e.target.id==='scgm')setTimeout(cgmUI,0)});
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='scgm')setTimeout(function(){cgmUI()},0)});
+cgmUI(true);
 function applyServer(j){
   if(!j.__snap)settingsLoaded=true;
   if(!j.__snap)lsSet(LS_SNAP,{entries:j.entries||[],settings:j.settings||null,role:j.role,protected:j.protected});
