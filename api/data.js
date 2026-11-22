@@ -389,7 +389,16 @@ async function runCron(host, force) {
   /* any glucose reading inside a time window (Cairo hours; after midnight counts as 24+) ends the matching reminder */
   const anyIn = (h1, h2) => E.some(e => { if (e.glucose == null) return false; const h = cairo(Date.parse(e.ts)).h, hh = h < 4 ? h + 24 : h; return hh >= h1 && hh < h2; });
   const due = [];
-  if (!settings.cgm) {
+  if (settings.cgm && cgmReady()) {
+    /* sensor users: tap the notification and the app reads the sensor and logs it */
+    const mins = c.h * 60 + c.m, hsh = x => { let h = 0; for (const ch of x) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+    const lastG = E.filter(e => e.glucose != null).map(e => Date.parse(e.ts)).sort((x, y) => y - x)[0] || 0;
+    if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['cgmfast', 'قراءة الصيام', 'اضغط لتسجيلها من الحساس']);
+    if ((c.h >= 23 || c.h < 1) && !hasRead('bed') && !anyIn(21, 28)) due.push(['cgmbed', 'قبل النوم', 'اضغط لتسجيل قراءة قبل النوم من الحساس']);
+    [['cgmr1', 10 * 60 + hsh(c.key + 'a') % 240], ['cgmr2', 15 * 60 + hsh(c.key + 'b') % 360]].forEach(([k, t]) => {
+      if (mins >= t && mins < t + 60 && now - lastG > 60 * 60e3) due.push([k, 'قراءة من الحساس', 'اضغط لتسجيل القراءة الآن']);
+    });
+  } else if (!settings.cgm) {
     if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['fast', 'قراءة الصيام', 'لم تُسجَّل اليوم بعد']);
     if (night && !hasRead('bed') && !anyIn(21, 28)) due.push(['bed', 'قبل النوم', 'سجّل قراءة قبل النوم']);
   }
