@@ -2231,7 +2231,10 @@ document.addEventListener('click',async function(e){
   }catch(x){toast(CGM_MSG[x&&x.code]||'تعذّرت القراءة من الحساس.')}
   b.disabled=false; b.textContent=t0;
 });
-document.addEventListener('change',function(e){if(e.target&&e.target.id==='scgm')setTimeout(function(){cgmUI()},0)});
+document.addEventListener('change',function(e){
+  if(!e.target||e.target.id!=='scgm')return;
+  settings.cgm=!!e.target.checked; try{persistSettings()}catch(_){} cgmUI(); try{render()}catch(_){}
+});
 cgmUI(true);
 function applyServer(j){
   if(!j.__snap)settingsLoaded=true;
@@ -4038,7 +4041,7 @@ function paintDoseMode(c){
   $('#carbhint').textContent=c?'الأبيدرا المقترحة تُحسب من كارب الوجبة والنسبة التي حدّدها الطبيب.':'الأبيدرا المقترحة هي الجرعة الثابتة التي حدّدها الطبيب لكل وجبة.';
 }
 $('#dosemode').addEventListener('click',function(e){var b=e.target.closest('button[data-dm]'); if(!b)return; paintDoseMode(b.dataset.dm==='carb'); $('#scarb').dispatchEvent(new Event('change',{bubbles:true}))});
-['#set','#medcard'].forEach(function(q){['change','input'].forEach(function(ev){$(q).addEventListener(ev,function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr'))))return; markDirty(true)})})});
+['#set','#medcard'].forEach(function(q){['change','input'].forEach(function(ev){$(q).addEventListener(ev,function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr')||t.id==='scgm'||t.id==='pushsw'||t.id==='sndsw')))return; markDirty(true)})})});
 $('#savebtn').addEventListener('click',onSetChange);
 $('#qicrsave').addEventListener('click',function(){
   var v=num($('#qicr').value);
@@ -4365,8 +4368,8 @@ function msOn(page){
   if(page==='report'){var an=$('#rcard'); an.parentNode.insertBefore(box,an)} else $('#set').appendChild(box);
   MS[page]={box:box,moved:moved,nav:nav,pane:pane};
   nav.addEventListener('click',function(e){var b=e.target.closest('.msi'); if(b)msSel(page,Number(b.dataset.i),b.dataset.j===undefined?null:Number(b.dataset.j))});
-  box.addEventListener('change',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr'))))return; markDirty(true)});
-  box.addEventListener('input',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr'))))return; markDirty(true)});
+  box.addEventListener('change',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr')||t.id==='scgm'||t.id==='pushsw'||t.id==='sndsw')))return; markDirty(true)});
+  box.addEventListener('input',function(e){var t=e.target; if(!t||t.type==='file'||(t.closest&&(t.closest('.acct')||t.closest('#secbox')||t.closest('#suppmgr')||t.id==='scgm'||t.id==='pushsw'||t.id==='sndsw')))return; markDirty(true)});
   document.body.classList.add('msl-'+page); msSel(page,idx,jdx)}
 function msSync(){['set','report'].forEach(function(p){if(MSQ.matches)msOn(p); else msOff(p)})}
 function msRefresh(page){if(!MSQ.matches)return; msOff(page); msOn(page)}
