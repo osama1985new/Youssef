@@ -143,6 +143,7 @@ function cleanSettings(s) {
     items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); if (x && x.d) o.d = T(x.d, 40); if (x && (x.x === 1 || x.x === 2)) o.x = x.x; return o; }).filter(x => x.n && x.q !== null && x.c !== null)
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
+  out.sensorStart = dOk(s.sensorStart) ? String(s.sensorStart) : null;
   out.tresAm = s.tresAm === true;
   out.carbMode = s.carbMode === true;
   out.supps = Array.isArray(s.supps) ? s.supps.slice(0, 8).map(x => ({ k: /^[a-z0-9]{1,12}$/.test(String(x && x.k)) ? String(x.k) : null, n: T(x && x.n, 24), g: x && (x.g === 'bf' || x.g === 'ln') ? x.g : '', pc: x && x.pc != null && N(x.pc, 1000) != null ? Math.round(N(x.pc, 1000)) : null, base: x && x.base != null && N(x.base, 5000) != null ? Math.round(N(x.base, 5000)) : null, at: x && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(x.at || '')) ? String(x.at) : null })).filter(x => x.k && x.n) : null;
@@ -552,7 +553,9 @@ module.exports = async (req, res) => {
       }
       let settings = null;
       try { settings = settingsRaw ? JSON.parse(settingsRaw) : null; } catch (e) {}
-      return res.status(200).json({ entries, settings, role, protected: isProtected, cgmReady: cgmReady() });
+      let cgmInfo = null;
+      if (cgmReady()) { try { const m = await redis(['MGET', 'ysg:cgmok', 'ysg:cgmerr']); cgmInfo = { ok: m && m[0] ? Number(m[0]) : null, err: m && m[1] ? JSON.parse(m[1]) : null }; } catch (x) {} }
+      return res.status(200).json({ entries, settings, role, protected: isProtected, cgmReady: cgmReady(), cgmInfo });
     }
     if (req.method === 'POST') {
       const b = req.body || {};
@@ -591,8 +594,8 @@ module.exports = async (req, res) => {
         return res.status(200).json({ ok: true });
       }
       if (b.action === 'cgm') {
-        try { return res.status(200).json(await libreReading()); }
-        catch (e) { return res.status(e.code === 'cgm_not_configured' ? 400 : 502).json({ error: e.code || 'cgm_fail' }); }
+        try { const r = await libreReading(); try { await redis(['SET', 'ysg:cgmok', String(Date.now())]); } catch (x) {} return res.status(200).json(r); }
+        catch (e) { try { await redis(['SET', 'ysg:cgmerr', JSON.stringify({ c: e.code || 'cgm_fail', at: Date.now() })]); } catch (x) {} return res.status(e.code === 'cgm_not_configured' ? 400 : 502).json({ error: e.code || 'cgm_fail' }); }
       }
       if (b.action === 'food') {
         const img = String(b.image || '');
