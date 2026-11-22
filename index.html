@@ -1853,7 +1853,7 @@ body.smopen{overflow:hidden!important;overscroll-behavior:none}.smcard{overscrol
     </div>
 
     <h3>جهاز قياس مستمر</h3>
-    <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
+    <div class="swrow"><div class="swtxt"><b>أستخدم جهاز قياس مستمر</b></div><label class="sw"><input type="checkbox" id="scgm" aria-label="أستخدم جهاز قياس مستمر"><i></i></label></div>
     <p class="hint" id="cgmst" hidden></p>
     <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطار وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>الأقلام المفتوحة</h3>
@@ -2635,7 +2635,7 @@ function renderTresRem(){
   el.hidden=false; el.classList.toggle('done',T.length>0);
   el.innerHTML=T.length?'<span>ترسيبا اليوم سُجّلت ✓ ('+fmt(T.reduce(function(a,e){return a+e.tresiba},0))+' وحدة)</span>':'<span>لم تُسجَّل ترسيبا اليوم بعد</span><button type="button" class="link" id="tresgo">سجّل ترسيبا</button>';
 }
-var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed','bf_after','ln_after','dn_after'];
+var MEAL_SLOTS=['bf_before','bf_after','ln_before','ln_after','dn_before','dn_after'], READ_SLOTS=['other','fast','bed'];
 function setSlotOptions(){
   var allow=imode==='meal'?MEAL_SLOTS:imode==='read'?READ_SLOTS:null, order=imode==='read'?READ_SLOTS:null;
   var list=allow?SLOTS.filter(function(x){return allow.indexOf(x[0])>=0||x[0]===keepSlot}):SLOTS;
