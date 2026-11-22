@@ -4707,6 +4707,8 @@ $('#f').addEventListener('submit',async function(ev){
     if(pend.length){err.textContent='قبل تسجيل ترسيبا علّم أنك أخذت: '+pend.join('، ')+'.'; var sb=$('#supp'); var dd=sb&&sb.closest('details'); if(dd)dd.open=true; if(sb&&sb.scrollIntoView)sb.scrollIntoView({block:'center',behavior:'smooth'}); return}
   }
   if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
+  if(/^(bf|ln|dn)_(before|after)$/.test(slot)&&imode!=='corr'&&imode!=='tres'&&imode!=='nofood'&&!items.length&&(!editingId||(edE&&edE.meal&&edE.meal.length))&&!(/_after$/.test(slot)&&entries.some(function(e){return e.id!==editingId&&e.meal&&e.meal.length&&lk(new Date(e.ts))===lk(d)&&e.slot&&e.slot.slice(0,2)===slot.slice(0,2)}))){
+    err.textContent='اكتب الوجبة التي أكلتها: قبل أو بعد أي وجبة (غير السناك) لا بد من تسجيل وجبة.'; var _fp=$('#foodpick'); if(_fp&&_fp.scrollIntoView)_fp.scrollIntoView({block:'center',behavior:'smooth'}); return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[], isC=$('#corr').checked;
     if(isC){if(g==null)miss.push('قراءة السكر')}
