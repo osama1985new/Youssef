@@ -894,6 +894,7 @@ body{background:linear-gradient(180deg,color-mix(in srgb,var(--pt) 16%,var(--bg)
 .flash{animation:flashk 1.2s ease-out}
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .agebox{height:50px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line,#d8dee3);border-radius:12px;font-weight:700;font-size:16px}
+.cgmbtn{margin-top:8px;padding:9px 14px;border-radius:10px;border:1px solid var(--line,#ccd);background:transparent;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}.cgmbtn:disabled{opacity:.6}
 .cgmrow{display:flex;align-items:center;gap:10px;font-size:15.5px;padding:10px 2px}.cgmrow input{width:22px;height:22px;flex:none}
 .toast.undo{display:flex;align-items:center;justify-content:center;gap:14px}.toast.undo .link{color:inherit;text-decoration:underline;font-weight:700;padding:6px 4px}
 .toast.undo.show{pointer-events:auto}
@@ -1602,7 +1603,7 @@ body.smopen{overflow:hidden!important;overscroll-behavior:none}.smcard{overscrol
       <h3>قراءة السكر</h3>
       <div class="two">
         <div class="field"><label for="slot">وقت القياس</label><select id="slot"></select><p class="small" id="prehint" hidden></p></div>
-        <div class="field"><label for="g">السكر <em>(mg/dL)</em></label><input id="g" type="text" inputmode="numeric" autocomplete="off" placeholder="120"></div>
+        <div class="field"><label for="g">السكر <em>(mg/dL)</em></label><input id="g" type="text" inputmode="numeric" autocomplete="off" placeholder="120"><button type="button" id="cgmbtn" class="cgmbtn" hidden>اقرأ من الحساس</button></div>
       </div>
       <p class="msg" id="gmsg" aria-live="assertive" style="margin:0"></p>
     </div>
@@ -1853,6 +1854,7 @@ body.smopen{overflow:hidden!important;overscroll-behavior:none}.smcard{overscrol
 
     <h3>جهاز قياس مستمر</h3>
     <label class="cgmrow"><input type="checkbox" id="scgm"><span>أستخدم جهاز قياس مستمر</span></label>
+    <p class="hint" id="cgmst" hidden></p>
     <p class="hint">عند تفعيله، تُوقَف تنبيهات القراءات (الصيام وبعد الفطار وقبل النوم). وتبقى تنبيهات الأنسولين.</p>
     <h3>الأقلام المفتوحة</h3>
     <p class="hint">اكتب تاريخ فتح كل قلم، وسنُذكّرك قبل مرور 28 يومًا على فتحه.</p>
@@ -2200,6 +2202,7 @@ async function api(body){
   if(ct.indexOf('json')<0)throw new ApiError(r.status===404||r.ok?'noapi':'net');
   var j=await r.json().catch(function(){return {}});
   if(r.status===403&&j.error==='read_only')throw new ApiError('readonly');
+  if(!r.ok&&/^cgm_/.test(j.error||''))throw new ApiError(j.error);
   if(!r.ok)throw new ApiError(j.error==='no_ai_key'?'noaikey':j.error==='ai_failed'?'aifail':j.error==='bad_key'?'badkey':j.error==='bad_image'?'badimage':j.error==='bad_pin_format'?'pinformat':j.error==='storage_not_configured'?'storage':j.error==='pin_not_configured'?'pinenv':(r.status===404?'noapi':'net'));
   return j;
 }
@@ -2207,12 +2210,33 @@ var LS_Q='ysg-queue-v1', LS_SNAP='ysg-snap-v2';
 function qGet(){return lsGet(LS_Q,[])}
 function mergeQueue(){qGet().forEach(function(d){entries=entries.filter(function(e){return e.id!==d.id}).concat([d])})}
 var settingsLoaded=false;
+var cgmReady=false;
+function cgmUI(){
+  var on=!!settings.cgm, b=$('#cgmbtn'), st=$('#cgmst');
+  if(b)b.hidden=!(on&&cgmReady&&role==='edit');
+  if(st){var c=$('#scgm'); st.hidden=!(c&&c.checked); st.textContent=cgmReady?'الربط بالحساس: مفعّل.':'الربط بالحساس: غير مفعّل (يحتاج إعدادًا على Vercel).'}
+}
+var CGM_MSG={cgm_not_configured:'الربط بالحساس غير مُعدّ بعد.',cgm_net:'تعذّر الاتصال بخدمة الحساس. حاول مرة أخرى.',cgm_version:'خدمة الحساس تطلب تحديث الإعداد (LIBRE_VERSION).',cgm_login:'بيانات دخول الحساس غير صحيحة.',cgm_noconn:'لا يوجد حساب متابَع في الحساس.',cgm_noreading:'لا توجد قراءة متاحة الآن.'};
+document.addEventListener('click',async function(e){
+  var b=e.target.closest&&e.target.closest('#cgmbtn'); if(!b||b.disabled)return;
+  b.disabled=true; var t0=b.textContent; b.textContent='جارٍ القراءة…';
+  try{
+    var r=await api({action:'cgm'});
+    if(r&&r.ok){
+      if(r.ageMin>10){toast('آخر قراءة قديمة (من '+r.ageMin+' دقيقة). لم تُكتب.')}
+      else{var g=$('#g'); g.value=String(r.mg); g.dispatchEvent(new Event('input',{bubbles:true})); toast('تم سحب القراءة')}
+    }else toast(CGM_MSG[r&&r.error]||'تعذّرت القراءة من الحساس.');
+  }catch(x){toast(CGM_MSG[x&&x.code]||'تعذّرت القراءة من الحساس.')}
+  b.disabled=false; b.textContent=t0;
+});
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='scgm')setTimeout(cgmUI,0)});
 function applyServer(j){
   if(!j.__snap)settingsLoaded=true;
   if(!j.__snap)lsSet(LS_SNAP,{entries:j.entries||[],settings:j.settings||null,role:j.role,protected:j.protected});
-  entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
+  cgmReady=!!j.cgmReady; entries=j.entries||[]; mergeQueue(); role=j.role==='view'?'view':'edit'; prot=!!j.protected;
   document.body.classList.toggle('ro',role==='view'); if(role==='view'&&tab==='add')tab='log'; renderSecurity();
   if(j.settings)settings=Object.assign({},DEFAULTS,j.settings,{scale:Array.isArray(j.settings.scale)?j.settings.scale:[]});
+  cgmUI();
 }
 async function refresh(){
   try{var j=await api(); applyServer(j); netErr=false; syncSettingsInputs(); render()}
