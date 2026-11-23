@@ -143,6 +143,8 @@ function cleanSettings(s) {
     items: (Array.isArray(m && m.items) ? m.items : []).slice(0, 20).map(x => { const o = { n: T(x && x.n, 60), q: N(x && x.q, 500), c: N(x && x.c, 500) }; if (x && x.u) o.u = T(x.u, 20); if (x && x.d) o.d = T(x.d, 40); if (x && (x.x === 1 || x.x === 2)) o.x = x.x; return o; }).filter(x => x.n && x.q !== null && x.c !== null)
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
+  out.careSeen = Array.isArray(s.careSeen) ? s.careSeen.slice(-40).map(k => T(k, 120)).filter(Boolean) : [];
+  out.careDis = {}; if (s.careDis && typeof s.careDis === 'object') Object.keys(s.careDis).slice(-40).forEach(k => { if (dOk(s.careDis[k])) out.careDis[T(k, 120)] = String(s.careDis[k]); });
   out.sensorStart = dOk(s.sensorStart) ? String(s.sensorStart) : null;
   out.tresAm = s.tresAm === true;
   out.carbMode = s.carbMode === true;
@@ -608,6 +610,18 @@ module.exports = async (req, res) => {
         if (!/^sk-ant-[A-Za-z0-9_\-]{10,300}$/.test(k)) return res.status(400).json({ error: 'bad_key' });
         await redis(['SET', 'ysg:aikey', k]);
         return res.status(200).json({ ok: true });
+      }
+      if (b.action === 'care') {
+        let cur = null; try { cur = JSON.parse((await redis(['GET', 'ysg:settings'])) || 'null'); } catch (x) {}
+        if (!cur) return res.status(200).json({ ok: true, settings: null });
+        if (Array.isArray(b.seen)) cur.careSeen = b.seen.slice(-40).map(k => String(k).slice(0, 120));
+        if (b.dis && typeof b.dis === 'object') {
+          cur.careDis = Object.assign({}, cur.careDis || {});
+          Object.keys(b.dis).slice(0, 20).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(String(b.dis[k]))) cur.careDis[String(k).slice(0, 120)] = String(b.dis[k]); });
+          const keep = {}, ks = Object.keys(cur.careDis).sort((x, y) => cur.careDis[y].localeCompare(cur.careDis[x])).slice(0, 40); ks.forEach(k => { keep[k] = cur.careDis[k]; }); cur.careDis = keep;
+        }
+        await redis(['SET', 'ysg:settings', JSON.stringify(cur)]);
+        return res.status(200).json({ ok: true, settings: { careSeen: cur.careSeen || [], careDis: cur.careDis || {} } });
       }
       if (b.action === 'cgm') {
         try { const r = await libreReading(); try { await redis(['SET', 'ysg:cgmok', String(Date.now())]); } catch (x) {} return res.status(200).json(r); }
