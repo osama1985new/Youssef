@@ -1738,6 +1738,23 @@ form#f .p-food .fgrp>details.more>*:not(summary){margin-inline:12px}
 form#f .p-food .fgrp>details.more[open]>:last-child{margin-bottom:12px}
 form#f .p-food .fgrp>details.more[open]>summary+*{margin-top:12px}
 form#f .p-food .fgrp>details.more>summary{flex-direction:column!important; align-items:flex-start!important; justify-content:center!important; text-align:start}
+
+/* ===== inline reminders moved into the bell ===== */
+#carebar,#medrem,#visitrem,#readrem,#tresrem{display:none!important}
+.csrem{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.csrem .rr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--surface) 60%,transparent);border:1px solid color-mix(in srgb,#C9892B 45%,var(--gl-bd));box-shadow:var(--gl-hi);font-size:15px;line-height:1.5}
+.csrem .rr>span:first-child{flex:1;min-width:0}
+.csrem .link{margin:0;font-weight:700;flex:none;background:none;border:0;color:var(--accent);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px 2px}
+/* ===== food rows: smaller, calmer icon tiles ===== */
+form#f .p-food .fgrp>.field::before,form#f .p-food .fgrp>details.more>summary::before{width:42px;height:42px;border-radius:12px;right:16px}
+form#f .p-food .fgrp>.field::after,form#f .p-food .fgrp>details.more>summary::after{width:42px;height:42px;right:16px;-webkit-mask-size:20px;mask-size:20px}
+form#f .p-food .fgrp>.field>label,form#f .p-food .fgrp>details.more>summary{padding-inline-start:78px!important;padding-inline-end:38px!important}
+form#f .p-food .fgrp>.field,form#f .p-food .fgrp>details.more>summary{min-height:68px}
+form#f .p-food .fgrp b{font-size:16px}
+form#f .p-food .fgrp small{font-size:13px}
+form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summary>b::after{left:14px}
+form#f .p-food h3.fh::before{width:42px;height:42px;border-radius:12px}
+form#f .panel.p-food>h3.fh::after{width:42px;height:42px;-webkit-mask-size:20px;mask-size:20px}
 </style>
 </head>
 <body>
@@ -3043,17 +3060,19 @@ function careViewLoad(){ if(careViewLoaded||role!=='view')return; careViewLoaded
 function careVisible(n){careViewLoad();var tk=lk(new Date()), D=settings.careDis||{}; return (n||[]).filter(function(t){return D[t]!==tk})}
 function careSet(n){
   careN=n; var b=$('#bellbtn'); if(!b)return; var bd=b.querySelector('.bdg');
-  var vis=careVisible(n), S=settings.careSeen||[], fresh=vis.filter(function(t){return S.indexOf(t)<0});
-  if(fresh.length){bd.hidden=false; bd.className='bdg'; bd.textContent=fresh.length>9?'9+':String(fresh.length)}
+  var vis=careVisible(n), S=settings.careSeen||[], fresh=vis.filter(function(t){return S.indexOf(t)<0}), rc=remCount();
+  if(fresh.length+rc){bd.hidden=false; bd.className='bdg'; bd.textContent=(fresh.length+rc)>9?'9+':String(fresh.length+rc)}
   else if(vis.length){bd.hidden=false; bd.className='bdg dot'; bd.textContent=''}
   else bd.hidden=true;
   if(fresh.length>careLast&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring'); setTimeout(function(){b.classList.remove('ring')},1000)}
   careLast=fresh.length; var cs0=$('#caresheet'); if(cs0&&!cs0.hidden)careList();
 }
 var careNew={};
+function remItems(){return ['medrem','visitrem','readrem','tresrem'].map(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return ''; return id==='tresrem'?'<div class="rr">'+el.innerHTML.replace(/ id="tresgo"/,' data-tresgo="1"')+'</div>':el.innerHTML}).join('')}
+function remCount(){var c=0; ['medrem','visitrem','readrem','tresrem'].forEach(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return; c+=id==='tresrem'?1:el.querySelectorAll('.rr').length}); return c}
 function careList(){
-  var l=$('#cslist'), vis=careVisible(careN);
-  l.innerHTML=vis.length?vis.map(function(t,i){return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">تجاهل</button></div>'}).join(''):'<div class="csempty">لا توجد تنبيهات الآن.</div>';
+  var l=$('#cslist'), vis=careVisible(careN), rem=remItems();
+  l.innerHTML=!vis.length&&!rem?'<div class="csempty">لا توجد تنبيهات الآن.</div>':(rem?'<div class="csrem">'+rem+'</div>':'')+(vis.length?vis.map(function(t,i){return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">تجاهل</button></div>'}).join(''):'');
 }
 function careSync(body){ if(role==='view'){try{localStorage.setItem('ysg-care-v1',JSON.stringify({s:settings.careSeen||[],d:settings.careDis||{}}))}catch(_){} return Promise.resolve()} return api(Object.assign({action:'care'},body)).then(function(r){if(r&&r.settings){if(r.settings.careSeen)settings.careSeen=r.settings.careSeen; if(r.settings.careDis)settings.careDis=r.settings.careDis; careSet(careN)}}).catch(function(){})}
 function careOpen(){
@@ -3073,6 +3092,9 @@ document.addEventListener('click',function(e){
   if(t.closest('#csclose')||t.id==='cscrim')careClose();
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#caresheet').hidden)careClose()});
+['renderReadRem','renderTresRem','renderMedRem','renderVisitRem'].forEach(function(nm){try{var f=eval(nm); eval(nm+'=function(){var r=f.apply(this,arguments); try{careSet(careN)}catch(_){} return r}')}catch(_){}});
+document.addEventListener('click',function(e){var t=e.target; if(t.closest&&t.closest('.csrem')&&t.closest('button')){setTimeout(function(){if(!$('#caresheet').hidden&&t.closest('button')&&!/data-med|data-visit|data-remdis/.test(t.closest('button').outerHTML))careClose()},0)}});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tresgo]'); if(b){var o=document.getElementById('tresgo'); if(o)o.click()}});
 function renderCare(E){
   var n=careNotes(E), el=$('#carebar');
   var d0=el.querySelector('details'), wasOpen=d0?d0.open:false;
