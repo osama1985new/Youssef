@@ -532,7 +532,23 @@ module.exports = async (req, res) => {
       if (!/^[a-f0-9]{32}$/.test(id)) return res.status(400).json({ error: 'bad_id' });
       const raw = await redis(['LRANGE', 'ysg:inbox:' + id, '0', '-1']);
       if (raw && raw.length) await redis(['DEL', 'ysg:inbox:' + id]);
-      const msgs = []; for (const r of raw || []) { try { msgs.push(JSON.parse(r)); } catch (e) {} }
+      let msgs = []; for (const r of raw || []) { try { msgs.push(JSON.parse(r)); } catch (e) {} }
+      /* a reminder that reached the phone late must not show if the thing was logged in the meantime */
+      try {
+        let rec = null; const nowT = Date.now(), keep = [];
+        for (const m of msgs) {
+          const base = String(m.tag || '').split(':')[0];
+          if (m.at && nowT - m.at > 2 * 60e3 && /^(tres|trY|fast|bed|cgmfast|cgmbed|cgmr1|cgmr2)$/.test(base)) {
+            rec = rec || await recentEntries(nowT);
+            const done = /^(tres|trY)$/.test(base)
+              ? rec.some(e => e.tresiba > 0 && Date.parse(e.ts) >= m.at - (base === 'tres' ? 18 : 6) * 3600e3)
+              : rec.some(e => e.glucose != null && Date.parse(e.ts) >= m.at - 2 * 3600e3);
+            if (done) continue;
+          }
+          keep.push(m);
+        }
+        msgs = keep;
+      } catch (e) {}
       return res.status(200).json({ msgs });
     }
     if (req.method === 'GET' && req.query && req.query.cron !== undefined) {
