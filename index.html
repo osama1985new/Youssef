@@ -1642,6 +1642,7 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
   .bell{color:var(--ink)!important;opacity:.9}
   .bell .bdg{position:absolute;top:-5px;right:-5px;left:auto;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--high);color:var(--on-solid,#fff);font-size:10.5px!important;font-weight:700;line-height:16px!important;text-align:center;border:2px solid var(--bg);box-sizing:content-box;font-family:var(--f-body)}
   .bell .bdg[hidden]{display:none}
+  .bell .bdg.dot{min-width:9px;width:9px;height:9px;padding:0;top:2px;right:2px;border-width:2px}
   .bell.ring svg{animation:bellring .9s ease-in-out 1;transform-origin:50% 12%}
   #carebar{display:none!important}
 }
@@ -1655,6 +1656,8 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 .csitem{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--surface) 60%,transparent);border:1px solid var(--gl-bd);box-shadow:var(--gl-hi)}
 .csitem i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--high);margin-top:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--high) 20%,transparent)}
 .csitem p{margin:0;line-height:1.55;font-size:15px}
+.csnew{display:inline-block;margin-inline-start:6px;padding:0 7px;border-radius:999px;background:color-mix(in srgb,var(--high) 22%,transparent);color:var(--ink);font-size:11.5px;font-weight:700;line-height:18px;vertical-align:1px}
+.csdis{flex:none;align-self:center;border:1px solid var(--gl-bd);background:transparent;color:var(--muted);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
 .csempty{padding:22px 8px;text-align:center;color:var(--muted)}
 .cspanel .ghost{margin-top:14px;width:100%}
 body.csopen{overflow:hidden!important;overscroll-behavior:none}
@@ -2955,17 +2958,33 @@ function careNotes(E){
   return out;
 }
 var careN=[], careLast=0;
+function careVisible(n){var tk=lk(new Date()), D=settings.careDis||{}; return (n||[]).filter(function(t){return D[t]!==tk})}
 function careSet(n){
   careN=n; var b=$('#bellbtn'); if(!b)return; var bd=b.querySelector('.bdg');
-  bd.hidden=!n.length; bd.textContent=n.length>9?'9+':String(n.length);
-  if(n.length>careLast&&careLast>=0&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring'); setTimeout(function(){b.classList.remove('ring')},1000)}
-  careLast=n.length; var cs0=$('#caresheet'); if(cs0&&!cs0.hidden)careList();
+  var vis=careVisible(n), S=settings.careSeen||[], fresh=vis.filter(function(t){return S.indexOf(t)<0});
+  if(fresh.length){bd.hidden=false; bd.className='bdg'; bd.textContent=fresh.length>9?'9+':String(fresh.length)}
+  else if(vis.length){bd.hidden=false; bd.className='bdg dot'; bd.textContent=''}
+  else bd.hidden=true;
+  if(fresh.length>careLast&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring'); setTimeout(function(){b.classList.remove('ring')},1000)}
+  careLast=fresh.length; var cs0=$('#caresheet'); if(cs0&&!cs0.hidden)careList();
 }
+var careNew={};
 function careList(){
-  var l=$('#cslist'); l.innerHTML=careN.length?careN.map(function(t){return '<div class="csitem"><i></i><p>'+esc(t)+'</p></div>'}).join(''):'<div class="csempty">لا توجد تنبيهات الآن.</div>';
+  var l=$('#cslist'), vis=careVisible(careN);
+  l.innerHTML=vis.length?vis.map(function(t,i){return '<div class="csitem"><i></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">تجاهل</button></div>'}).join(''):'<div class="csempty">لا توجد تنبيهات الآن.</div>';
 }
-function careOpen(){careList(); $('#caresheet').hidden=false; document.body.classList.add('csopen'); try{$('#csclose').focus()}catch(_){}}
-function careClose(){$('#caresheet').hidden=true; document.body.classList.remove('csopen')}
+function careSync(body){return api(Object.assign({action:'care'},body)).then(function(r){if(r&&r.settings){if(r.settings.careSeen)settings.careSeen=r.settings.careSeen; if(r.settings.careDis)settings.careDis=r.settings.careDis; careSet(careN)}}).catch(function(){})}
+function careOpen(){
+  var vis=careVisible(careN), S=settings.careSeen||[]; careNew={}; vis.forEach(function(t){if(S.indexOf(t)<0)careNew[t]=1});
+  careList(); $('#caresheet').hidden=false; document.body.classList.add('csopen'); try{$('#csclose').focus()}catch(_){}
+  if(vis.some(function(t){return careNew[t]})){settings.careSeen=vis.slice(); careSet(careN); careSync({seen:vis})}
+}
+function careClose(){$('#caresheet').hidden=true; document.body.classList.remove('csopen'); careNew={}; careList()}
+document.addEventListener('click',function(e){
+  var d=e.target.closest&&e.target.closest('.csdis'); if(!d)return;
+  var vis=careVisible(careN), t=vis[+d.dataset.ci]; if(!t)return; var tk=lk(new Date()), o={}; o[t]=tk;
+  settings.careDis=Object.assign({},settings.careDis||{},o); careSet(careN); careSync({dis:o});
+});
 document.addEventListener('click',function(e){
   var t=e.target; if(!t.closest)return;
   if(t.closest('#bellbtn')){var o=!$('#caresheet').hidden; if(o)careClose(); else careOpen(); return}
@@ -4158,7 +4177,7 @@ function onSetChange(){
   var s=readSettings();
   if(s==='wait')return;
   if(!s){toast('راجع الأرقام في الإعدادات: في رقم خارج المسموح'); return}
-  var at={supps:settings.supps||null,bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null,tresAm:settings.tresAm===true}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
+  var at={supps:settings.supps||null,bpLog:settings.bpLog||[],myFoods:settings.myFoods||[],mealBF:settings.mealBF===true,mealNo:settings.mealNo||[],foodOv:settings.foodOv||{},meals:settings.meals||[],medGot:settings.medGot||null,stockAtA:settings.stockAtA||null,stockAtT:settings.stockAtT||null,tresAm:settings.tresAm===true,careSeen:settings.careSeen||[],careDis:settings.careDis||{}}, nowL=toLocalInput(new Date()); if((s.stockA||null)!==(settings.stockA||null)||(s.stockA>0&&!at.stockAtA))at.stockAtA=s.stockA>0?nowL:null; if((s.stockT||null)!==(settings.stockT||null)||(s.stockT>0&&!at.stockAtT))at.stockAtT=s.stockT>0?nowL:null;
   if(s.bps>0&&s.bpd>0&&(s.bps!==settings.bps||s.bpd!==settings.bpd)){var bdt=s.bodyDate?new Date(s.bodyDate+'T12:00:00'):null; if(!bdt||isNaN(bdt)||bdt>new Date())bdt=new Date(); at.bpLog=(at.bpLog||[]).concat([{t:bdt.toISOString(),s:Math.round(s.bps),d:Math.round(s.bpd)}]).slice(-60); var bk=bpClass(s.bps,s.bpd); setTimeout(function(){toast('سُجّل الضغط '+Math.round(s.bps)+'/'+Math.round(s.bpd)+(bk?' · '+bk.t:''))},1200)}
   settings=Object.assign({},DEFAULTS,at,s); persistSettings(); markDirty(false); render(); toast('حُفظت الإعدادات'); try{bpPaint()}catch(_){} try{mmRender(); nwMine()}catch(_){}
 }
