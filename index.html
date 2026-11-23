@@ -1585,6 +1585,23 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 #savebar{background:color-mix(in srgb,var(--surface) 72%,transparent)!important;-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);border:1px solid var(--gl-bd)!important;border-radius:22px!important;box-shadow:var(--gl-sh),var(--gl-hi)!important}
 .primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 4px 14px color-mix(in srgb,var(--accent) 28%,transparent)}
 .field input,.field select,.field textarea{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+
+/* ===== nav v3: settings -> gear in header; bottom bar = log | + | report ===== */
+.gear{display:none}
+@media (max-width:759px){
+  .top{position:relative}
+  .gear{display:flex;position:absolute;left:0;top:2px;width:42px;height:42px;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--gl-bd);background:var(--gl-bg);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--gl-sh),var(--gl-hi);color:var(--c-set,var(--accent));cursor:pointer;padding:0;z-index:5}
+  .gear[hidden]{display:none}
+  .gear svg{width:22px;height:22px}
+  .gear[aria-current=page]{background:color-mix(in srgb,var(--c-set,var(--accent)) 26%,transparent)}
+  .gear:not([hidden])~.date{margin-inline-end:52px}
+  .tabs [data-go=set]{display:none!important}
+  .tabs [data-go=log]{order:1}.tabs [data-go=add]{order:2}.tabs [data-go=report]{order:3}
+  .tabs div{grid-template-columns:repeat(3,1fr)!important;align-items:center}
+  body.ro .tabs div{grid-template-columns:repeat(2,1fr)!important}
+  .tabs button[data-go=add]{font-size:0!important;width:60px;height:60px;min-height:60px!important;margin:-22px auto 0!important;border-radius:50%!important;padding:0;background:linear-gradient(150deg,color-mix(in srgb,var(--c-add) 82%,#fff),var(--c-add))!important;color:var(--on-accent,#fff)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 20px color-mix(in srgb,var(--c-add) 45%,transparent),0 0 0 5px color-mix(in srgb,var(--surface) 55%,transparent)!important}
+  .tabs button[data-go=add] svg{width:30px;height:30px;color:var(--on-accent,#fff)!important}
+}
 </style>
 </head>
 <body>
@@ -1592,7 +1609,7 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 
   <div class="alertbar" id="alertbar" role="alert" hidden></div>
 
-  <header class="top" id="top">
+  <header class="top" id="top"><button type="button" class="gear" id="gearbtn" aria-label="الإعدادات" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.6 2.6 0 0 0 2.5 2"/></svg></span><h1>متابعة السكر</h1></div>
     <p class="date" id="today"></p>
     <p class="store" id="store"><i></i><span>جارٍ التحميل…</span></p>
@@ -1981,7 +1998,7 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 <div id="savebar" hidden><button type="button" class="primary" id="savebtn">حفظ الإعدادات</button><span id="savenote">تغييرات لم تُحفظ بعد</span></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
-    <button type="button" data-go="add" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
+    <button type="button" data-go="add" aria-label="تسجيل" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
     <button type="button" data-go="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>السجل</button>
     <button type="button" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/></svg>التقرير</button>
     <button type="button" data-go="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>الإعدادات</button>
@@ -2504,6 +2521,7 @@ function applyTab(){
   });
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
+  var gb=$('#gearbtn'); if(gb){gb.hidden=!authed; if(tab==='set')gb.setAttribute('aria-current','page'); else gb.removeAttribute('aria-current')}
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false); updateSaveBar();
   placeExport(); moveTabInd(); try{renderModeHint()}catch(_){}
 }
@@ -2516,6 +2534,7 @@ function go(t){
   }
 }
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
+(function(){var g=$('#gearbtn'); if(g)g.addEventListener('click',function(){go('set')})})();
 
 /* ---------- static UI ---------- */
 function defaultSlot(){var h=new Date().getHours(); return h<11?'bf_before':h<16?'ln_before':h<21?'dn_before':'bed'}
