@@ -1602,6 +1602,11 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
   .tabs button[data-go=add]{font-size:0!important;width:60px;height:60px;min-height:60px!important;margin:-22px auto 0!important;border-radius:50%!important;padding:0;background:linear-gradient(150deg,color-mix(in srgb,var(--c-add) 82%,#fff),var(--c-add))!important;color:var(--on-accent,#fff)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 20px color-mix(in srgb,var(--c-add) 45%,transparent),0 0 0 5px color-mix(in srgb,var(--surface) 55%,transparent)!important}
   .tabs button[data-go=add] svg{width:30px;height:30px;color:var(--on-accent,#fff)!important}
 }
+
+@media (max-width:759px){
+  .tabs button[data-go=log] svg,.tabs button[data-go=report] svg{width:32px!important;height:32px!important}
+  .tabs button[data-go=log],.tabs button[data-go=report]{font-size:14px!important;gap:3px}
+}
 </style>
 </head>
 <body>
@@ -2534,7 +2539,7 @@ function go(t){
   }
 }
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
-(function(){var g=$('#gearbtn'); if(g)g.addEventListener('click',function(){go('set')})})();
+(function(){var g=$('#gearbtn'),prev='add'; if(g)g.addEventListener('click',function(){ if(tab==='set'){go(prev&&prev!=='set'?(role==='view'&&prev==='add'?'log':prev):(role==='view'?'log':'add'))} else {prev=tab; go('set')} })})();
 
 /* ---------- static UI ---------- */
 function defaultSlot(){var h=new Date().getHours(); return h<11?'bf_before':h<16?'ln_before':h<21?'dn_before':'bed'}
