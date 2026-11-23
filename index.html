@@ -1632,6 +1632,35 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
   .top .store.local{border-color:color-mix(in srgb,var(--high) 40%,transparent)}
   .top .store.local i{margin-top:0;box-shadow:0 0 0 3px color-mix(in srgb,var(--high) 22%,transparent)}
 }
+
+/* ===== bell + notification sheet ===== */
+.hact{display:none}
+.csheet[hidden]{display:none}
+@media (max-width:759px){
+  .hact{display:flex;grid-area:gear;justify-self:end;gap:10px;align-items:center}
+  .hact .gear{grid-area:auto!important;justify-self:auto!important;position:relative!important}
+  .bell{color:var(--ink)!important;opacity:.9}
+  .bell .bdg{position:absolute;top:-5px;right:-5px;left:auto;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--high);color:var(--on-solid,#fff);font-size:10.5px!important;font-weight:700;line-height:16px!important;text-align:center;border:2px solid var(--bg);box-sizing:content-box;font-family:var(--f-body)}
+  .bell .bdg[hidden]{display:none}
+  .bell.ring svg{animation:bellring .9s ease-in-out 1;transform-origin:50% 12%}
+  #carebar{display:none!important}
+}
+@keyframes bellring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+.csheet{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center}
+.cscrim{position:absolute;inset:0;background:rgba(10,20,30,.38);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:csfade .2s ease}
+.cspanel{position:relative;width:100%;max-width:520px;max-height:78vh;overflow:auto;overscroll-behavior:contain;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));border-radius:26px 26px 0 0;background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:blur(28px) saturate(1.6);backdrop-filter:blur(28px) saturate(1.6);border:1px solid var(--gl-bd);border-bottom:0;box-shadow:0 -12px 40px rgba(0,0,0,.28),var(--gl-hi);animation:csup .28s cubic-bezier(.2,.8,.2,1)}
+.csgrab{width:40px;height:5px;border-radius:999px;background:color-mix(in srgb,var(--muted) 55%,transparent);margin:2px auto 12px}
+.cspanel h3{margin:0 0 10px;font-size:19px}
+.cslist{display:flex;flex-direction:column;gap:8px}
+.csitem{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--surface) 60%,transparent);border:1px solid var(--gl-bd);box-shadow:var(--gl-hi)}
+.csitem i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--high);margin-top:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--high) 20%,transparent)}
+.csitem p{margin:0;line-height:1.55;font-size:15px}
+.csempty{padding:22px 8px;text-align:center;color:var(--muted)}
+.cspanel .ghost{margin-top:14px;width:100%}
+body.csopen{overflow:hidden!important;overscroll-behavior:none}
+@keyframes csup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes csfade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cspanel,.cscrim{animation:none}}
 </style>
 </head>
 <body>
@@ -1639,7 +1668,7 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 
   <div class="alertbar" id="alertbar" role="alert" hidden></div>
 
-  <header class="top" id="top"><button type="button" class="gear" id="gearbtn" aria-label="الإعدادات" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <header class="top" id="top"><div class="hact"><button type="button" class="gear bell" id="bellbtn" aria-label="التنبيهات" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10.2 20a2 2 0 0 0 3.6 0"/></svg><b class="bdg" hidden></b></button><button type="button" class="gear" id="gearbtn" aria-label="الإعدادات" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
     <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.6 2.6 0 0 0 2.5 2"/></svg></span><h1>متابعة السكر</h1></div>
     <p class="date" id="today"></p>
     <p class="store" id="store"><i></i><span>جارٍ التحميل…</span></p>
@@ -2026,6 +2055,7 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
 
 <div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">حسنًا</button></div></div>
 <div id="savebar" hidden><button type="button" class="primary" id="savebtn">حفظ الإعدادات</button><span id="savenote">تغييرات لم تُحفظ بعد</span></div>
+<div id="caresheet" class="csheet" hidden><div class="cscrim" id="cscrim"></div><div class="cspanel" role="dialog" aria-modal="true" aria-labelledby="cstt"><div class="csgrab" aria-hidden="true"></div><h3 id="cstt">التنبيهات</h3><div class="cslist" id="cslist"></div><button type="button" class="ghost" id="csclose">إغلاق</button></div></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-label="تسجيل" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -2551,7 +2581,7 @@ function applyTab(){
   });
   var vis=[].filter.call(document.querySelectorAll('#tabs button'),function(b){return getComputedStyle(b).display!=='none'}).length||4; var td=document.querySelector('#tabs div'); if(td)td.style.gridTemplateColumns='repeat('+vis+',1fr)';
   document.querySelectorAll('#tabs button').forEach(function(b){if(b.dataset.go===tab)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current')});
-  var gb=$('#gearbtn'); if(gb){gb.hidden=!authed; if(tab==='set')gb.setAttribute('aria-current','page'); else gb.removeAttribute('aria-current')}
+  var bb=$('#bellbtn'); if(bb)bb.hidden=!authed||role==='view'; var gb=$('#gearbtn'); if(gb){gb.hidden=!authed; if(tab==='set')gb.setAttribute('aria-current','page'); else gb.removeAttribute('aria-current')}
   document.body.dataset.t=tab; $('#top').classList.toggle('tabhide',false); updateSaveBar();
   placeExport(); moveTabInd(); try{renderModeHint()}catch(_){}
 }
@@ -2924,10 +2954,28 @@ function careNotes(E){
   }
   return out;
 }
+var careN=[], careLast=0;
+function careSet(n){
+  careN=n; var b=$('#bellbtn'); if(!b)return; var bd=b.querySelector('.bdg');
+  bd.hidden=!n.length; bd.textContent=n.length>9?'9+':String(n.length);
+  if(n.length>careLast&&careLast>=0&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring'); setTimeout(function(){b.classList.remove('ring')},1000)}
+  careLast=n.length; var cs0=$('#caresheet'); if(cs0&&!cs0.hidden)careList();
+}
+function careList(){
+  var l=$('#cslist'); l.innerHTML=careN.length?careN.map(function(t){return '<div class="csitem"><i></i><p>'+esc(t)+'</p></div>'}).join(''):'<div class="csempty">لا توجد تنبيهات الآن.</div>';
+}
+function careOpen(){careList(); $('#caresheet').hidden=false; document.body.classList.add('csopen'); try{$('#csclose').focus()}catch(_){}}
+function careClose(){$('#caresheet').hidden=true; document.body.classList.remove('csopen')}
+document.addEventListener('click',function(e){
+  var t=e.target; if(!t.closest)return;
+  if(t.closest('#bellbtn')){var o=!$('#caresheet').hidden; if(o)careClose(); else careOpen(); return}
+  if(t.closest('#csclose')||t.id==='cscrim')careClose();
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#caresheet').hidden)careClose()});
 function renderCare(E){
   var n=careNotes(E), el=$('#carebar');
   var d0=el.querySelector('details'), wasOpen=d0?d0.open:false;
-  el.innerHTML=n.length?'<details'+(wasOpen?' open':'')+'><summary><span>تنبيهات للمتابعة</span><span class="cnt">'+n.length+'</span></summary><div class="carelist">'+n.map(function(t){return '<p>'+esc(t)+'</p>'}).join('')+'</div></details>':''; el.hidden=!n.length;
+  el.innerHTML=n.length?'<details'+(wasOpen?' open':'')+'><summary><span>تنبيهات للمتابعة</span><span class="cnt">'+n.length+'</span></summary><div class="carelist">'+n.map(function(t){return '<p>'+esc(t)+'</p>'}).join('')+'</div></details>':''; el.hidden=!n.length; careSet(n);
 }
 function injHint(){
   var el=$('#injhint'), msgs=[];
