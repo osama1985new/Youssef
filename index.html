@@ -1607,6 +1607,12 @@ body{background:radial-gradient(60% 40% at 15% 8%,var(--gl-blob1),transparent 70
   .tabs button[data-go=log] svg,.tabs button[data-go=report] svg{width:32px!important;height:32px!important}
   .tabs button[data-go=log],.tabs button[data-go=report]{font-size:14px!important;gap:3px}
 }
+
+/* landscape: keep the save button whole inside the two-column form (Safari split it across columns) */
+@media (min-width:760px){
+  body[data-t=add] #f>*{-webkit-column-break-inside:avoid;break-inside:avoid-column;page-break-inside:avoid}
+  body[data-t=add] #f>#save{vertical-align:top;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+}
 </style>
 </head>
 <body>
