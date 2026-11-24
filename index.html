@@ -1699,17 +1699,6 @@ body.csopen{overflow:hidden!important;overscroll-behavior:none}
 
 /* ===== food box v3: rows like reference, meal colour ===== */
 .p-food{--fc:var(--mgc,var(--accent))}
-.p-food h3.fh{display:flex; align-items:center; gap:12px; justify-content:flex-start; font-size:inherit; text-transform:none; letter-spacing:0; margin:0 0 14px}
-form#f .panel.p-food>h3.fh::before{content:""; flex:none; width:46px; height:46px; border-radius:14px; font-size:0; display:block; background:color-mix(in srgb,var(--fc) 16%,var(--surface))!important; -webkit-mask:none; mask:none; position:relative; box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fc) 22%,transparent)}
-.p-food h3.fh::after{content:""; position:absolute}
-.p-food h3.fh{position:relative}
-.p-food h3.fh .fht{display:flex; flex-direction:column; gap:2px; flex:1; min-width:0}
-.p-food h3.fh .fht b{font-size:19px; font-weight:800; color:var(--ink)}
-.p-food h3.fh .fht small{font-size:13.5px; font-weight:500; color:var(--muted)}
-.p-food h3.fh .fcnt{min-width:30px; height:30px; padding:0 8px; border-radius:15px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--fc); background:color-mix(in srgb,var(--fc) 16%,var(--surface))}
-.p-food h3.fh .fcnt[hidden]{display:none}
-form#f .panel.p-food>h3.fh::after{top:0; width:46px; height:46px; background:var(--fc); -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3v7a2 2 0 002 2v9M10 3v7a2 2 0 01-2 2M6 3v7M18 21V3c-2.500 1.500-3.500 5-3.500 8H18'/%3E%3C/svg%3E") center/24px no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3v7a2 2 0 002 2v9M10 3v7a2 2 0 01-2 2M6 3v7M18 21V3c-2.500 1.500-3.500 5-3.500 8H18'/%3E%3C/svg%3E") center/24px no-repeat; inset-inline-start:auto}
-form#f .panel.p-food>h3.fh::after{right:0; left:auto}
 .p-food .fsw .fsi{z-index:2; color:var(--fc); top:50%; transform:translateY(-50%)}
 .p-food #fsearch{min-height:60px!important; border:1.5px solid color-mix(in srgb,var(--fc) 38%,var(--line))!important; background:color-mix(in srgb,var(--fc) 5%,var(--surface))!important; font-size:16.5px!important}
 .p-food #fsearch:focus{border-color:var(--fc)!important; box-shadow:0 0 0 3px color-mix(in srgb,var(--fc) 18%,transparent)}
@@ -1753,8 +1742,6 @@ form#f .p-food .fgrp>.field,form#f .p-food .fgrp>details.more>summary{min-height
 form#f .p-food .fgrp b{font-size:16px}
 form#f .p-food .fgrp small{font-size:13px}
 form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summary>b::after{left:14px}
-form#f .p-food h3.fh::before{width:42px;height:42px;border-radius:12px}
-form#f .panel.p-food>h3.fh::after{width:42px;height:42px;-webkit-mask-size:20px;mask-size:20px}
 @media (max-width:759px){.tabs button[data-go=add]{margin:0 auto!important;align-self:center!important;width:56px;height:56px;min-height:56px!important;transform:none!important}.tabs button[data-go=add] svg{width:28px;height:28px}}
 @media (max-width:759px){
 .tabs{bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,color-mix(in srgb,#fff 16%,transparent),color-mix(in srgb,#fff 4%,transparent)),color-mix(in srgb,var(--surface) 26%,transparent)!important;-webkit-backdrop-filter:blur(30px) saturate(1.9) brightness(1.04)!important;backdrop-filter:blur(30px) saturate(1.9) brightness(1.04)!important;border:1px solid color-mix(in srgb,#fff 26%,transparent)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 38%,transparent),inset 0 -1px 0 color-mix(in srgb,#fff 8%,transparent),0 10px 30px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.12)!important}
@@ -1810,7 +1797,7 @@ form#f .panel.p-food>h3.fh::after{width:42px;height:42px;-webkit-mask-size:20px;
 
 
         <div class="sect panel p-food">
-      <h3 class="fh" data-ic="1"><span class="fht"><b>الأكل</b><small>اختيار الوجبة والأصناف</small></span><span class="fcnt" id="fcnt" hidden></span></h3>
+      <h3>الأكل</h3>
       <div class="mealsug" id="mealsug" hidden></div>
       <div class="mealseg" id="mealseg" role="tablist" aria-label="نوع الوجبة"><button type="button" data-mg="bf">فطار</button><button type="button" data-mg="ln">غداء</button><button type="button" data-mg="dn">عشاء</button><button type="button" data-mg="sn">سناك</button></div>
       <div class="fpick">
@@ -5227,7 +5214,6 @@ start(true);
 })();
 })();
 
-(function(){var l=document.getElementById('mlist'),c=document.getElementById('fcnt');if(!l||!c)return;function u(){var n=l.children.length;c.hidden=!n;c.textContent=n?String(n):''}u();try{new MutationObserver(u).observe(l,{childList:true})}catch(_){}})();
 </script>
 </body>
 </html>
