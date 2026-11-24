@@ -4698,7 +4698,7 @@ document.addEventListener('click',function(ev){
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
   if(t.dataset.supp){if(t.disabled)return; t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
-  if(t.id==='showk'){$('#kbox').hidden=false; t.hidden=true; $('#kt').value='u'; ketUI(); return}
+  if(t.closest&&t.closest('#showk')){if($('#kbox').hidden){$('#kbox').hidden=false; $('#kt').value='u'; ketUI()} else clearKet(); return}
   if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
   if(t.dataset.ckdel!==undefined){
     var idx=Number(t.dataset.ckdel), keep=[];
@@ -4989,7 +4989,7 @@ function startEdit(id){
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
   $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':PREMEAL.indexOf(e.slot)>=0?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
-  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showk').hidden=true; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
+  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){var c=m.x===1?null:(Number(m.c)||0); return {k:'ed'+i,fk:m.n,name:m.n,disp:m.n,d:m.d||'',dunk:!m.d,drev:'',raw:'',d0:m.x===2?'':(m.d||''),pend:m.x===2,w:0,c:c,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:false,u:m.u||'',step:m.u?0.5:0.5,src:'',bu:m.u||'',bc:c,bw:0,alts:[],cur:0}});
   renderMeal();
