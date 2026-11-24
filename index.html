@@ -1777,6 +1777,9 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
 .p-extra .bi{width:20px;height:20px;flex:none}
 .p-extra details.more>summary{display:flex;align-items:center;gap:8px}
 #showk{text-decoration:none!important}
+#ferr:not(:empty){color:#C62828!important;font-weight:700;font-size:15.5px;line-height:1.6;background:color-mix(in srgb,#E53935 10%,transparent);border:1.5px solid color-mix(in srgb,#E53935 55%,transparent);border-radius:14px;padding:12px 14px;margin:10px 0}
+:root[data-theme=dark] #ferr:not(:empty){color:#FF8A80!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #ferr:not(:empty){color:#FF8A80!important}}
 </style>
 </head>
 <body>
@@ -5031,7 +5034,7 @@ $('#f').addEventListener('submit',async function(ev){
   }
   if(imode==='nofood'&&!items.length){err.textContent='اختر السناك الذي أكلته.'; return}
   if(/^(bf|ln|dn)_(before|after)$/.test(slot)&&imode!=='corr'&&imode!=='tres'&&imode!=='nofood'&&!items.length&&(!editingId||(edE&&edE.meal&&edE.meal.length))&&!(/_after$/.test(slot)&&entries.some(function(e){return e.id!==editingId&&e.meal&&e.meal.length&&lk(new Date(e.ts))===lk(d)&&e.slot&&e.slot.slice(0,2)===slot.slice(0,2)}))){
-    err.textContent='اكتب الوجبة التي أكلتها: قبل أو بعد أي وجبة (غير السناك) لا بد من تسجيل وجبة.'; var _fp=$('#foodpick'); if(_fp&&_fp.scrollIntoView)_fp.scrollIntoView({block:'center',behavior:'smooth'}); return}
+    err.textContent='اكتب الوجبة التي أكلتها: قبل أو بعد أي وجبة (غير السناك) لا بد من تسجيل وجبة.'; return}
   if(PREMEAL.indexOf(slot)>=0&&imode!=='read'){
     var miss=[], isC=$('#corr').checked;
     if(isC){if(g==null)miss.push('قراءة السكر')}
@@ -5253,6 +5256,9 @@ start(true);
 })();
 })();
 
+
+(function(){var fe=document.getElementById('ferr'); if(!fe||!window.MutationObserver)return;
+new MutationObserver(function(){ if(!fe.textContent.trim())return; try{fe.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){} try{if(navigator.vibrate)navigator.vibrate(60)}catch(_){} }).observe(fe,{childList:true,characterData:true,subtree:true});})();
 </script>
 </body>
 </html>
