@@ -1826,6 +1826,45 @@ header.top#top .hact{gap:8px!important}
 header.top#top .hact .gear{width:42px!important;height:42px!important}
 }
 @media (max-width:759px){header.top#top::after{display:none!important}header.top#top .store{max-width:none!important}header.top#top .store span{overflow:visible}}
+
+/* ===== batch5 ===== */
+@keyframes npulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 35%,transparent)}}
+.npulse{animation:npulse 1.1s ease-in-out 3;border-color:var(--accent)!important}
+button,.primary,[role=button],select,input{touch-action:manipulation}
+/* clock icon between date and time */
+header.top#top .date .clk{display:inline-flex!important;align-items:center;gap:5px}
+header.top#top .date .clk::before{content:""!important;margin:0 4px 0 0!important;opacity:1!important;width:15px;height:15px;flex:none;background:color-mix(in srgb,var(--accent) 75%,var(--ink));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center/contain no-repeat}
+header.top#top .date .clk{margin-inline-start:8px}
+/* sync: icon only */
+header.top#top .store{width:32px;height:32px;min-width:0;padding:0!important;border-radius:50%;justify-content:center;gap:0;font-size:0!important;cursor:pointer}
+header.top#top .store i,header.top#top .store span{display:none!important}
+header.top#top .store::before{content:"";width:19px;height:19px;background:var(--ok);-webkit-mask:var(--cico) center/contain no-repeat;mask:var(--cico) center/contain no-repeat}
+header.top#top .store{--cico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 18a4.500 4.500 0 01-.600-8.960A6 6 0 0118 10.500 3.800 3.800 0 0117.500 18z'/%3E%3Cpath d='M9.500 13.500l2 2 3.500-3.800'/%3E%3C/svg%3E")}
+header.top#top .store.local{--cico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 18a4.500 4.500 0 01-.600-8.960A6 6 0 0118 10.500 3.800 3.800 0 0117.500 18z'/%3E%3Cpath d='M4 4l16 16'/%3E%3C/svg%3E")}
+header.top#top .store.local::before{background:var(--high)}
+header.top#top .store.bad{--cico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 18a4.500 4.500 0 01-.600-8.960A6 6 0 0118 10.500 3.800 3.800 0 0117.500 18z'/%3E%3Cpath d='M12 9.500v3.500M12 15.500h.01'/%3E%3C/svg%3E")}
+header.top#top .store.bad::before{background:#E53935}
+@media (max-width:759px){
+ header.top#top{grid-template-areas:"logo title acts" "store date date"!important}
+ header.top#top .store{justify-self:center!important;max-width:none!important}
+ header.top#top .date{padding-inline-start:0!important}
+ .tabs{bottom:calc(10px + env(safe-area-inset-bottom,0px))!important}
+ body{padding-bottom:calc(128px + env(safe-area-inset-bottom,0px))!important}
+}
+/* notifications: clean list like reference */
+.csitem{display:flex;gap:12px;align-items:flex-start;padding:14px}
+.csitem i{margin-top:5px!important}
+.csb{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.csh{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.csh b{font-size:15px;font-weight:700;color:var(--ink);line-height:1.5}
+.csh time{flex:none;font-size:12px;color:var(--muted)}
+.csitem p{display:none}
+.csdis,.csrem .link,.csall{background:none!important;border:0!important;box-shadow:none!important;min-height:0!important;padding:2px 0!important;border-radius:0!important;font-size:13.5px!important;font-weight:600;color:var(--accent)!important;text-decoration:none!important}
+.csdis{align-self:flex-end;margin:0!important}
+.csall{color:var(--accent)!important;font-size:14px!important}
+.csrem .link[data-remdis]{color:var(--muted)!important}
+.csrem .rr>span:last-child:not(:first-child){gap:16px!important}
+header.top#top .date{justify-content:flex-start!important;gap:7px!important}header.top#top .date .clk{margin-inline-start:6px}
 </style>
 </head>
 <body>
@@ -3145,7 +3184,7 @@ function remItems(){return ['medrem','visitrem','readrem','tresrem'].map(functio
 function remCount(){var c=0; ['medrem','visitrem','readrem','tresrem'].forEach(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return; c+=id==='tresrem'?1:el.querySelectorAll('.rr').length}); return c}
 function careList(){
   var l=$('#cslist'), vis=careVisible(careN), rem=remItems();
-  l.innerHTML=!vis.length&&!rem?'<div class="csempty">لا توجد تنبيهات الآن.</div>':(rem?'<div class="csrem">'+rem+'</div>':'')+(vis.length?vis.map(function(t,i){return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">مسح</button></div>'}).join(''):'');
+  l.innerHTML=!vis.length&&!rem?'<div class="csempty">لا توجد تنبيهات الآن.</div>':(rem?'<div class="csrem">'+rem+'</div>':'')+(vis.length?vis.map(function(t,i){var pp=t.split(' · '), tt=pp[0], tm=pp.length>1?pp.slice(1).join(' · '):''; return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><div class="csb"><div class="csh"><b>'+esc(tt)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</b>'+(tm?'<time>'+esc(tm)+'</time>':'')+'</div><button type="button" class="csdis" data-ci="'+i+'">مسح</button></div></div>'}).join(''):'');
 }
 function careSync(body){ if(role==='view'){try{localStorage.setItem('ysg-care-v1',JSON.stringify({s:settings.careSeen||[],d:settings.careDis||{}}))}catch(_){} return Promise.resolve()} return api(Object.assign({action:'care'},body)).then(function(r){if(r&&r.settings){if(r.settings.careSeen)settings.careSeen=r.settings.careSeen; if(r.settings.careDis)settings.careDis=r.settings.careDis; careSet(careN)}}).catch(function(){})}
 function careOpen(){
@@ -3436,7 +3475,8 @@ function renderStore(){
   else if(loaded&&syncErr)txt=SYNC_MSG[syncErr]||SYNC_MSG.net;
   el.classList.toggle('show',!!txt);
   el.classList.toggle('local',mode!=='cloud'||netErr);
-  el.querySelector('span').textContent=txt;
+  el.classList.toggle('bad',!!(loaded&&mode==='cloud'?false:(loaded&&syncErr)));
+  el.querySelector('span').textContent=txt; el.setAttribute('aria-label',txt); el.setAttribute('title',txt); el.setAttribute('role','button');
 }
 function gmsg(){
   var el=$('#gmsg'), v=num($('#g').value);
@@ -5201,7 +5241,7 @@ function openFromNotif(tag){
     showFocusA();
   }
 }
-function focusId(id){[0,150,500].forEach(function(d){setTimeout(function(){var a=$('#'+id); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)})}
+function focusId(id){[0,150,500].forEach(function(d){setTimeout(function(){var a=$('#'+id); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} if(d===500){a.classList.add('npulse'); setTimeout(function(){a.classList.remove('npulse')},3500)} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)})}
 function showFocusA(){
   [0,150,500].forEach(function(d){setTimeout(function(){var a=$('#a'); if(!a)return; try{a.focus({preventScroll:true})}catch(_){} var c=a.closest('.field')||a; c.scrollIntoView({block:'center',behavior:'smooth'})},d)});
 }
@@ -5305,6 +5345,16 @@ start(true);
 
 (function(){var fe=document.getElementById('ferr'); if(!fe||!window.MutationObserver)return;
 new MutationObserver(function(){ if(!fe.textContent.trim())return; try{fe.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){} try{if(navigator.vibrate)navigator.vibrate(60)}catch(_){} }).observe(fe,{childList:true,characterData:true,subtree:true});})();
+
+(function(){var lab,inp;
+ function mk(){if(lab)return; lab=document.createElement('label'); lab.setAttribute('aria-hidden','true'); lab.setAttribute('data-hap','1'); lab.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none'; inp=document.createElement('input'); inp.type='checkbox'; inp.setAttribute('switch',''); inp.tabIndex=-1; lab.appendChild(inp); document.body.appendChild(lab)}
+ window.hap=function(){try{if(navigator.vibrate){navigator.vibrate(8); return} mk(); lab.click()}catch(_){}};
+ var SEL='#modebar button,#mealseg button,.presets button,.supp button,button[aria-pressed],button[aria-selected],[role=tab],[role=radio],.csall,.csdis';
+ document.addEventListener('click',function(e){var t=e.target; if(!t||!t.closest||t.closest('[data-hap]'))return; if(t.closest(SEL))window.hap()},true);
+ document.addEventListener('change',function(e){var t=e.target; if(!t||t.closest&&t.closest('[data-hap]'))return; if(e.isTrusted&&t.tagName==='SELECT')window.hap()},true);
+ var sv=document.getElementById('save');
+ if(sv){sv.addEventListener('mousedown',function(e){var a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))e.preventDefault()});}
+})();
 </script>
 </body>
 </html>
