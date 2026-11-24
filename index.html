@@ -2991,6 +2991,8 @@ function renderStrips(){ renderNeedles();
 }
 function careNotes(E){
   var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
+  if(settings.cgm&&settings.sensorStart){var sst=new Date(settings.sensorStart+'T00:00:00'), sday=Math.floor((now-sst.getTime())/864e5)+1, sleft=SENSOR_DAYS-sday;
+    if(sday>=1&&sleft<=2)out.push(sleft<0?'انتهت مدة السينسر ('+SENSOR_DAYS+' يومًا). استبدله.':sleft===0?'اليوم آخر يوم للسينسر. جهّز سينسر جديد.':'متبقٍّ '+sleft+(sleft===1?' يوم':' يومان')+' على انتهاء السينسر. جهّز سينسر جديد.')}
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'نفدت أسنان الأقلام. جهّز علبة جديدة.':'المتبقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سنًّا')+' فقط في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'نفدت شرائط السكر. جهّز علبة جديدة.':'المتبقي '+si.left+(si.left===1?' شريط':' شرائط')+' فقط في علبة الشرائط. جهّز علبة جديدة.');
   [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'القلم '+x[1]+' مضى 28 يومًا على فتحه. استبدله.':'القلم '+x[1]+' متبقٍّ له '+l+' يومًا بعد الفتح.')});
