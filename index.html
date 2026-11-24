@@ -1780,6 +1780,35 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
 #ferr:not(:empty){color:#C62828!important;font-weight:700;font-size:15.5px;line-height:1.6;background:color-mix(in srgb,#E53935 10%,transparent);border:1.5px solid color-mix(in srgb,#E53935 55%,transparent);border-radius:14px;padding:12px 14px;margin:10px 0}
 :root[data-theme=dark] #ferr:not(:empty){color:#FF8A80!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) #ferr:not(:empty){color:#FF8A80!important}}
+
+/* ===== header v3: glass banner ===== */
+header.top#top{position:relative;display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"logo title acts" "date date date" "store store store";align-items:center;column-gap:12px;row-gap:9px;padding:16px 16px 14px!important;margin:0 0 10px!important;border:1px solid color-mix(in srgb,var(--accent) 22%,#fff)!important;border-radius:26px;overflow:hidden;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120' preserveAspectRatio='none'%3E%3Cpath d='M0 78C80 36 140 118 220 78S340 28 400 68V120H0Z' fill='%232f9078' fill-opacity='.10'/%3E%3Cpath d='M0 100C90 68 170 124 260 94S360 68 400 90V120H0Z' fill='%232f9078' fill-opacity='.13'/%3E%3C/svg%3E") bottom/100% 62% no-repeat,radial-gradient(120% 150% at 100% 0%,color-mix(in srgb,var(--accent) 30%,transparent) 0%,transparent 58%),radial-gradient(90% 130% at 0% 100%,color-mix(in srgb,var(--accent) 20%,transparent) 0%,transparent 62%),linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,var(--surface)),var(--surface))!important;
+ -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 70%,transparent),0 10px 28px color-mix(in srgb,var(--accent) 14%,transparent)!important}
+header.top#top .brand{display:contents}
+header.top#top .logo{grid-area:logo;width:54px!important;height:54px!important;border-radius:17px!important;background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 78%,#fff),var(--accent) 45%,color-mix(in srgb,var(--accent) 72%,#000))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 0 1.5px rgba(255,255,255,.28),0 8px 18px color-mix(in srgb,var(--accent) 38%,transparent)!important}
+header.top#top .logo svg{width:28px!important;height:28px!important;color:#fff}
+header.top#top h1{grid-area:title;margin:0;font-size:23px;white-space:nowrap;line-height:1.2;font-weight:800;background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;-webkit-text-fill-color:currentColor!important;color:color-mix(in srgb,var(--accent) 48%,var(--ink))!important}
+header.top#top .date{grid-area:date;display:flex!important;flex-direction:row!important;align-items:center!important;gap:7px;margin:0!important;padding:0!important;font-size:14px!important;font-weight:500!important;color:var(--ink)!important;white-space:nowrap;text-align:start}
+header.top#top .date .clk{color:var(--ink)!important;font-size:14px!important;font-weight:500!important}
+header.top#top .date::before{content:"";flex:none;width:20px;height:20px;background:color-mix(in srgb,var(--accent) 75%,var(--ink));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.500' rx='3'/%3E%3Cpath d='M3.500 10h17M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 17.500h.01M12 17.500h.01'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.500' rx='3'/%3E%3Cpath d='M3.500 10h17M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 17.500h.01M12 17.500h.01'/%3E%3C/svg%3E") center/contain no-repeat}
+header.top#top .hact{grid-area:acts;display:flex;gap:9px;justify-self:end}
+header.top#top .hact .gear{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1px solid color-mix(in srgb,#fff 80%,transparent);background:linear-gradient(180deg,color-mix(in srgb,#fff 82%,transparent),color-mix(in srgb,#fff 52%,transparent));color:color-mix(in srgb,var(--accent) 55%,var(--ink));box-shadow:inset 0 1px 0 #fff,0 4px 12px rgba(20,60,55,.12);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+header.top#top .hact .gear[hidden]{display:none}
+header.top#top .hact .gear svg{width:23px;height:23px}
+header.top#top .store{grid-area:store;justify-self:start;max-width:100%;flex-basis:auto!important;padding:5px 12px;border-radius:999px;font-size:12px;color:var(--ink);border:1px solid color-mix(in srgb,#fff 75%,transparent);background:color-mix(in srgb,#fff 55%,transparent);box-shadow:inset 0 1px 0 #fff}
+header.top#top .store span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root[data-theme=dark] header.top#top .hact .gear,:root[data-theme=dark] header.top#top .store{background:color-mix(in srgb,#fff 10%,transparent);border-color:color-mix(in srgb,#fff 22%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 25%,transparent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) header.top#top .hact .gear,:root:not([data-theme=light]) header.top#top .store{background:color-mix(in srgb,#fff 10%,transparent);border-color:color-mix(in srgb,#fff 22%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 25%,transparent)}}
+header.top#top>*:not(.brand){z-index:1}
+@media (min-width:760px){
+ header.top#top{grid-template-columns:auto auto minmax(0,1fr) 1px auto;grid-template-areas:"logo title . div acts" "logo date . div store";padding:18px 22px!important;column-gap:16px;row-gap:6px}
+ header.top#top::after{content:"";grid-column:4;grid-row:1/3;align-self:stretch;min-height:56px;width:1px;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--accent) 60%,transparent),transparent)}
+ header.top#top .logo{grid-row:1/3}
+ header.top#top .store:not(.show){display:none}
+ header.top#top .hact{justify-self:start}
+ header.top#top .store{justify-self:start}
+}
 </style>
 </head>
 <body>
