@@ -1772,6 +1772,11 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
 @media (max-width:759px){.tabs{inset-inline:6px!important;max-width:600px!important;grid-template-columns:1fr 56px 1fr!important}.tabs button[data-go=log] svg,.tabs button[data-go=report] svg{width:30px!important;height:30px!important}.tabs button[data-go=log],.tabs button[data-go=report]{min-height:52px!important;height:52px!important;font-size:12px!important}.tabs button[data-go=add]{width:50px!important;height:50px!important;min-height:50px!important}.tabs button[data-go=add] svg{width:28px;height:28px}}
 @media (max-width:759px){.tabs{grid-template-columns:1fr 1fr 1fr!important;padding:6px 8px!important}.tabs button[data-go=log],.tabs button[data-go=report]{min-height:60px!important;height:60px!important;font-size:14px!important;font-weight:700!important;gap:3px!important}.tabs button[data-go=log] svg,.tabs button[data-go=report] svg{width:30px!important;height:30px!important}.tabs button[data-go=add]{width:60px!important;height:60px!important;min-height:60px!important}.tabs button[data-go=add] svg{width:32px;height:32px}}
 @media (max-width:759px){.tabs{background:linear-gradient(180deg,color-mix(in srgb,#fff 6%,transparent),transparent)!important;-webkit-backdrop-filter:blur(16px) saturate(2.3) brightness(1.04)!important;backdrop-filter:blur(16px) saturate(2.3) brightness(1.04)!important;border-color:color-mix(in srgb,#fff 45%,transparent)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 60%,transparent),0 10px 28px rgba(0,0,0,.14)!important}}
+#showk{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+#showk[hidden]{display:none}
+.p-extra .bi{width:20px;height:20px;flex:none}
+.p-extra details.more>summary{display:flex;align-items:center;gap:8px}
+#showk{text-decoration:none!important}
 </style>
 </head>
 <body>
@@ -1936,7 +1941,7 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
     <div class="panel p-extra">
       <h3>إضافات</h3>
     <div class="supp" id="supp"><div class="suphead"><span class="lbl">المكملات</span></div></div>
-    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0">+ سجّل كيتون</button>
+    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5s6 6.2 6 10.3a6 6 0 01-12 0C6 9.700 12 3.500 12 3.500z"/><path d="M12 17a3 3 0 003-3"/></svg><span>تسجيل كيتون</span></button>
     <div class="injrow" id="kbox" hidden>
       <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="u" selected>بول</option><option value="b">دم (mmol/L)</option></select></div>
       <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
@@ -1945,7 +1950,7 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
     <p class="msg" id="khint" hidden></p>
     <div class="field" id="tdf" hidden><label for="tdt">يوم ووقت جرعة الترسيبا</label><input id="tdt" type="datetime-local"></div>
     <details class="more">
-      <summary>ملاحظة</summary>
+      <summary><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM15 4v4h4M8.500 12h7M8.500 16h5"/></svg><span>ملاحظات</span></summary>
       <div class="stack" style="margin-top:8px">
         <div class="field" id="dtf" hidden><label for="dt">التاريخ والوقت</label><input id="dt" type="datetime-local"></div>
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
@@ -4693,7 +4698,7 @@ document.addEventListener('click',function(ev){
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
   if(t.dataset.supp){if(t.disabled)return; t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
-  if(t.id==='showk'){$('#kbox').hidden=false; t.hidden=true; $('#kv').focus(); return}
+  if(t.id==='showk'){$('#kbox').hidden=false; t.hidden=true; $('#kt').value='u'; ketUI(); return}
   if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
   if(t.dataset.ckdel!==undefined){
     var idx=Number(t.dataset.ckdel), keep=[];
