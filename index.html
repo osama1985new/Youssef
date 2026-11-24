@@ -1747,6 +1747,17 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
 .tabs{bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,color-mix(in srgb,#fff 16%,transparent),color-mix(in srgb,#fff 4%,transparent)),color-mix(in srgb,var(--surface) 26%,transparent)!important;-webkit-backdrop-filter:blur(30px) saturate(1.9) brightness(1.04)!important;backdrop-filter:blur(30px) saturate(1.9) brightness(1.04)!important;border:1px solid color-mix(in srgb,#fff 26%,transparent)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 38%,transparent),inset 0 -1px 0 color-mix(in srgb,#fff 8%,transparent),0 10px 30px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.12)!important}
 .tabs button[aria-current=page]:not([data-go=add]){background:color-mix(in srgb,#fff 14%,transparent)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-color:color-mix(in srgb,#fff 28%,transparent)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 30%,transparent)!important}
 }
+.cshead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}.cshead h3{margin:0!important}
+.csall{border:1px solid var(--gl-bd);background:color-mix(in srgb,var(--surface) 50%,transparent);color:var(--muted);border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+@media (max-width:759px){
+.tabs{bottom:calc(44px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,color-mix(in srgb,#fff 12%,transparent),color-mix(in srgb,#fff 2%,transparent)),color-mix(in srgb,var(--surface) 10%,transparent)!important;-webkit-backdrop-filter:blur(22px) saturate(2.1) brightness(1.06)!important;backdrop-filter:blur(22px) saturate(2.1) brightness(1.06)!important;border:1px solid color-mix(in srgb,#fff 40%,transparent)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 55%,transparent),inset 0 -1px 0 color-mix(in srgb,#fff 12%,transparent),0 14px 34px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.1)!important}
+}
+.csrem .rr>span:last-child:not(:first-child){display:flex!important;gap:8px!important;flex:none;align-items:center}
+.csrem .rr{align-items:center}
+.csrem .link,.csdis{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 14px!important;border-radius:999px;font:inherit;font-size:13.5px;font-weight:600;text-decoration:none!important;white-space:nowrap;margin:0!important;cursor:pointer}
+.csrem .link{border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.csrem .link[data-remdis],.csrem .link[data-remdis=""]{border-color:var(--gl-bd);background:transparent;color:var(--muted)}
+.csdis{border:1px solid var(--gl-bd);background:transparent;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -2141,7 +2152,7 @@ form#f .p-food .fgrp>.field>label::after,form#f .p-food .fgrp>details.more>summa
 
 <div id="sitemodal" class="smodal" hidden><div class="smcard" role="dialog" aria-modal="true"><div class="smbody"></div><button type="button" class="ghost" id="smclose">حسنًا</button></div></div>
 <div id="savebar" hidden><button type="button" class="primary" id="savebtn">حفظ الإعدادات</button><span id="savenote">تغييرات لم تُحفظ بعد</span></div>
-<div id="caresheet" class="csheet" hidden><div class="cscrim" id="cscrim"></div><div class="cspanel" role="dialog" aria-modal="true" aria-labelledby="cstt"><div class="csgrab" aria-hidden="true"></div><h3 id="cstt">التنبيهات</h3><div class="cslist" id="cslist"></div><button type="button" class="ghost" id="csclose">إغلاق</button></div></div>
+<div id="caresheet" class="csheet" hidden><div class="cscrim" id="cscrim"></div><div class="cspanel" role="dialog" aria-modal="true" aria-labelledby="cstt"><div class="csgrab" aria-hidden="true"></div><div class="cshead"><h3 id="cstt">التنبيهات</h3><button type="button" class="csall" id="csall">مسح كل التنبيهات</button></div><div class="cslist" id="cslist"></div><button type="button" class="ghost" id="csclose">إغلاق</button></div></div>
 <nav class="tabs" id="tabs" aria-label="الأقسام" hidden>
   <div>
     <button type="button" data-go="add" aria-label="تسجيل" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>تسجيل</button>
@@ -3062,17 +3073,23 @@ function careSet(n){
   careLast=fresh.length; var cs0=$('#caresheet'); if(cs0&&!cs0.hidden)careList();
 }
 var careNew={};
-function remItems(){return ['medrem','visitrem','readrem','tresrem'].map(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return ''; return id==='tresrem'?'<div class="rr">'+el.innerHTML.replace(/ id="tresgo"/,' data-tresgo="1"')+'</div>':el.innerHTML}).join('')}
+function remItems(){return ['medrem','visitrem','readrem','tresrem'].map(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return ''; return id==='tresrem'?'<div class="rr">'+el.innerHTML.replace(/ id="tresgo"/,' data-tresgo="1"')+'</div>':el.innerHTML}).join('').replace(/>تجاهل</g,'>مسح<')}
 function remCount(){var c=0; ['medrem','visitrem','readrem','tresrem'].forEach(function(id){var el=document.getElementById(id); if(!el||el.hidden||!el.innerHTML.trim())return; c+=id==='tresrem'?1:el.querySelectorAll('.rr').length}); return c}
 function careList(){
   var l=$('#cslist'), vis=careVisible(careN), rem=remItems();
-  l.innerHTML=!vis.length&&!rem?'<div class="csempty">لا توجد تنبيهات الآن.</div>':(rem?'<div class="csrem">'+rem+'</div>':'')+(vis.length?vis.map(function(t,i){return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">تجاهل</button></div>'}).join(''):'');
+  l.innerHTML=!vis.length&&!rem?'<div class="csempty">لا توجد تنبيهات الآن.</div>':(rem?'<div class="csrem">'+rem+'</div>':'')+(vis.length?vis.map(function(t,i){return '<div class="csitem"><i class="'+(t.indexOf('منخفض')>-1?'dl':t.indexOf('مرتفع')>-1?'dh':'')+'"></i><p>'+esc(t)+(careNew[t]?' <span class="csnew">جديد</span>':'')+'</p><button type="button" class="csdis" data-ci="'+i+'">مسح</button></div>'}).join(''):'');
 }
 function careSync(body){ if(role==='view'){try{localStorage.setItem('ysg-care-v1',JSON.stringify({s:settings.careSeen||[],d:settings.careDis||{}}))}catch(_){} return Promise.resolve()} return api(Object.assign({action:'care'},body)).then(function(r){if(r&&r.settings){if(r.settings.careSeen)settings.careSeen=r.settings.careSeen; if(r.settings.careDis)settings.careDis=r.settings.careDis; careSet(careN)}}).catch(function(){})}
 function careOpen(){
   var vis=careVisible(careN), S=settings.careSeen||[]; careNew={}; vis.forEach(function(t){if(S.indexOf(t)<0)careNew[t]=1});
   careList(); $('#caresheet').hidden=false; document.body.classList.add('csopen'); try{$('#csclose').focus()}catch(_){}
   if(vis.some(function(t){return careNew[t]})){settings.careSeen=vis.slice(); careSet(careN); careSync({seen:vis})}
+}
+function careClearAll(){
+  var vis=careVisible(careN), tk=lk(new Date()), o={}; vis.forEach(function(t){o[t]=tk});
+  if(vis.length){settings.careDis=Object.assign({},settings.careDis||{},o); careSync({dis:o})}
+  for(var k=0;k<12;k++){var b=document.querySelector('#readrem [data-remdis]'); if(!b)break; b.click()}
+  careSet(careN); careList();
 }
 function careClose(){$('#caresheet').hidden=true; document.body.classList.remove('csopen'); careNew={}; careList()}
 document.addEventListener('click',function(e){
@@ -3083,6 +3100,7 @@ document.addEventListener('click',function(e){
 document.addEventListener('click',function(e){
   var t=e.target; if(!t.closest)return;
   if(t.closest('#bellbtn')){var o=!$('#caresheet').hidden; if(o)careClose(); else careOpen(); return}
+  if(t.closest('#csall')){careClearAll(); return}
   if(t.closest('#csclose')||t.id==='cscrim')careClose();
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#caresheet').hidden)careClose()});
