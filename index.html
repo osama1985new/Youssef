@@ -1865,6 +1865,63 @@ header.top#top .store.bad::before{background:#E53935}
 .csrem .link[data-remdis]{color:var(--muted)!important}
 .csrem .rr>span:last-child:not(:first-child){gap:16px!important}
 header.top#top .date{justify-content:flex-start!important;gap:7px!important}header.top#top .date .clk{margin-inline-start:6px}
+
+/* supplements manager v2 */
+.suppmgr{gap:12px!important}
+.suppmgr .spr{display:flex!important;flex-direction:column;align-items:stretch;gap:0;padding:12px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.spr .sp1{display:flex;gap:8px;align-items:center}
+.spr .sp1 .spn{flex:1;min-width:0;font-size:16px;font-weight:600}
+.spr .sp2{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 8px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spr .sp2 span{font-size:13.5px;color:var(--muted)}
+.spr .sp2 .spg{max-width:none;width:auto!important;min-width:128px;font-size:14px}
+.spr .sp3{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
+.spr .sp3 .spl{flex:1 1 auto;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}
+.spr .sp3 .spl.low{color:var(--high)}
+.spr .spst{display:flex;align-items:center;gap:8px;flex:none}
+.spr .spst em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.spr .spst button{width:34px!important;min-height:34px!important;height:34px;padding:0!important;border-radius:50%;font-size:19px;line-height:1;text-decoration:none!important;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.spr .sp3 .spe{flex:none;font-size:13px;text-decoration:none!important;color:var(--accent);padding:4px 2px}
+.spr .sp3>.spe:only-child{width:100%;text-align:start;font-size:14px}
+.suppmgr,.suppmgr .spr{min-width:0;max-width:100%;box-sizing:border-box}
+.suppmgr .spr>*{min-width:0}
+.spr .sp1 .spn{width:auto!important}
+.spr .sp2 .spg{min-width:0!important;flex:0 1 150px;width:150px!important}
+.spr .sp3{flex-wrap:wrap;row-gap:8px}
+.spr .sp3 .spl{white-space:normal!important;flex:1 1 100%}
+.spr .sp3 .spst{margin-inline-end:auto}
+.suppmgr .spr{flex-wrap:nowrap!important}
+.spr .sp3 .spu{flex:1 1 100%;order:5;text-align:start;font-size:12.5px;color:var(--muted)!important;text-decoration:none!important;padding:0!important}
+.spr .spst em{min-width:48px;text-align:center}
+.spr .spst0{flex:1}
+.spr .sp3 .spe{min-width:56px;text-align:center;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent)!important;border-radius:999px!important;padding:6px 14px!important;min-height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600}
+.spr .sp3>.spe:only-child{width:auto;text-align:center}
+.spr .sp3 .spl{color:var(--ink)}
+.spr .sp3 .spl.low{color:var(--high)}
+.spr .sp2,.spr .sp3{min-height:40px}
+.spr .sp2{border-bottom:0!important;margin-bottom:0!important;padding-bottom:6px}
+.spr .spun{border-bottom:1px solid var(--line)!important;margin-bottom:8px!important;padding-bottom:10px}
+.spr .useg{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:12px;flex:0 1 150px;width:150px}
+.spr .useg .spw{flex:1;min-height:34px!important;padding:0!important;border:0!important;border-radius:9px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none!important}
+.spr .useg .spw[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
+.spr .spopt{display:flex;gap:8px;align-items:center;padding:8px 0 10px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.spr .spopt .spg{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;font-size:13.5px;min-height:40px}
+.spr .spopt .useg{flex:1 1 0;width:auto;min-width:0}
+.spr .sp3{display:grid!important;grid-template-columns:1fr auto auto;align-items:center;gap:8px 10px}
+.spr .sp3 .spl{grid-column:1/-1;font-size:14.5px;white-space:normal}
+.spr .sp3 .spl small{font-size:12px;color:var(--muted);font-weight:500}
+.spr .sp3 .spl.mut{color:var(--muted);font-weight:500}
+.spr .sp3 .spst{grid-column:1;justify-self:start}
+.spr .sp3 .spe{grid-column:3;justify-self:end}
+.spr .sp3 .spl.mut+.spe{grid-column:3}
+.suppmgr .spr{border-radius:20px;padding:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 82%,transparent),color-mix(in srgb,var(--surface) 55%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 6px 18px rgba(0,0,0,.08)}
+.spr .spopt .spg{padding-inline-start:36px!important;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a9aa5' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9a6 6 0 0112 0c0 6 2.500 7.500 2.500 7.500h-17S6 15 6 9zM10 20a2 2 0 004 0'/%3E%3C/svg%3E") no-repeat right 11px center/18px;background-color:transparent;padding-inline-end:12px}
+.spr .spopt .spg{background-position:right 11px center}
+.spr .sp3 .spst{gap:0!important;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.spr .sp3 .spst button{width:46px!important;height:38px!important;min-height:38px!important;border:0!important;border-radius:0!important;background:transparent!important;font-size:21px}
+.spr .sp3 .spst button+button{border-inline-start:1px solid var(--line)!important}
+.spr .sp3 .spe{border-radius:999px!important;min-height:38px!important;padding:0 18px!important;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.spr .sp3 .spl{font-size:15.5px;font-weight:700}
+.spr .spx{border:0!important;background:color-mix(in srgb,var(--surface) 50%,transparent)!important;border-radius:50%!important;width:38px!important;min-height:38px!important;height:38px}
 </style>
 </head>
 <body>
@@ -2807,7 +2864,8 @@ $('#slot').value=defaultSlot();
 function curSlot(){return $('#slot').value}
 $('#site').innerHTML+=SITES.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>'}).join('');
 $('#supp').insertAdjacentHTML('beforeend','<div class="suplist">'+SUPPS.map(function(x){return '<button type="button" class="chip" data-supp="'+x[0]+'" aria-pressed="false"><i class="sk"></i><span>'+x[1]+'</span></button>'}).join('')+'</div>');
-function suppList(){var L=(settings&&settings.supps&&settings.supps.length)?settings.supps:DEFSUPP; return L.map(function(x){return (x.pc==null&&(x.k==='omega'||x.k==='milga'||x.k==='calmag'||x.k==='d3'))?Object.assign({},x,{pc:30}):x})}
+function suppList(){var L=(settings&&settings.supps&&settings.supps.length)?settings.supps:DEFSUPP; return L.map(function(x){var y=(x.pc==null&&(x.k==='omega'||x.k==='milga'||x.k==='calmag'||x.k==='d3'))?Object.assign({},x,{pc:30}):x; return y.u>0?y:Object.assign({},y,{u:y.k==='omega'?30:10})})}
+function unW(it){return it&&(it.un==='علبة'||it.un==='شريط')?it.un:((it&&it.k==='omega')?'علبة':'شريط')}
 var _spSig='', _spNoMgr=false;
 function applySupps(){
   var L=suppList(), sig=JSON.stringify(L); if(sig===_spSig)return; _spSig=sig;
@@ -2820,11 +2878,12 @@ function suppLeft(it){
   if(!it||!(it.pc>0)||it.base==null||!it.at)return null; var st=new Date(it.at).getTime(), n=0;
   prep().forEach(function(e){if(Array.isArray(e.supp)&&e.supp.indexOf(it.k)>=0&&e.d.getTime()>=st)n++}); return Math.max(0,it.base-n);
 }
-function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+l+' حبة'}
+function stripsTxt(l,u,w){u=u>0?u:10; w=w||'شريط'; var P=w==='علبة'?['علبة','علبتان','علب']:['شريط','شريطان','شرائط']; if(l==null)return ''; if(l<=0)return 'انتهى'; var s=Math.floor(l/u), r=l%u; return (s?(s===1?P[0]:s===2?P[1]:s+' '+P[2]):'')+(s&&r?' و':'')+(r?(r===1?'حبة':r+' حبات'):'')}
+function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+stripsTxt(l,it.u,unW(it))}
 function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطار: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
 function spMgr(){
   var el=$('#suppmgr'); if(!el)return; if(el.contains(document.activeElement)&&document.activeElement.tagName==='INPUT')return;
-  el.innerHTML=suppList().map(function(x,i){return '<div class="spr" data-i="'+i+'"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><button type="button" class="spx" aria-label="حذف">✕</button><div class="spm"><input type="text" inputmode="numeric" class="spc" value="'+(x.pc>0?x.pc:'')+'" placeholder="حبوب العلبة" aria-label="حبوب في العلبة" maxlength="4"><span class="spl">'+suppLeftTxt(x)+'</span>'+(x.pc>0?'<button type="button" class="link spb">+ علبة</button><button type="button" class="link spm2">− علبة</button><button type="button" class="link spe">ضبط</button>':'')+'</div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
+  el.innerHTML=suppList().map(function(x,i){var l=suppLeft(x), tr=l!=null, w=unW(x); return '<div class="spr" data-i="'+i+'"><div class="sp1"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><button type="button" class="spx" aria-label="حذف">✕</button></div><div class="spopt"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><div class="useg" role="group" aria-label="العد بـ"><button type="button" class="spw" data-w="شريط" aria-pressed="'+(w==='شريط')+'">شريط</button><button type="button" class="spw" data-w="علبة" aria-pressed="'+(w==='علبة')+'">علبة</button></div></div><div class="sp3">'+(tr?'<span class="spl'+(l<=(x.u||10)?' low':'')+'">'+suppLeftTxt(x)+' <small>· '+(x.u||10)+' حبة</small></span><div class="spst"><button type="button" class="spm2" aria-label="نقص">−</button><button type="button" class="spb" aria-label="زيادة">+</button></div><button type="button" class="link spe">ضبط</button>':'<span class="spl mut">بدون تتبّع المخزون</span><button type="button" class="link spe">+ تتبّع</button>')+'</div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
 }
 function spSave(L,keep){settings.supps=L; persistSettings(); _spSig=''; _spNoMgr=!!keep; try{applySupps()}finally{_spNoMgr=false} try{render()}catch(_){}}
 document.addEventListener('change',function(e){var r=e.target.closest&&e.target.closest('#suppmgr .spr'); if(!r||role==='view')return; var i=Number(r.dataset.i), L=JSON.parse(JSON.stringify(suppList())); if(!L[i])return;
@@ -2834,12 +2893,14 @@ document.addEventListener('change',function(e){var r=e.target.closest&&e.target.
   else return; spSave(L,true)});
 document.addEventListener('click',function(e){
   if(role==='view')return; var b=e.target.closest&&e.target.closest('#suppmgr button'); if(!b)return; var L=JSON.parse(JSON.stringify(suppList()));
-  if(b.classList.contains('spb')||b.classList.contains('spm2')||b.classList.contains('spe')){var j=Number(b.closest('.spr').dataset.i), it=L[j]; if(!it||!(it.pc>0))return; var cur=suppLeft(it);
-    if(b.classList.contains('spb')){it.base=(cur||0)+it.pc; it.at=toLocalInput(new Date())}
-    else if(b.classList.contains('spm2')){if(!cur){return} it.base=Math.max(0,cur-it.pc); it.at=toLocalInput(new Date())}
-    else {var v=prompt('كم حبة متبقية الآن في «'+it.n+'»؟',String(cur==null?0:cur)); if(v===null)return; var nv=Math.round(num(v)); if(!(nv>=0)||nv>5000)return; it.base=nv; it.at=toLocalInput(new Date())}
+  if(b.classList.contains('spb')||b.classList.contains('spm2')||b.classList.contains('spe')){var j=Number(b.closest('.spr').dataset.i), it=L[j]; if(!it)return; if(!(it.pc>0))it.pc=it.u||10; var cur=suppLeft(it);
+    if(b.classList.contains('spb')){it.base=(cur||0)+(it.u||10); it.at=toLocalInput(new Date())}
+    else if(b.classList.contains('spm2')){if(!cur){return} it.base=Math.max(0,cur-(it.u||10)); it.at=toLocalInput(new Date())}
+    else {var v=prompt('كم '+(unW(it)==='علبة'?'علبة':'شريطًا')+' متبقيًا الآن في «'+it.n+'»؟ ('+(unW(it)==='علبة'?'العلبة':'الشريط')+' '+(it.u||10)+' حبة، ويمكن كسر مثل ٢.٥)',String(cur==null?0:Math.round(cur/(it.u||10)*10)/10)); if(v===null)return; var nv=Math.round(num(v)*(it.u||10)); if(!(nv>=0)||nv>5000)return; it.base=nv; it.at=toLocalInput(new Date())}
     spSave(L); return}
-  if(b.id==='spadd'){if(L.length>=8)return; L.push({k:'s'+Date.now().toString(36).slice(-7),n:'مكمل جديد',g:''}); spSave(L); var ins=document.querySelectorAll('#suppmgr .spn'); if(ins.length){var li=ins[ins.length-1]; li.focus(); li.select()}}
+  if(b.classList.contains('spw')){var q2=L[Number(b.closest('.spr').dataset.i)], w=b.dataset.w; if(!q2)return; var pl=prompt('كم حبة في '+(w==='علبة'?'العلبة':'الشريط')+' الواحد من «'+q2.n+'»؟',String(unW(q2)===w?(q2.u||(w==='علبة'?30:10)):(w==='علبة'?30:10))); if(pl===null)return; var pn=Math.round(num(pl)); if(!(pn>0)||pn>500)return; var cl2=suppLeft(q2); q2.un=w; q2.u=pn; if(cl2!=null){q2.base=cl2; q2.at=toLocalInput(new Date())} spSave(L); return}
+  if(b.classList.contains('spu')){var q=L[Number(b.closest('.spr').dataset.i)], uv=prompt('كم حبة في '+(unW(q)==='علبة'?'العلبة':'الشريط')+' الواحد من «'+q.n+'»؟',String(q.u||10)); if(uv===null)return; var un=Math.round(num(uv)); if(!(un>0)||un>500)return; var cl=suppLeft(q); q.u=un; if(cl!=null){q.base=cl; q.at=toLocalInput(new Date())} spSave(L); return}
+  if(b.id==='spadd'){if(L.length>=8)return; L.push({k:'s'+Date.now().toString(36).slice(-7),n:'مكمل جديد',g:'',un:'شريط',u:10}); spSave(L); var ins=document.querySelectorAll('#suppmgr .spn'); if(ins.length){var li=ins[ins.length-1]; li.focus(); li.select()}}
   else if(b.classList.contains('spx')){var i=Number(b.closest('.spr').dataset.i); if(!confirm('حذف «'+L[i].n+'» من القائمة؟ السجلات القديمة تبقى كما هي.'))return; L.splice(i,1); spSave(L.length?L:DEFSUPP.slice())}
 });
 function getSupp(){return [].slice.call(document.querySelectorAll('#supp .chip[aria-pressed=true]')).map(function(b){return b.dataset.supp})}
@@ -3111,6 +3172,7 @@ function careNotes(E){
   var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
   if(settings.cgm&&settings.sensorStart){var sst=new Date(settings.sensorStart+'T00:00:00'), sday=Math.floor((now-sst.getTime())/864e5)+1, sleft=SENSOR_DAYS-sday;
     if(sday>=1&&sleft<=2)out.push(sleft<0?'انتهت مدة السينسر ('+SENSOR_DAYS+' يومًا). استبدله.':sleft===0?'اليوم آخر يوم للسينسر. جهّز سينسر جديد.':'متبقٍّ '+sleft+(sleft===1?' يوم':' يومان')+' على انتهاء السينسر. جهّز سينسر جديد.')}
+  try{suppList().forEach(function(x){var l=suppLeft(x); if(l==null)return; var u=x.u||10, w=unW(x); if(l<=0)out.push('انتهى '+x.n+'. جهّز '+(w==='علبة'?'علبة':'شريطًا')+' جديدًا.'); else if(l<=u)out.push('قارب '+x.n+' على النفاد: باقي '+stripsTxt(l,u,w)+'.')})}catch(_){}
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'نفدت أسنان الأقلام. جهّز علبة جديدة.':'المتبقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سنًّا')+' فقط في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'نفدت شرائط السكر. جهّز علبة جديدة.':'المتبقي '+si.left+(si.left===1?' شريط':' شرائط')+' فقط في علبة الشرائط. جهّز علبة جديدة.');
   [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'القلم '+x[1]+' مضى 28 يومًا على فتحه. استبدله.':'القلم '+x[1]+' متبقٍّ له '+l+' يومًا بعد الفتح.')});
@@ -5195,7 +5257,7 @@ function stockPopup(){
   var tk=lk(new Date()); if(lsGet('ysg:stockpop','')===tk){_spDone=true; return}
   var rows=[], E=prep();
   [['A','أقلام أبيدرا'],['T','أقلام ترسيبا']].forEach(function(x){var i=penStock(x[0],E); if(!i)return; rows.push([x[1],(Math.round(i.left/30)/10)+' قلم'+(i.days!==null?' · يكفي '+i.days+' يومًا':'')])});
-  suppList().forEach(function(x){var l=suppLeft(x); if(l!=null&&l<=14)rows.push([x.n,'باقي '+l+' حبة'])});
+  suppList().forEach(function(x){var l=suppLeft(x); if(l!=null&&l<=14)rows.push([x.n,'باقي '+stripsTxt(l,x.u,unW(x))])});
   var ni=needleInfo(E); if(ni)rows.push(['أسنان الأقلام','متبقٍّ '+Math.max(0,ni.left)]);
   var si=stripInfo(E); if(si)rows.push(['شرائط السكر','متبقٍّ '+Math.max(0,si.left)]);
   _spDone=true; if(!rows.length)return; lsSet('ysg:stockpop',tk);
