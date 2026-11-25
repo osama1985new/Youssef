@@ -3042,8 +3042,9 @@ function renderVisitRem(){
   if(role==='view'||!vn||new Date(vn).getTime()>now||now-new Date(vn).getTime()>30*DAY){el.hidden=true; return}
   var missed=false; try{missed=localStorage.getItem('ysg:vmiss')===vn}catch(e){}
   el.hidden=false;
-  el.innerHTML=missed?'<div class="rr"><span>فات موعد زيارة الطبيب. حدّد موعدًا جديدًا</span><button type="button" class="link" data-visit="new">حدّد موعدًا جديدًا</button></div>'
-   :'<div class="rr"><span>فات موعد الطبيب ('+dayLong(new Date(vn))+'). هل ذهبت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">نعم</button><button type="button" class="link" data-visit="skip">لا</button></span></div>';
+  var pick=false; try{pick=localStorage.getItem('ysg:vpick')===vn}catch(e){}
+  el.innerHTML=pick?'<div class="rr"><span>أجّل الموعد إلى</span><span style="display:flex;gap:14px;flex:none;flex-wrap:wrap"><button type="button" class="link" data-visit="p1">بكرة</button><button type="button" class="link" data-visit="p7">بعد أسبوع</button><button type="button" class="link" data-visit="new">تاريخ آخر</button></span></div>'
+   :'<div class="rr"><span>فات موعد الطبيب ('+dayLong(new Date(vn))+'). هل ذهبت؟</span><span style="display:flex;gap:14px;flex:none"><button type="button" class="link" data-visit="done">نعم</button><button type="button" class="link" data-visit="skip">أجّل</button></span></div>';
 }
 function renderTresRem(){
   var el=$('#tresrem'); if(!el)return; var T=settings.tresAm?prep().filter(function(e){return e.tresiba>0&&Date.now()-e.d.getTime()<18*36e5}):tresToday();
@@ -3105,7 +3106,8 @@ document.addEventListener('click',function(e){
   if(vb){
     var act=vb.dataset.visit;
     if(act==='done'){settings=Object.assign({},settings,{visitLast:toLocalInput(new Date()),visitNext:null}); persistSettings(); syncSettingsInputs(); render(); toast('سُجّلت آخر زيارة اليوم. اكتب موعد الزيارة القادمة.'); act='new'}
-    else if(act==='skip'){try{localStorage.setItem('ysg:vmiss',settings.visitNext)}catch(x){} render(); return}
+    else if(act==='skip'){try{localStorage.setItem('ysg:vpick',settings.visitNext)}catch(x){} render(); return}
+    else if(act==='p1'||act==='p7'){var o=new Date(settings.visitNext), n=new Date(); n.setDate(n.getDate()+(act==='p1'?1:7)); n.setHours(o.getHours(),o.getMinutes(),0,0); settings=Object.assign({},settings,{visitNext:toLocalInput(n)}); persistSettings(); syncSettingsInputs(); render(); toast('اتأجّل الموعد إلى '+dayLong(n)+'.'); return}
     if(act==='new'){gotoVisit()}
     return;
   }
