@@ -1932,6 +1932,21 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .spr .spopt{flex-direction:column;gap:8px;align-items:stretch}
 .spr .spopt .spg{flex:none!important;width:100%!important;height:42px!important;min-height:42px!important}
 .spr .spopt .useg{flex:none!important;width:100%!important;height:42px}
+
+/* ===== bottom bar legibility ===== */
+@media (max-width:759px){
+.tabs{--tbg:rgba(255,255,255,.58);--tfg:#16303b;--tsh:0 1px 2px rgba(255,255,255,.7);
+ background:linear-gradient(180deg,color-mix(in srgb,#fff 10%,transparent),transparent),var(--tbg)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(1.25)!important;backdrop-filter:blur(22px) saturate(1.25)!important}
+:root[data-theme=dark] .tabs{--tbg:rgba(14,24,33,.62);--tfg:#EAF2F6;--tsh:0 1px 3px rgba(0,0,0,.65)}
+.tabs button[data-go=log],.tabs button[data-go=report]{color:var(--tfg)!important;text-shadow:var(--tsh);opacity:1!important}
+.tabs button[data-go=log] svg,.tabs button[data-go=report] svg{color:var(--tfg)!important;opacity:1!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.tabs button[aria-current=page][data-go=log],.tabs button[aria-current=page][data-go=report]{color:var(--tc,var(--accent))!important;background:color-mix(in srgb,var(--tc,var(--accent)) 22%,transparent)!important}
+.tabs button[aria-current=page][data-go=log] svg,.tabs button[aria-current=page][data-go=report] svg{color:var(--tc,var(--accent))!important}
+}
+@media (max-width:759px) and (prefers-color-scheme:dark){
+:root:not([data-theme=light]) .tabs{--tbg:rgba(14,24,33,.62);--tfg:#EAF2F6;--tsh:0 1px 3px rgba(0,0,0,.65)}
+}
 </style>
 </head>
 <body>
