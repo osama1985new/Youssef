@@ -376,10 +376,56 @@ async function backupNow(now) {
   await redis(['SET', 'ysg:bkn:' + c.key, String(entries.length), 'EX', ttl]);
   return { key, n: entries.length };
 }
+/* Sensor users: the cron logs these readings by itself from the latest Libre value (once each, never over an existing/manual one):
+   fasting 06:00, random 04:00, bedtime 23:00 (Cairo; each within 30 min), and the "after meal" reading exactly 2 h after a before-meal
+   reading, only when a meal was logged. A marker key per reading stops duplicates and stops a deleted entry from coming back. */
+async function autoCgm(host, now) {
+  let st = {}; try { st = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (e) {}
+  if (!(st.cgm && cgmReady())) return [];
+  const c = cairo(now), mins = c.h * 60 + c.m, sd = sday(now), recent = await recentEntries(now);
+  const gl = recent.filter(e => e.glucose != null);
+  const todayHas = sl => gl.some(e => e.slot === sl && sday(Date.parse(e.ts)) === sd);
+  const nearAny = gl.some(e => Math.abs(Date.parse(e.ts) - now) < 15 * 60e3);
+  const jobs = [];
+  if (mins >= 360 && mins < 390 && !todayHas('fast') && !nearAny) jobs.push({ id: 'ac_fast_' + c.key, slot: 'fast' });
+  if (mins >= 240 && mins < 270 && !nearAny) jobs.push({ id: 'ac_rnd_' + c.key, slot: 'other' });
+  if (mins >= 1380 && mins < 1410 && !todayHas('bed') && !nearAny) jobs.push({ id: 'ac_bed_' + c.key, slot: 'bed' });
+  const AFT = { bf_before: 'bf_after', ln_before: 'ln_after', dn_before: 'dn_after' };
+  gl.forEach(e => {
+    const as = AFT[e.slot]; if (!as) return;
+    const t = Date.parse(e.ts), dt = now - t;
+    if (dt < 120 * 60e3 || dt >= 145 * 60e3) return;
+    if (!recent.some(x => Array.isArray(x.meal) && x.meal.length && Date.parse(x.ts) >= t - 30 * 60e3 && Date.parse(x.ts) <= t + 90 * 60e3)) return;
+    if (gl.some(x => x.slot === as && Date.parse(x.ts) >= t && Date.parse(x.ts) <= t + 8 * 3600e3)) return;
+    jobs.push({ id: 'ac_' + String(e.id).slice(0, 40) + '_a', slot: as });
+  });
+  if (!jobs.length) return [];
+  const claimed = [], done = [];
+  for (const j of jobs) { try { if ((await redis(['SET', 'ysg:autoc:' + j.id, '1', 'NX', 'EX', '259200'])) === 'OK') claimed.push(j); } catch (e) {} }
+  if (!claimed.length) return [];
+  const release = async list => { for (const j of list) { try { await redis(['DEL', 'ysg:autoc:' + j.id]); } catch (e) {} } };
+  let r;
+  try { r = await libreReading(); try { await redis(['SET', 'ysg:cgmok', String(Date.now())]); } catch (e) {} }
+  catch (e) { try { await redis(['SET', 'ysg:cgmerr', JSON.stringify({ c: e.code || 'cgm_fail', at: Date.now() })]); } catch (x) {} await release(claimed); return []; }
+  const ageMin = (now - Date.parse(r.ts)) / 60000;
+  if (!(ageMin <= 20) || ageMin < -5) { await release(claimed); return []; }
+  for (const j of claimed) {
+    const e = cleanEntry({ id: j.id, ts: r.ts, slot: j.slot, glucose: r.mg, note: 'تسجيل تلقائي من الحساس' });
+    if (!e) { await release([j]); continue; }
+    try {
+      await redis(['HSET', 'ysg:entries', e.id, JSON.stringify(e)]);
+      try { await redis(['HSET', 'ysg:recent', e.id, JSON.stringify(e)]); } catch (x) {}
+      done.push(e.id);
+      try { await entryAlerts(e, false, '', host); } catch (x) {}
+    } catch (x) { await release([j]); }
+  }
+  return done;
+}
 async function runCron(host, force) {
   /* deep night 00:00-06:00 Cairo: check every 10 minutes instead of 5 (saves commands; every alert window is wider than 10 min) */
   if (!force) { const qc = cairo(Date.now()); if (qc.h < 6 && Math.floor(qc.m / 5) % 2 === 1) return { sent: [], note: 'quiet_hours' }; }
   try { await backupNow(force && force.now ? force.now : Date.now()); } catch (e) {}
+  try { await autoCgm(host, force && force.now ? force.now : Date.now()); } catch (e) {}
   const subsFlat = await redis(['HGETALL', 'ysg:subs']); const subs = [];
   for (let i = 1; i < (subsFlat || []).length; i += 2) { try { const sb = JSON.parse(subsFlat[i]); if (sb && sb.role === 'edit') subs.push(sb); } catch (e) {} }
   if (!subs.length) return { sent: [], note: 'no_subscribers' };
