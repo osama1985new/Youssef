@@ -1,5 +1,5 @@
 /* Service worker: offline shell + push reminders */
-const CACHE = 'ysg-shell-v2';
+const CACHE = 'ysg-shell-v3';
 const SHELL = ['/', '/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -44,6 +44,13 @@ async function subId(endpoint) {
   return Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
 }
 
+async function setBadge() {
+  try {
+    const n = (await self.registration.getNotifications()).length;
+    if (self.navigator && self.navigator.setAppBadge) { if (n > 0) await self.navigator.setAppBadge(n); else await self.navigator.clearAppBadge(); }
+  } catch (err) {}
+}
+
 self.addEventListener('push', e => {
   e.waitUntil((async () => {
     let msgs = [];
@@ -70,12 +77,14 @@ self.addEventListener('push', e => {
       const title = iconFor(m.tag) + ' ' + m.t;
       await self.registration.showNotification(title, { body, tag: (m.tag || 'ysg') + (m.at ? ':' + m.at : ''), timestamp: m.at || Date.now(), icon: '/apple-touch-icon.png', lang: 'ar', dir: 'rtl' });
     }
+    await setBadge();
   })());
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil((async () => {
+    await setBadge();
     const tag = e.notification.tag || '';
     const all = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of all) { if ('focus' in c) { try { c.postMessage({ ntf: tag }); } catch (err) {} return c.focus(); } }

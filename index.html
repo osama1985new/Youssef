@@ -3245,6 +3245,7 @@ function careVisible(n){careViewLoad();var tk=lk(new Date()), D=settings.careDis
 function careSet(n){
   careN=n; var b=$('#bellbtn'); if(!b)return; var bd=b.querySelector('.bdg');
   var vis=careVisible(n), S=settings.careSeen||[], fresh=vis.filter(function(t){return S.indexOf(t)<0}), rc=remCount();
+  try{var bn=fresh.length+rc; if(navigator.setAppBadge){ if(bn>0)navigator.setAppBadge(bn); else navigator.clearAppBadge() }}catch(_){}
   if(fresh.length+rc){bd.hidden=false; bd.className='bdg'; bd.textContent=(fresh.length+rc)>9?'9+':String(fresh.length+rc)}
   else if(vis.length){bd.hidden=false; bd.className='bdg dot'; bd.textContent=''}
   else bd.hidden=true;
