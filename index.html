@@ -2019,6 +2019,11 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .spr .spq>b{font-size:15px;font-weight:600}
 .spr .spnm .spn{font-family:var(--f-body)!important;font-size:16px!important;font-weight:400!important}
 .spr .spq .spv{font-family:var(--f-body);font-weight:600}
+
+/* ketone test: own panel, independent of meals/modes */
+.panel.p-ket{--pc:var(--c-ext)}
+.p-ket #showk{align-self:flex-start;margin:0}
+.p-ket #showk[aria-pressed=true]{color:var(--low)}
 </style>
 </head>
 <body>
@@ -2183,13 +2188,6 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
     <div class="panel p-extra">
       <h3>إضافات</h3>
     <div class="supp" id="supp"><div class="suphead"><span class="lbl">المكملات</span></div></div>
-    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5s6 6.2 6 10.3a6 6 0 01-12 0C6 9.700 12 3.500 12 3.500z"/><path d="M12 17a3 3 0 003-3"/></svg><span>تسجيل كيتون</span></button>
-    <div class="injrow" id="kbox" hidden>
-      <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="u" selected>بول</option><option value="b">دم (mmol/L)</option></select></div>
-      <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
-      <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
-    </div>
-    <p class="msg" id="khint" hidden></p>
     <div class="field" id="tdf" hidden><label for="tdt">يوم ووقت جرعة الترسيبا</label><input id="tdt" type="datetime-local"></div>
     <details class="more">
       <summary><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM15 4v4h4M8.500 12h7M8.500 16h5"/></svg><span>ملاحظات</span></summary>
@@ -2198,6 +2196,16 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
         <div class="field"><label for="n">ملاحظة</label><input id="n" type="text" autocomplete="off" placeholder="رياضة، تعب، مجهود…"></div>
       </div>
     </details>
+    </div>
+    <div class="panel p-ket">
+      <h3>اختبار كيتون</h3>
+    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0"><span id="showkt">إضافة نتيجة</span></button>
+    <div class="injrow" id="kbox" hidden>
+      <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="u" selected>بول</option><option value="b">دم (mmol/L)</option></select></div>
+      <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
+      <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
+    </div>
+    <p class="msg" id="khint" hidden></p>
     </div>
     <div class="editbar" id="editbar" hidden><button type="button" class="link" id="editcancel" style="margin:0">إلغاء التعديل</button></div>
     <p class="err" id="ferr" role="alert"></p>
@@ -3527,7 +3535,7 @@ function ketUI(){
   if(!v||(!u&&isNaN(Number(v.replace(',','.'))))){h.hidden=true; return}
   var l=ketLevel(u?'u':'b',u?v:Number(v.replace(',','.'))); h.hidden=false; h.className='msg ket-'+l[0]; h.textContent=l[1];
 }
-function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#kt').value='u'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
+function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#showkt').textContent='إضافة نتيجة'; $('#showk').setAttribute('aria-pressed','false'); $('#kt').value='u'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
 function readKet(){
   if($('#kbox').hidden)return {ok:true,t:null,v:null};
   if($('#kt').value==='u')return {ok:true,t:'u',v:$('#ku').value};
@@ -3580,7 +3588,7 @@ var ICONS={
 };
 var EXACTIC={'التنبيهات والقياس':'bell','الجرعات':'syr','المخزون':'box','الهاتف':'phone','الحساب':'user','حدود التنبيه':'target','جهاز قياس مستمر':'act','الكيتون':'drop','نظام الجرعات':'syr','تصحيح السكر المرتفع':'target','مخزون الأقلام':'box','شرائط قياس السكر':'drop','أسنان الأقلام':'syr','المكملات':'pill','الأمان والمتابعة':'shield','نسخة احتياطية':'down','الفترة والتقرير':'cal','زيارة الطبيب':'cal','التحاليل والقياسات':'act','تقرير متابعة السكر':'clip','التحكم والتحليل':'chart','الجرعات والحقن':'syr','الفترة والملخص':'cal','تقرير الطبيب':'down','مؤشر التحكم في السكر':'target','الرسومات والتحليل':'chart','الجرعات الثابتة':'syr','جرعة ترسيبا':'syr','أماكن الحقن':'pin','التحليل التراكمي (HbA1c)':'drop','الفحوصات الدورية':'clip','بيانات الجسم':'act'};
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تقرير الطبيب','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
+var H3ICON=[['تقرير متابعة','clip'],['الفترة','cal'],['تقرير الطبيب','down'],['الرسومات','chart'],['قراءة السكر','drop'],['الأكل','ut'],['الأنسولين','syr'],['إضافات','pill'],['اختبار كيتون','drop'],['الوزن والطول','act'],['زيارة الطبيب','cal'],['التحليل التراكمي','chart'],['الفحوصات','clip'],['حدود التنبيه','target'],['نظام الجرعات','ut'],['تصحيح السكر','syr'],['جهاز قياس','act'],['المكملات','pill'],['الأقلام المفتوحة','syr'],['مخزون الأقلام','box'],['الجرعات الثابتة','clock'],['شرائط قياس','drop'],['أسنان الأقلام','syr'],['الكيتون','drop'],['إشعارات الهاتف','bell'],['الحساب','user'],['نسخة احتياطية','down'],['الأمان','shield'],['تأثير الوجبات','ut'],['ملاحظات','note'],['أماكن الحقن','pin'],['مؤشر التحكم','target'],['قراءات السكر','chart'],['متوسط','chart'],['مجموع أبيدرا','syr'],['أنماط','act'],['بيانات','user'],['التفاصيل','note']];
 function decorateIcons(){
   var hs=document.querySelectorAll('h3:not([data-ic]),details.acc>summary:not([data-ic]),details.msub>summary:not([data-ic])');
   for(var i=0;i<hs.length;i++){var h=hs[i]; h.setAttribute('data-ic','1'); if(h.closest('.dsum,.day,#pdfdoc'))continue; var t=h.textContent.trim(), hit=null; if(EXACTIC[t]&&h.tagName==='SUMMARY'){ var _sub=h.parentNode.classList.contains('msub'); hit=(_sub&&t==='الحساب')?'logout':EXACTIC[t]; h.insertAdjacentHTML('afterbegin',ico(hit)); continue}
@@ -4479,7 +4487,7 @@ function buildReport(){
       h+='<div class="daybox"><div class="dayh">'+dlog(G2[0].d)+'</div><div class="tw"><table class="dtab"><thead><tr><th>الوقت</th><th>السكر</th><th>أبيدرا</th><th>ترسيبا</th></tr></thead><tbody>';
       G2.forEach(function(e){
         var st=e.glucose!=null?status(e.glucose)[0]:'', mark=st==='low'?' ↓':st==='high'?' ↑':'';
-        var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (دون طعام)':'',e.note||''].filter(Boolean).join(' · ');
+        var extra=[mealText(e),e.corr&&e.apidra>0?'جرعة تصحيح (دون طعام)':'',e.ketT?ketText(e):'',e.note||''].filter(Boolean).join(' · ');
         h+='<tr><td>'+timeStr(e.d)+' <small>'+esc(slotLbl(e))+'</small></td><td class="'+st+'">'+(e.glucose!=null?fmt(e.glucose)+mark:'')+'</td><td>'+(e.apidra>0?fmt(e.apidra)+'<small class="dtm">'+timeStr(e.d)+'</small>':'')+'</td><td>'+(e.tresiba>0?fmt(e.tresiba)+'<small class="dtm">'+(e.tresibaTime?hm(e.tresibaTime):timeStr(e.d))+'</small>':'')+'</td></tr>'+(extra?'<tr class="xr"><td colspan="4">'+esc(extra)+'</td></tr>':'');
       });
       h+='</tbody></table></div></div>';
@@ -4961,7 +4969,7 @@ document.addEventListener('click',function(ev){
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
   if(t.dataset.supp){if(t.disabled)return; t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
-  if(t.closest&&t.closest('#showk')){if($('#kbox').hidden){$('#kbox').hidden=false; $('#kt').value='u'; ketUI()} else clearKet(); return}
+  if(t.closest&&t.closest('#showk')){if($('#kbox').hidden){$('#kbox').hidden=false; $('#kt').value='u'; ketUI(); $('#showkt').textContent='إلغاء النتيجة'; $('#showk').setAttribute('aria-pressed','true')} else clearKet(); return}
   if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
   if(t.dataset.ckdel!==undefined){
     var idx=Number(t.dataset.ckdel), keep=[];
@@ -5060,6 +5068,7 @@ async function buildDoctorPdf(E,r){
   /* summary tiles */
   var tiles=[['أيام فيها تسجيل',String(ord.length)],['عدد القراءات',String(G.length)],['A1c تقديري'+(rangeStats(E)&&!rangeStats(E).ok?' (غير موثوق)':''),rangeStats(E)?'~'+fmt(rangeStats(E).a1c)+'%':'—']];
   if(settings.carbMode){var fd0=fixedDoses(E); tiles.push(['ترسيبا',fd0.tr!=null?fmt(fd0.tr)+' وحدة':'—'])}
+  var KN=E.filter(function(e){return e.ketT}).length; if(KN)tiles.push(['تحاليل الكيتون',String(KN)]);
   var tw=(CW-(tiles.length-1)*8)/tiles.length;
   tiles.forEach(function(t,i){var x=R-(i+1)*tw-i*8; rr(x,y,tw,52,8,'#F1F6F8','#D5E0E5'); T(t[1],x+tw/2,y+19,18,700,'#0D7480','center'); T(t[0],x+tw/2,y+40,10.5,400,'#3F505A','center')});
   y+=64;
@@ -5078,7 +5087,7 @@ async function buildDoctorPdf(E,r){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
     var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
-    var nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, h=Math.max(58,hR,nCR*27+6);
+    var kets=D.filter(function(e){return e.ketT}), nrows=Math.max(1,Math.ceil((reads.length+kets.length)/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, h=Math.max(58,hR,nCR*36+6);
     if(y+h>PH-M-18){newPage(); header()}
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
@@ -5093,14 +5102,23 @@ async function buildDoctorPdf(E,r){
       var vt=String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''), vf=19; cx.font='700 '+vf+'px '+FF; while(vf>12&&cx.measureText(vt).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(vt,x+CH_W/2,yy+16,vf,700,fg,'center');
       var sl=slotLbl(e), fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
     });
-    if(!reads.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
+    kets.forEach(function(e,j){
+      var i=reads.length+j, col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), lv=ketLevel(e.ketT,e.ketV)[0];
+      var bg=lv==='danger'?'#FBE3E1':lv==='watch'?'#FCEBD3':'#E6F4EC', fg=lv==='danger'?'#B3261E':lv==='watch'?'#A85A00':'#1E7F47';
+      var kv=e.ketT==='b'?String(e.ketV):({neg:'سالب',small:'قليل',mod:'متوسط',large:'كبير'}[e.ketV]||'');
+      rr(x,yy,CH_W,CH_H,6,bg,fg);
+      var vf=e.ketT==='b'?19:15; cx.font='700 '+vf+'px '+FF; while(vf>10&&cx.measureText(kv).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(kv,x+CH_W/2,yy+16,vf,700,fg,'center');
+      var kl='كيتون '+(e.ketT==='b'?'دم':'بول'), fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(kl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(kl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
+    });
+    if(!reads.length&&!kets.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
     /* only correction doses (the fixed doses are in the top tiles) */
     var CR=D.filter(function(e){return e.corr&&e.apidra>0});
     if(CR.length){
-      var lh=Math.min(28,(h-4)/CR.length), two=lh>=24;
+      var lh=Math.min(38,(h-4)/CR.length), tri=lh>=33, two=lh>=22;
       CR.forEach(function(e,i){var cy=y+h/2-(CR.length-1)*lh/2+i*lh;
-        T(fmt(e.apidra),M+CA/2,cy-(two?5:0),Math.min(17,lh*.8),700,'#C2410C','center');
-        if(two)T(timeStr(e.d),M+CA/2,cy+9,8.5,400,'#55656f','center')});
+        T(fmt(e.apidra),M+CA/2,cy-(tri?11:two?6:0),Math.min(17,lh*.55),700,'#C2410C','center');
+        if(two)T('وحدة',M+CA/2,cy+(tri?2:7),8.5,400,'#55656f','center');
+        if(tri)T(timeStr(e.d),M+CA/2,cy+13,8,400,'#7A8A93','center')});
     }
     y+=h+8;
   });
@@ -5252,7 +5270,7 @@ function startEdit(id){
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
   $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':PREMEAL.indexOf(e.slot)>=0?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
-  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
+  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showkt').textContent='إلغاء النتيجة'; $('#showk').setAttribute('aria-pressed','true'); $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){var c=m.x===1?null:(Number(m.c)||0); return {k:'ed'+i,fk:m.n,name:m.n,disp:m.n,d:m.d||'',dunk:!m.d,drev:'',raw:'',d0:m.x===2?'':(m.d||''),pend:m.x===2,w:0,c:c,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:false,u:m.u||'',step:m.u?0.5:0.5,src:'',bu:m.u||'',bc:c,bw:0,alts:[],cur:0}});
   renderMeal();
@@ -5284,8 +5302,9 @@ $('#f').addEventListener('submit',async function(ev){
   });
   var noExtra=imode==='corr'&&!editingId;
   if(noExtra)note='';
-  var supp=noExtra?[]:getSupp().filter(function(k){return !suppDoneToday(k)}), ket=noExtra?{ok:true}:readKet();
+  var supp=noExtra?[]:getSupp().filter(function(k){return !suppDoneToday(k)}), ket=readKet();
   if(!ket.ok){err.textContent='يجب أن تكون نتيجة الكيتون (دم) رقمًا بين 0 و15.'; $('#kv').focus(); return}
+  if(!editingId&&ket.t&&g==null&&!(a>0)&&!(t>0)&&!items.length&&imode!=='tres'&&imode!=='nofood'&&imode!=='corr')slot='other';
   if(imode==='tres'&&!(t>0)){err.textContent='اكتب جرعة ترسيبا.'; $('#t').focus(); return}
   var edE=editingId?entries.filter(function(x){return x.id===editingId})[0]:null;
   if(t>0&&isNight()&&(!editingId||(edE&&lk(new Date(edE.ts))===lk(new Date())))){
