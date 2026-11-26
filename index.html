@@ -3641,7 +3641,7 @@ function renderLog(E){
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+(ketOnly(e)?' ketrow':(e.corr&&e.apidra>0)?' corrrow':'')+(window._freshId&&e.id===window._freshId?' fresh':'')+'"><div class="when"><b'+(ketOnly(e)?' class="ketb"':(e.corr&&e.apidra>0)?' class="corrb"':'')+'>'+esc((e.corr&&e.apidra>0&&!ketOnly(e))?'جرعة تصحيحية':slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
-        (st?'<div class="val"><span class="gnum"><b>'+fmt(e.glucose)+'</b><small>mg/dL</small></span><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
+        (st&&!(e.corr&&e.apidra>0&&!ketOnly(e))?'<div class="val"><span class="gnum"><b>'+fmt(e.glucose)+'</b><small>mg/dL</small></span><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico((e.d.getHours()>=4&&e.d.getHours()<15)?'syr':'moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">'+ico('ut')+'الأكل: '+mt+'</p>':'')+
