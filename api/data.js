@@ -377,7 +377,7 @@ async function backupNow(now) {
   return { key, n: entries.length };
 }
 /* Sensor users: the cron logs these readings by itself from the latest Libre value (once each, never over an existing/manual one):
-   fasting 06:00, random 04:00, bedtime 23:00 (Cairo; each within 30 min), and the "after meal" reading exactly 2 h after a before-meal
+   fasting 06:00, random 04:00, bedtime 00:00 (Cairo; each within 30 min), and the "after meal" reading exactly 2 h after a before-meal
    reading, only when a meal was logged. A marker key per reading stops duplicates and stops a deleted entry from coming back. */
 async function autoCgm(host, now) {
   let st = {}; try { st = JSON.parse(await redis(['GET', 'ysg:settings']) || '{}') || {}; } catch (e) {}
@@ -389,7 +389,7 @@ async function autoCgm(host, now) {
   const jobs = [];
   if (mins >= 360 && mins < 390 && !todayHas('fast') && !nearAny) jobs.push({ id: 'ac_fast_' + c.key, slot: 'fast' });
   if (mins >= 240 && mins < 270 && !nearAny) jobs.push({ id: 'ac_rnd_' + c.key, slot: 'other' });
-  if (mins >= 1380 && mins < 1410 && !todayHas('bed') && !nearAny) jobs.push({ id: 'ac_bed_' + c.key, slot: 'bed' });
+  if (mins >= 0 && mins < 30 && !todayHas('bed') && !nearAny) jobs.push({ id: 'ac_bed_' + c.key, slot: 'bed' });
   const AFT = { bf_before: 'bf_after', ln_before: 'ln_after', dn_before: 'dn_after' };
   gl.forEach(e => {
     const as = AFT[e.slot]; if (!as) return;
@@ -443,7 +443,7 @@ async function runCron(host, force) {
     const mins = c.h * 60 + c.m, hsh = x => { let h = 0; for (const ch of x) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
     const lastG = E.filter(e => e.glucose != null).map(e => Date.parse(e.ts)).sort((x, y) => y - x)[0] || 0;
     if (morning && !hasRead('fast') && !anyIn(4, 11)) due.push(['cgmfast', 'قراءة الصيام', 'اضغط لتسجيلها من الحساس']);
-    if ((c.h >= 23 || c.h < 1) && !hasRead('bed') && !anyIn(21, 28)) due.push(['cgmbed', 'قبل النوم', 'اضغط لتسجيل قراءة قبل النوم من الحساس']);
+    if (c.h < 1 && !hasRead('bed') && !anyIn(21, 28)) due.push(['cgmbed', 'قبل النوم', 'اضغط لتسجيل قراءة قبل النوم من الحساس']);
     [['cgmr1', 10 * 60 + hsh(c.key + 'a') % 240], ['cgmr2', 15 * 60 + hsh(c.key + 'b') % 360]].forEach(([k, t]) => {
       if (mins >= t && mins < t + 60 && now - lastG > 60 * 60e3) due.push([k, 'قراءة من الحساس', 'اضغط لتسجيل القراءة الآن']);
     });
