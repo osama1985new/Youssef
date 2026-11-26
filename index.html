@@ -2000,6 +2000,14 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .suppmgr .spr .spq .spst{justify-content:space-between;width:100%}
 .suppmgr .spr .spq .spst button{width:52px!important;flex:none}
 .spr .spq .spv{flex:1}
+
+/* supp card v3: name first, delete button, strips-only text */
+.spr .spnm{padding:12px 0 2px}
+.spr .spnm label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.spr .spnm .spn{width:100%!important;box-sizing:border-box;font-size:16px;font-weight:600}
+.spr .spq{padding-top:10px}
+.suppmgr .spr .spdel{display:block;width:100%!important;min-height:44px!important;margin-top:14px;border-radius:12px!important;background:transparent!important;color:var(--low)!important;border:1px solid color-mix(in srgb,var(--low) 40%,transparent)!important;font-size:14.5px;font-weight:600;flex:none}
+.spr .spq .spv{font-size:16px;line-height:1.3;padding:0 4px}
 </style>
 </head>
 <body>
@@ -2956,7 +2964,10 @@ function suppLeft(it){
   if(!it||!(it.pc>0)||it.base==null||!it.at)return null; var st=new Date(it.at).getTime(), n=0;
   prep().forEach(function(e){if(Array.isArray(e.supp)&&e.supp.indexOf(it.k)>=0&&e.d.getTime()>=st)n++}); return Math.max(0,it.base-n);
 }
-function stripsTxt(l,u,w){u=u>0?u:10; w=w||'شريط'; var P=w==='علبة'?['علبة','علبتان','علب']:['شريط','شريطان','شرائط']; if(l==null)return ''; if(l<=0)return 'انتهى'; var s=Math.floor(l/u), r=l%u; return (s?(s===1?P[0]:s===2?P[1]:s+' '+P[2]):'')+(s&&r?' و':'')+(r?(r===1?'حبة':r===2?'حبتان':r<=10?r+' حبات':r+' حبة'):'')}
+function stripsTxt(l,u,w){u=u>0?u:10; w=w||'شريط'; var P=w==='علبة'?['علبة','علبتان','علب','علبة']:['شريط','شريطان','شرائط','شريطًا']; if(l==null)return ''; if(l<=0)return 'انتهى';
+  var q=l/u, n=Math.floor(q), f=q-n, half=false, ap=false; if(f>=0.75){n++; ap=true} else if(f>=0.25){half=true; ap=true} else if(f>0){ap=n>0?true:false}
+  var core; if(n===0){core=half?'نصف '+P[0]:'أقل من نصف '+P[0]} else {var nm=n===1?P[0]:n===2?P[1]:n<=10?n+' '+P[2]:n+' '+P[3]; core=nm+(half?' ونصف':'')}
+  var pre=(ap&&n>0&&!half||(ap&&half)); if(pre&&n===2)core=core.replace('ان','ين'); return (pre?'حوالي ':'')+core}
 function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+stripsTxt(l,it.u,unW(it))}
 function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطار: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
 var _spOpen=-1;
@@ -2970,9 +2981,9 @@ function spMgr(){
     var cap=Math.max(x.pc||0,x.base||0,u,l||0), pct=tr?Math.max(0,Math.min(100,Math.round(l/cap*100))):0;
     var chip='<span class="spchip">'+S[1]+'</span>';
     var sum=tr?'<div class="spsum"><div class="spln">'+chip+'<span class="spmid">'+(l>0?'باقي <b>'+stripsTxt(l,u,w)+'</b> · يكفي '+spDays(l):'<b>نفد المخزون</b>')+'</span></div><div class="spbar" role="img" aria-label="مستوى المخزون '+pct+'٪"><i style="width:'+pct+'%"></i></div></div>':'<div class="spsum"><div class="spln">'+chip+'<span class="spmid mut">لم يُفعَّل تتبّع المخزون</span></div></div>';
-    var qty=tr?'<div class="spq"><b>إدارة الكمية</b><div class="spst"><button type="button" class="spb" aria-label="زيادة '+w+'">+</button><span class="spv">'+l+'<small>حبة</small></span><button type="button" class="spm2" aria-label="نقص '+w+'">−</button></div></div><p class="sphint">كل ضغطة = '+w+' ('+u+' حبة). <button type="button" class="link spe">ضبط الكمية يدويًا</button></p>':'<div class="spq"><b>إدارة الكمية</b><button type="button" class="link spe">+ تفعيل تتبّع المخزون</button></div>';
+    var qty=tr?'<div class="spq"><b>إدارة الكمية</b><div class="spst"><button type="button" class="spb" aria-label="زيادة '+w+'">+</button><span class="spv">'+stripsTxt(l,u,w)+'</span><button type="button" class="spm2" aria-label="نقص '+w+'">−</button></div></div><p class="sphint">كل ضغطة = '+w+' واحد. <button type="button" class="link spe">ضبط الكمية يدويًا</button></p>':'<div class="spq"><b>إدارة الكمية</b><button type="button" class="link spe">+ تفعيل تتبّع المخزون</button></div>';
     return '<div class="spr'+(open?' open':'')+'" data-i="'+i+'" data-st="'+S[0]+'"><button type="button" class="sph" aria-expanded="'+open+'"><span class="spi">'+SP_PILL+'</span><span class="spt"><b>'+esc(x.n)+'</b><small>'+spSub(x)+'</small></span><i class="spch" aria-hidden="true"></i></button>'+sum+
-     '<div class="spbody"'+(open?'':' hidden')+'>'+qty+'<div class="spset"><div class="sp1"><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"><button type="button" class="spx" aria-label="حذف">✕</button></div><div class="spopt"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><div class="useg" role="group" aria-label="العد بـ"><button type="button" class="spw" data-w="شريط" aria-pressed="'+(w==='شريط')+'">شريط</button><button type="button" class="spw" data-w="علبة" aria-pressed="'+(w==='علبة')+'">علبة</button></div></div></div></div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
+     '<div class="spbody"'+(open?'':' hidden')+'><div class="spnm"><label>اسم المكمل</label><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"></div>'+qty+'<div class="spset"><div class="spopt"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><div class="useg" role="group" aria-label="العد بـ"><button type="button" class="spw" data-w="شريط" aria-pressed="'+(w==='شريط')+'">شريط</button><button type="button" class="spw" data-w="علبة" aria-pressed="'+(w==='علبة')+'">علبة</button></div></div><button type="button" class="spx spdel">حذف المكمل</button></div></div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
 }
 function spSave(L,keep){settings.supps=L; persistSettings(); _spSig=''; _spNoMgr=!!keep; try{applySupps()}finally{_spNoMgr=false} try{render()}catch(_){}}
 document.addEventListener('change',function(e){var r=e.target.closest&&e.target.closest('#suppmgr .spr'); if(!r||role==='view')return; var i=Number(r.dataset.i), L=JSON.parse(JSON.stringify(suppList())); if(!L[i])return;
