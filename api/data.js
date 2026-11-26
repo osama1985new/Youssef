@@ -389,7 +389,7 @@ async function autoCgm(host, now) {
   const jobs = [];
   if (mins >= 360 && mins < 390 && !todayHas('fast') && !nearAny) jobs.push({ id: 'ac_fast_' + c.key, slot: 'fast' });
   if (mins >= 240 && mins < 270 && !nearAny) jobs.push({ id: 'ac_rnd_' + c.key, slot: 'other' });
-  if (mins >= 0 && mins < 30 && !todayHas('bed') && !nearAny) jobs.push({ id: 'ac_bed_' + c.key, slot: 'bed' });
+  if (mins >= 0 && mins < 30 && !todayHas('bed') && !nearAny && !gl.some(x => x.slot === 'dn_after' && Math.abs(now - Date.parse(x.ts)) < 60 * 60e3)) jobs.push({ id: 'ac_bed_' + c.key, slot: 'bed' });
   const AFT = { bf_before: 'bf_after', ln_before: 'ln_after', dn_before: 'dn_after' };
   gl.forEach(e => {
     const as = AFT[e.slot]; if (!as) return;
@@ -397,8 +397,11 @@ async function autoCgm(host, now) {
     if (dt < 120 * 60e3 || dt >= 145 * 60e3) return;
     if (!recent.some(x => Array.isArray(x.meal) && x.meal.length && Date.parse(x.ts) >= t - 30 * 60e3 && Date.parse(x.ts) <= t + 90 * 60e3)) return;
     if (gl.some(x => x.slot === as && Date.parse(x.ts) >= t && Date.parse(x.ts) <= t + 8 * 3600e3)) return;
+    if (as === 'dn_after' && gl.some(x => x.slot === 'bed' && Math.abs(now - Date.parse(x.ts)) < 60 * 60e3)) return; /* bedtime reading just logged: skip the duplicate */
     jobs.push({ id: 'ac_' + String(e.id).slice(0, 40) + '_a', slot: as });
   });
+  /* after-dinner and bedtime due together: keep only one (after-dinner stands in for bedtime) */
+  if (jobs.some(j => j.slot === 'dn_after')) { for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i].slot === 'bed') jobs.splice(i, 1); }
   if (!jobs.length) return [];
   const claimed = [], done = [];
   for (const j of jobs) { try { if ((await redis(['SET', 'ysg:autoc:' + j.id, '1', 'NX', 'EX', '259200'])) === 'OK') claimed.push(j); } catch (e) {} }
