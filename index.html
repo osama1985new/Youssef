@@ -2025,6 +2025,16 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .p-ket #showk{align-self:flex-start;margin:0}
 .p-ket{display:flex;flex-direction:column}
 .p-ket #showk[aria-pressed=true]{color:var(--low);order:9;align-self:flex-end!important;margin-top:4px!important}
+
+.when b.ketb{color:var(--low)!important}
+
+.row.ketrow{--rc:var(--low)!important;background:color-mix(in srgb,var(--low) 8%,var(--surface))!important;border-inline-start-color:var(--low)!important}
+:root[data-theme=dark] .row.ketrow{background:color-mix(in srgb,var(--low) 14%,var(--surface))!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .row.ketrow{background:color-mix(in srgb,var(--low) 14%,var(--surface))!important}}
+
+.row.corrrow{--rc:var(--high)!important;background:color-mix(in srgb,var(--high) 8%,var(--surface))!important;border-inline-start-color:var(--high)!important}
+:root[data-theme=dark] .row.corrrow{background:color-mix(in srgb,var(--high) 14%,var(--surface))!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .row.corrrow{background:color-mix(in srgb,var(--high) 14%,var(--surface))!important}}
 </style>
 </head>
 <body>
@@ -2440,7 +2450,8 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 var $=function(s){return document.querySelector(s)};
 var SLOTS=[['fast','صائم'],['bf_before','قبل الفطار'],['bf_after','بعد الفطار'],['ln_before','قبل الغداء'],['ln_after','بعد الغداء'],['dn_before','قبل العشاء'],['dn_after','بعد العشاء'],['bed','قبل النوم'],['other','عشوائي']];
 var SLOT_LABEL={sn:'سناك'}, SLOT_ORD={sn:6.5}; SLOTS.forEach(function(s,i){SLOT_LABEL[s[0]]=s[1]; SLOT_ORD[s[0]]=i});
-function slotLbl(e){if(e.ketT&&e.glucose==null&&!(e.apidra>0)&&!(e.tresiba>0)&&!(e.meal&&e.meal.length))return 'اختبار كيتون'; if(e.slot==='bed'&&e.tresiba>0&&!(e.glucose!=null)&&!(e.apidra>0)){var h=e.tresibaTime?Number(String(e.tresibaTime).slice(0,2)):(e.d?e.d.getHours():new Date(e.ts).getHours()); return 'ترسيبا - '+((h>=4&&h<16)?'صباحًا':'مساءً')} return SLOT_LABEL[e.slot]||''}
+function ketOnly(e){return !!(e.ketT&&e.glucose==null&&!(e.apidra>0)&&!(e.tresiba>0)&&!(e.meal&&e.meal.length))}
+function slotLbl(e){if(ketOnly(e))return 'اختبار كيتون'; if(e.slot==='bed'&&e.tresiba>0&&!(e.glucose!=null)&&!(e.apidra>0)){var h=e.tresibaTime?Number(String(e.tresibaTime).slice(0,2)):(e.d?e.d.getHours():new Date(e.ts).getHours()); return 'ترسيبا - '+((h>=4&&h<16)?'صباحًا':'مساءً')} return SLOT_LABEL[e.slot]||''}
 function dayOrder(a,b){var ka=lk(a.d), kb=lk(b.d); return ka<kb?-1:ka>kb?1:(a.d-b.d)}
 var NEEDLE={new:'سن قلم جديد',reuse:'نفس سن القلم'};
 var SITES=[['ab_r','بطن يمين'],['ab_l','بطن شمال'],['th_r','رجل يمين'],['th_l','رجل شمال'],['ar_r','ذراع يمين'],['ar_l','ذراع شمال']];
@@ -3619,7 +3630,7 @@ function renderLog(E){
     html+='<details class="day" data-k="'+k+'"'+((openDays[k]!==undefined?openDays[k]:di===0)?' open':'')+'><summary><div class="dsum"><h3>'+dayLong(d)+'</h3></div><span class="dcnt'+(G.length?'':' z')+'">'+G.length+'</span></summary><ul class="rows">'+(G.length?'':'<li class="row"><p class="empty">لا توجد تسجيلات في هذا اليوم</p></li>');
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
-      html+='<li class="row g-'+rowGroup(e.slot)+(window._freshId&&e.id===window._freshId?' fresh':'')+'"><div class="when"><b>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
+      html+='<li class="row g-'+rowGroup(e.slot)+(ketOnly(e)?' ketrow':(e.corr&&e.apidra>0)?' corrrow':'')+(window._freshId&&e.id===window._freshId?' fresh':'')+'"><div class="when"><b'+(ketOnly(e)?' class="ketb"':'')+'>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
         (st?'<div class="val"><span class="gnum"><b>'+fmt(e.glucose)+'</b><small>mg/dL</small></span><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico((e.d.getHours()>=4&&e.d.getHours()<15)?'syr':'moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
