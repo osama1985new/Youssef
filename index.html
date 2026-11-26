@@ -1947,6 +1947,11 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 @media (max-width:759px) and (prefers-color-scheme:dark){
 :root:not([data-theme=light]) .tabs{--tbg:rgba(14,24,33,.62);--tfg:#EAF2F6;--tsh:0 1px 3px rgba(0,0,0,.65)}
 }
+
+/* unit beside glucose in log rows */
+.row .val{grid-template-columns:auto 1fr!important;width:auto!important;gap:10px!important}
+.row .val .gnum{direction:ltr;display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+.row .val .gnum small{font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:0}
 </style>
 </head>
 <body>
@@ -3527,7 +3532,7 @@ function renderLog(E){
     G.forEach(function(e){
       var st=e.glucose!=null?status(e.glucose):null, mt=mealText(e);
       html+='<li class="row g-'+rowGroup(e.slot)+(window._freshId&&e.id===window._freshId?' fresh':'')+'"><div class="when"><b>'+esc(slotLbl(e))+'</b><span>'+timeStr(e.d)+'</span></div>'+
-        (st?'<div class="val"><b>'+fmt(e.glucose)+'</b><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
+        (st?'<div class="val"><span class="gnum"><b>'+fmt(e.glucose)+'</b><small>mg/dL</small></span><span class="tag '+st[0]+'">'+st[1]+'</span></div>':'')+
         '<div class="doses">'+(e.apidra>0?'<span class="dose a">'+ico('syr')+'أبيدرا '+fmt(e.apidra)+' وحدة</span>':'')+(e.corr&&e.apidra>0?'<span class="dose c">جرعة تصحيح (دون طعام)</span>':'')+(e.tresiba>0?'<span class="dose t">'+ico((e.d.getHours()>=4&&e.d.getHours()<15)?'syr':'moon')+'ترسيبا '+fmt(e.tresiba)+' وحدة</span>':'')+'</div>'+
         '<div class="acts"><button type="button" class="edt" data-id="'+esc(e.id)+'">تعديل</button><button type="button" class="del" data-id="'+esc(e.id)+'">حذف</button></div>'+
         (mt?'<p class="mealtxt">'+ico('ut')+'الأكل: '+mt+'</p>':'')+
