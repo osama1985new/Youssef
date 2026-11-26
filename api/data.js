@@ -148,7 +148,7 @@ function cleanSettings(s) {
   out.sensorStart = dOk(s.sensorStart) ? String(s.sensorStart) : null;
   out.tresAm = s.tresAm === true;
   out.carbMode = s.carbMode === true;
-  out.supps = Array.isArray(s.supps) ? s.supps.slice(0, 8).map(x => ({ k: /^[a-z0-9]{1,12}$/.test(String(x && x.k)) ? String(x.k) : null, n: T(x && x.n, 24), g: x && (x.g === 'bf' || x.g === 'ln') ? x.g : '', pc: x && x.pc != null && N(x.pc, 1000) != null ? Math.round(N(x.pc, 1000)) : null, base: x && x.base != null && N(x.base, 5000) != null ? Math.round(N(x.base, 5000)) : null, at: x && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(x.at || '')) ? String(x.at) : null })).filter(x => x.k && x.n) : null;
+  out.supps = Array.isArray(s.supps) ? s.supps.slice(0, 8).map(x => ({ k: /^[a-z0-9]{1,12}$/.test(String(x && x.k)) ? String(x.k) : null, n: T(x && x.n, 24), g: x && (x.g === 'bf' || x.g === 'ln') ? x.g : '', pc: x && x.pc != null && N(x.pc, 1000) != null ? Math.round(N(x.pc, 1000)) : null, base: x && x.base != null && N(x.base, 5000) != null ? Math.round(N(x.base, 5000)) : null, at: x && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(x.at || '')) ? String(x.at) : null, u: x && N(x.u, 500) > 0 ? Math.round(N(x.u, 500)) : null, un: x && (x.un === 'علبة' || x.un === 'شريط') ? x.un : null })).filter(x => x.k && x.n) : null;
   if (out.supps && !out.supps.length) out.supps = null;
   out.suppOmega = s.suppOmega === true; out.suppVit = s.suppVit === true;
   out.omegaAt = /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s.omegaAt || '')) ? String(s.omegaAt) : null;
@@ -547,9 +547,10 @@ async function runCron(host, force) {
       });
       (settings.supps || []).forEach(x => {
         if (!(x.pc > 0) || x.base == null || !x.at) return;
-        const used = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && stamp(e) >= x.at).length, left = Math.max(0, x.base - used), lvl = [0, 3, 7].find(v => left <= v);
+        const un = x.un === 'علبة' || x.un === 'شريط' ? x.un : (x.k === 'omega' ? 'علبة' : 'شريط'), uu = x.u > 0 ? x.u : (x.k === 'omega' ? 30 : 10);
+        const used = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && stamp(e) >= x.at).length, left = Math.max(0, x.base - used), lvl = [0, uu].find(v => left <= v);
         if (lvl === undefined) return;
-        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهت الحبوب. جهّز علبة جديدة' : 'باقي ' + left + ' حبة فقط. جهّز علبة جديدة']);
+        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهى ' + x.n + '. جهّز ' + un + ' جديدًا' : 'قارب ' + x.n + ' على النفاد: باقي ' + un + ' واحد. جهّز غيره']);
       });
     }
   }
