@@ -2008,6 +2008,17 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .spr .spq{padding-top:10px}
 .suppmgr .spr .spdel{display:block;width:100%!important;min-height:44px!important;margin-top:14px;border-radius:12px!important;background:transparent!important;color:var(--low)!important;border:1px solid color-mix(in srgb,var(--low) 40%,transparent)!important;font-size:14.5px;font-weight:600;flex:none}
 .spr .spq .spv{font-size:16px;line-height:1.3;padding:0 4px}
+
+/* supp card v4: app-style icon + app fonts */
+.spr .spi{background:color-mix(in srgb,var(--accent) 11%,var(--surface))!important;box-shadow:none!important;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));color:inherit}
+.spr .spi svg.ic{width:22px;height:22px;margin:0;stroke:color-mix(in srgb,var(--accent) 70%,var(--ink));stroke-width:1.8;opacity:1;vertical-align:0}
+.spr .spt b{font-family:var(--f-body)!important;font-size:15px!important;font-weight:600!important}
+.spr .spt small{font-family:var(--f-body);font-size:12.5px;font-weight:400}
+.spr .spchip,.spr .spln,.spr .spq>b,.spr .spnm label,.spr .sphint{font-family:var(--f-body)}
+.spr .spchip{font-weight:600}
+.spr .spq>b{font-size:15px;font-weight:600}
+.spr .spnm .spn{font-family:var(--f-body)!important;font-size:16px!important;font-weight:400!important}
+.spr .spq .spv{font-family:var(--f-body);font-weight:600}
 </style>
 </head>
 <body>
@@ -2965,13 +2976,11 @@ function suppLeft(it){
   prep().forEach(function(e){if(Array.isArray(e.supp)&&e.supp.indexOf(it.k)>=0&&e.d.getTime()>=st)n++}); return Math.max(0,it.base-n);
 }
 function stripsTxt(l,u,w){u=u>0?u:10; w=w||'شريط'; var P=w==='علبة'?['علبة','علبتان','علب','علبة']:['شريط','شريطان','شرائط','شريطًا']; if(l==null)return ''; if(l<=0)return 'انتهى';
-  var q=l/u, n=Math.floor(q), f=q-n, half=false, ap=false; if(f>=0.75){n++; ap=true} else if(f>=0.25){half=true; ap=true} else if(f>0){ap=n>0?true:false}
-  var core; if(n===0){core=half?'نصف '+P[0]:'أقل من نصف '+P[0]} else {var nm=n===1?P[0]:n===2?P[1]:n<=10?n+' '+P[2]:n+' '+P[3]; core=nm+(half?' ونصف':'')}
-  var pre=(ap&&n>0&&!half||(ap&&half)); if(pre&&n===2)core=core.replace('ان','ين'); return (pre?'حوالي ':'')+core}
+  var n=Math.ceil(l/u); return n===1?P[0]:n===2?P[1]:n<=10?n+' '+P[2]:n+' '+P[3]}
 function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+stripsTxt(l,it.u,unW(it))}
 function spTxt(){var n=function(g){var a=suppList().filter(function(x){return x.g===g}).map(function(x){return x.n}); return a.length?a.join(' و'):'—'}; var a=$('#ssuppo-t'), b=$('#ssuppv-t'); if(a)a.textContent='تنبيه بعد الفطار: '+n('bf'); if(b)b.textContent='تنبيه بعد الغداء: '+n('ln')}
 var _spOpen=-1;
-var SP_PILL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>';
+function spPill(){return ico('pill')}
 function spDays(n){return n===1?'يوم':n===2?'يومان':n>=3&&n<=10?n+' أيام':n+' يومًا'}
 function spSub(x){return 'مكمل غذائي · '+(x.g==='bf'?'بعد الفطار':x.g==='ln'?'بعد الغداء':'بدون تنبيه')}
 function spState(x,l){if(l==null)return ['none','بدون تتبّع'];if(l<=0)return ['out','انتهى'];if(l<=(x.u||10))return ['low','قارب على النفاد'];return ['ok','متاح']}
@@ -2982,7 +2991,7 @@ function spMgr(){
     var chip='<span class="spchip">'+S[1]+'</span>';
     var sum=tr?'<div class="spsum"><div class="spln">'+chip+'<span class="spmid">'+(l>0?'باقي <b>'+stripsTxt(l,u,w)+'</b> · يكفي '+spDays(l):'<b>نفد المخزون</b>')+'</span></div><div class="spbar" role="img" aria-label="مستوى المخزون '+pct+'٪"><i style="width:'+pct+'%"></i></div></div>':'<div class="spsum"><div class="spln">'+chip+'<span class="spmid mut">لم يُفعَّل تتبّع المخزون</span></div></div>';
     var qty=tr?'<div class="spq"><b>إدارة الكمية</b><div class="spst"><button type="button" class="spb" aria-label="زيادة '+w+'">+</button><span class="spv">'+stripsTxt(l,u,w)+'</span><button type="button" class="spm2" aria-label="نقص '+w+'">−</button></div></div><p class="sphint">كل ضغطة = '+w+' واحد. <button type="button" class="link spe">ضبط الكمية يدويًا</button></p>':'<div class="spq"><b>إدارة الكمية</b><button type="button" class="link spe">+ تفعيل تتبّع المخزون</button></div>';
-    return '<div class="spr'+(open?' open':'')+'" data-i="'+i+'" data-st="'+S[0]+'"><button type="button" class="sph" aria-expanded="'+open+'"><span class="spi">'+SP_PILL+'</span><span class="spt"><b>'+esc(x.n)+'</b><small>'+spSub(x)+'</small></span><i class="spch" aria-hidden="true"></i></button>'+sum+
+    return '<div class="spr'+(open?' open':'')+'" data-i="'+i+'" data-st="'+S[0]+'"><button type="button" class="sph" aria-expanded="'+open+'"><span class="spi">'+spPill()+'</span><span class="spt"><b>'+esc(x.n)+'</b><small>'+spSub(x)+'</small></span><i class="spch" aria-hidden="true"></i></button>'+sum+
      '<div class="spbody"'+(open?'':' hidden')+'><div class="spnm"><label>اسم المكمل</label><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"></div>'+qty+'<div class="spset"><div class="spopt"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><div class="useg" role="group" aria-label="العد بـ"><button type="button" class="spw" data-w="شريط" aria-pressed="'+(w==='شريط')+'">شريط</button><button type="button" class="spw" data-w="علبة" aria-pressed="'+(w==='علبة')+'">علبة</button></div></div><button type="button" class="spx spdel">حذف المكمل</button></div></div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
 }
 function spSave(L,keep){settings.supps=L; persistSettings(); _spSig=''; _spNoMgr=!!keep; try{applySupps()}finally{_spNoMgr=false} try{render()}catch(_){}}
@@ -2996,7 +3005,7 @@ document.addEventListener('click',function(e){
   if(b.classList.contains('spb')||b.classList.contains('spm2')||b.classList.contains('spe')){var j=Number(b.closest('.spr').dataset.i), it=L[j]; if(!it)return; if(!(it.pc>0))it.pc=it.u||10; var cur=suppLeft(it);
     if(b.classList.contains('spb')){it.base=(cur||0)+(it.u||10); it.at=toLocalInput(new Date())}
     else if(b.classList.contains('spm2')){if(!cur){return} it.base=Math.max(0,cur-(it.u||10)); it.at=toLocalInput(new Date())}
-    else {var v=prompt('كم '+(unW(it)==='علبة'?'علبة':'شريطًا')+' متبقيًا الآن في «'+it.n+'»؟ ('+(unW(it)==='علبة'?'العلبة':'الشريط')+' '+(it.u||10)+' حبة، ويمكن كسر مثل ٢.٥)',String(cur==null?0:Math.round(cur/(it.u||10)*10)/10)); if(v===null)return; var nv=Math.round(num(v)*(it.u||10)); if(!(nv>=0)||nv>5000)return; it.base=nv; it.at=toLocalInput(new Date())}
+    else {var v=prompt('كم '+(unW(it)==='علبة'?'علبة':'شريطًا')+' متبقيًا الآن في «'+it.n+'»؟ (رقم صحيح)',String(cur==null?0:Math.ceil(cur/(it.u||10)))); if(v===null)return; var nv=Math.round(num(v))*(it.u||10); if(!(nv>=0)||nv>5000)return; it.base=nv; it.at=toLocalInput(new Date())}
     spSave(L); return}
   if(b.classList.contains('spw')){var q2=L[Number(b.closest('.spr').dataset.i)], w=b.dataset.w; if(!q2)return; var pl=prompt('كم حبة في '+(w==='علبة'?'العلبة':'الشريط')+' الواحد من «'+q2.n+'»؟',String(unW(q2)===w?(q2.u||(w==='علبة'?30:10)):(w==='علبة'?30:10))); if(pl===null)return; var pn=Math.round(num(pl)); if(!(pn>0)||pn>500)return; var cl2=suppLeft(q2); q2.un=w; q2.u=pn; if(cl2!=null){q2.base=cl2; q2.at=toLocalInput(new Date())} spSave(L); return}
   if(b.classList.contains('spu')){var q=L[Number(b.closest('.spr').dataset.i)], uv=prompt('كم حبة في '+(unW(q)==='علبة'?'العلبة':'الشريط')+' الواحد من «'+q.n+'»؟',String(q.u||10)); if(uv===null)return; var un=Math.round(num(uv)); if(!(un>0)||un>500)return; var cl=suppLeft(q); q.u=un; if(cl!=null){q.base=cl; q.at=toLocalInput(new Date())} spSave(L); return}
