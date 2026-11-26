@@ -2023,7 +2023,8 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 /* ketone test: own panel, independent of meals/modes */
 .panel.p-ket{--pc:var(--c-ext)}
 .p-ket #showk{align-self:flex-start;margin:0}
-.p-ket #showk[aria-pressed=true]{color:var(--low)}
+.p-ket{display:flex;flex-direction:column}
+.p-ket #showk[aria-pressed=true]{color:var(--low);order:9;align-self:flex-end!important;margin-top:4px!important}
 </style>
 </head>
 <body>
@@ -5087,13 +5088,13 @@ async function buildDoctorPdf(E,r){
     var D=by[k], reads=D.filter(function(e){return e.glucose!=null});
     var ins=D.filter(function(e){return e.apidra>0||e.tresiba>0});
     var A=D.filter(function(e){return e.apidra>0}), Tr=D.filter(function(e){return e.tresiba>0});
-    var kets=D.filter(function(e){return e.ketT}), nrows=Math.max(1,Math.ceil((reads.length+kets.length)/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, h=Math.max(58,hR,nCR*36+6);
+    var kets=D.filter(function(e){return e.ketT}), nrows=Math.max(1,Math.ceil(reads.length/PER)), hR=nrows*(CH_H+GAP)+8, nCR=D.filter(function(e){return e.corr&&e.apidra>0}).length, corrH=nCR?nCR*36+4:0, ketH=kets.length?kets.length*14+4:0, hc=Math.max(58,hR), hb=Math.max(hc,corrH+ketH+6), h=hb;
     if(y+h>PH-M-18){newPage(); header()}
     var ld=new Date(D[0].d.getTime()-SHIFT);
     /* row bg + separators */
     cx.strokeStyle='#E1E8EC'; cx.lineWidth=0.8; cx.beginPath(); cx.moveTo(M,y+h+2); cx.lineTo(R,y+h+2); cx.stroke();
-    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+h/2-11,16.5,700,'#17303B');
-    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+h/2+11,12.5,400,'#3F505A');
+    T(ld.toLocaleDateString(LOC,{weekday:'long'}),R-8,y+hc/2-11,16.5,700,'#17303B');
+    T(ld.toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'}),R-8,y+hc/2+11,12.5,400,'#3F505A');
     /* readings chips, right to left */
     reads.forEach(function(e,i){
       var col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), st=status(e.glucose)[0];
@@ -5102,23 +5103,16 @@ async function buildDoctorPdf(E,r){
       var vt=String(e.glucose)+(st==='low'?'↓':st==='high'?'↑':''), vf=19; cx.font='700 '+vf+'px '+FF; while(vf>12&&cx.measureText(vt).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(vt,x+CH_W/2,yy+16,vf,700,fg,'center');
       var sl=slotLbl(e), fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(sl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(sl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
     });
-    kets.forEach(function(e,j){
-      var i=reads.length+j, col=i%PER, row=Math.floor(i/PER), x=R-C1-4-(col+1)*CH_W-col*GAP, yy=y+4+row*(CH_H+GAP), lv=ketLevel(e.ketT,e.ketV)[0];
-      var bg=lv==='danger'?'#FBE3E1':lv==='watch'?'#FCEBD3':'#E6F4EC', fg=lv==='danger'?'#B3261E':lv==='watch'?'#A85A00':'#1E7F47';
-      var kv=e.ketT==='b'?String(e.ketV):({neg:'سالب',small:'قليل',mod:'متوسط',large:'كبير'}[e.ketV]||'');
-      rr(x,yy,CH_W,CH_H,6,bg,fg);
-      var vf=e.ketT==='b'?19:15; cx.font='700 '+vf+'px '+FF; while(vf>10&&cx.measureText(kv).width>CH_W-5){vf-=.5; cx.font='700 '+vf+'px '+FF} T(kv,x+CH_W/2,yy+16,vf,700,fg,'center');
-      var kl='كيتون '+(e.ketT==='b'?'دم':'بول'), fs=9.6; cx.font='500 '+fs+'px '+FF; while(fs>5.8&&cx.measureText(kl).width>CH_W-3){fs-=.2; cx.font='500 '+fs+'px '+FF} T(kl,x+CH_W/2,yy+33,fs,500,'#3F505A','center'); T(timeStr(e.d),x+CH_W/2,yy+46,8.6,500,'#55656f','center');
-    });
-    if(!reads.length&&!kets.length)T('—',R-C1-12,y+h/2,11,400,'#98A6AE');
+    if(!reads.length)T('—',R-C1-12,y+hc/2,11,400,'#98A6AE');
     /* only correction doses (the fixed doses are in the top tiles) */
     var CR=D.filter(function(e){return e.corr&&e.apidra>0});
-    if(CR.length){
-      var lh=Math.min(38,(h-4)/CR.length), tri=lh>=33, two=lh>=22;
-      CR.forEach(function(e,i){var cy=y+h/2-(CR.length-1)*lh/2+i*lh;
-        T(fmt(e.apidra),M+CA/2,cy-(tri?11:two?6:0),Math.min(17,lh*.55),700,'#C2410C','center');
-        if(two)T('وحدة',M+CA/2,cy+(tri?2:7),8.5,400,'#55656f','center');
-        if(tri)T(timeStr(e.d),M+CA/2,cy+13,8,400,'#7A8A93','center')});
+    CR.forEach(function(e,i){var cy=y+4+i*36+17;
+      T(fmt(e.apidra),M+CA/2,cy-11,15,700,'#C2410C','center'); T('وحدة',M+CA/2,cy+2,8.5,400,'#55656f','center'); T(timeStr(e.d),M+CA/2,cy+13,8,400,'#7A8A93','center')});
+    if(kets.length){
+      var ky=y+4+corrH+(CR.length?3:0);
+      kets.forEach(function(e,i){var lv=ketLevel(e.ketT,e.ketV)[0], col=lv==='danger'?'#B3261E':lv==='watch'?'#A85A00':'#1E7F47', yy=ky+i*14+6;
+        var tx='كيتون '+(e.ketT==='b'?'\u202A'+e.ketV+'\u202C':({neg:'سالب',small:'قليل',mod:'متوسط',large:'كبير'}[e.ketV]||'')), fs=9.5; cx.font='700 '+fs+'px '+FF; while(fs>6&&cx.measureText(tx).width>CA-2){fs-=.3; cx.font='700 '+fs+'px '+FF}
+        T(tx,M+CA/2,yy,fs,700,col,'center')});
     }
     y+=h+8;
   });
