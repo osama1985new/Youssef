@@ -3372,7 +3372,10 @@ function careGlu(E){
 }
 var careViewLoaded=false;
 function careViewLoad(){ if(careViewLoaded||role!=='view')return; careViewLoaded=true; try{var v=JSON.parse(localStorage.getItem('ysg-care-v1')||'null'); if(v){settings.careSeen=v.s||[]; settings.careDis=v.d||{}}}catch(_){} }
-function careVisible(n){careViewLoad();var tk=lk(new Date()), D=settings.careDis||{}; return (n||[]).filter(function(t){return D[t]!==tk})}
+/* a dismissed alert stays dismissed (any later day); only ketone-safety alerts are re-shown the next day. Numbers in the text are ignored so "12 days left" and "11 days left" count as the same alert; glucose alerts stay exact. */
+function careSafe(t){return t.indexOf('تحليل كيتون')>-1||t.indexOf('آخر نتيجة كيتون')>-1}
+function careKey(t){return (careSafe(t)||/^سكر /.test(t))?t:t.replace(/[0-9٠-٩]+/g,'#')}
+function careVisible(n){careViewLoad();var tk=lk(new Date()), D=settings.careDis||{}; return (n||[]).filter(function(t){return careSafe(t)?D[t]!==tk:!(D[careKey(t)]||D[t])})}
 function careSet(n){
   careN=n; var b=$('#bellbtn'); if(!b)return; var bd=b.querySelector('.bdg');
   var vis=careVisible(n), S=settings.careSeen||[], fresh=vis.filter(function(t){return S.indexOf(t)<0}), rc=remCount();
@@ -3397,7 +3400,7 @@ function careOpen(){
   if(vis.some(function(t){return careNew[t]})){settings.careSeen=vis.slice(); careSet(careN); careSync({seen:vis})}
 }
 function careClearAll(){
-  var vis=careVisible(careN), tk=lk(new Date()), o={}; vis.forEach(function(t){o[t]=tk});
+  var vis=careVisible(careN), tk=lk(new Date()), o={}; vis.forEach(function(t){o[careKey(t)]=tk});
   if(vis.length){settings.careDis=Object.assign({},settings.careDis||{},o); careSync({dis:o})}
   for(var k=0;k<12;k++){var b=document.querySelector('#readrem [data-remdis]'); if(!b)break; b.click()}
   careSet(careN); careList();
@@ -3405,7 +3408,7 @@ function careClearAll(){
 function careClose(){$('#caresheet').hidden=true; document.body.classList.remove('csopen'); careNew={}; careList()}
 document.addEventListener('click',function(e){
   var d=e.target.closest&&e.target.closest('.csdis'); if(!d)return;
-  var vis=careVisible(careN), t=vis[+d.dataset.ci]; if(!t)return; var tk=lk(new Date()), o={}; o[t]=tk;
+  var vis=careVisible(careN), t=vis[+d.dataset.ci]; if(!t)return; var tk=lk(new Date()), o={}; o[careKey(t)]=tk;
   settings.careDis=Object.assign({},settings.careDis||{},o); careSet(careN); careSync({dis:o});
 });
 document.addEventListener('click',function(e){
