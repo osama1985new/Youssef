@@ -2376,7 +2376,6 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
     <button type="button" class="ghost" id="needlenew">بدء علبة أسنان جديدة</button>
 
     <h3>المكملات</h3>
-    <p class="hint">أسماء المكملات هنا هي نفسها اللي بتظهر في صفحة التسجيل. غيّر الاسم أو أضف/احذف، ويتحفظ تلقائيًا.</p>
     <div id="suppmgr" class="suppmgr"></div>
     <label class="cgmrow"><input type="checkbox" id="ssuppo"><span id="ssuppo-t">تنبيه بعد الفطار</span></label>
     <div class="field"><label for="somegat">وقت بديل إن لم يُسجَّل الفطار</label><input id="somegat" type="time"></div>
@@ -3003,6 +3002,10 @@ function suppLeft(it){
   if(!it||!(it.pc>0)||it.base==null||!it.at)return null; var st=new Date(it.at).getTime(), n=0;
   prep().forEach(function(e){if(Array.isArray(e.supp)&&e.supp.indexOf(it.k)>=0&&e.d.getTime()>=st)n++}); return Math.max(0,it.base-n);
 }
+/* monthly use: pills taken in the last 30 days (daily rate); with under a week of data it assumes one a day. The bar = stock / a month's use; the alert = under 7 days left. */
+function suppRate(it){var st=new Date(it.at).getTime(), now=Date.now(); if(isNaN(st))return 1; var from=Math.max(st,now-30*864e5), obs=Math.min(30,Math.max(1,(now-from)/864e5)), n=0; prep().forEach(function(e){if(Array.isArray(e.supp)&&e.supp.indexOf(it.k)>=0&&e.d.getTime()>=from)n++}); return (obs>=7&&n>0)?n/obs:1}
+function suppMonth(it){return Math.max(1,Math.round(suppRate(it)*30))}
+function suppDaysLeft(it,l){return Math.floor(l/suppRate(it))}
 function stripsTxt(l,u,w){u=u>0?u:10; w=w||'شريط'; var P=w==='علبة'?['علبة','علبتان','علب','علبة']:['شريط','شريطان','شرائط','شريطًا']; if(l==null)return ''; if(l<=0)return 'انتهى';
   var n=Math.ceil(l/u); return n===1?P[0]:n===2?P[1]:n<=10?n+' '+P[2]:n+' '+P[3]}
 function suppLeftTxt(it){var l=suppLeft(it); return l==null?'':'باقي '+stripsTxt(l,it.u,unW(it))}
@@ -3011,13 +3014,13 @@ var _spOpen=-1;
 function spPill(){return ico('pill')}
 function spDays(n){return n===1?'يوم':n===2?'يومان':n>=3&&n<=10?n+' أيام':n+' يومًا'}
 function spSub(x){return 'مكمل غذائي · '+(x.g==='bf'?'بعد الفطار':x.g==='ln'?'بعد الغداء':'بدون تنبيه')}
-function spState(x,l){if(l==null)return ['none','بدون تتبّع'];if(l<=0)return ['out','انتهى'];if(l<=(x.u||10))return ['low','قارب على النفاد'];return ['ok','متاح']}
+function spState(x,l){if(l==null)return ['none','بدون تتبّع'];if(l<=0)return ['out','انتهى'];if(suppDaysLeft(x,l)<7)return ['low','قارب على النفاد'];return ['ok','متاح']}
 function spMgr(){
   var el=$('#suppmgr'); if(!el)return; if(el.contains(document.activeElement)&&document.activeElement.tagName==='INPUT')return;
   el.innerHTML=suppList().map(function(x,i){var l=suppLeft(x), tr=l!=null, w=unW(x), u=x.u||10, S=spState(x,l), open=(_spOpen===i);
-    var cap=Math.max(x.pc||0,x.base||0,u,l||0), pct=tr?Math.max(0,Math.min(100,Math.round(l/cap*100))):0;
+    var cap=Math.max(x.pc||0,x.base||0,u,l||0), pct=tr?Math.max(0,Math.min(100,Math.round(l/suppMonth(x)*100))):0;
     var chip='<span class="spchip">'+S[1]+'</span>';
-    var sum=tr?'<div class="spsum"><div class="spln">'+chip+'<span class="spmid">'+(l>0?'باقي <b>'+stripsTxt(l,u,w)+'</b> · يكفي '+spDays(l):'<b>نفد المخزون</b>')+'</span></div><div class="spbar" role="img" aria-label="مستوى المخزون '+pct+'٪"><i style="width:'+pct+'%"></i></div></div>':'<div class="spsum"><div class="spln">'+chip+'<span class="spmid mut">لم يُفعَّل تتبّع المخزون</span></div></div>';
+    var sum=tr?'<div class="spsum"><div class="spln">'+chip+'<span class="spmid">'+(l>0?'باقي <b>'+stripsTxt(l,u,w)+'</b> · يكفي '+spDays(Math.max(1,suppDaysLeft(x,l))):'<b>نفد المخزون</b>')+'</span></div><div class="spbar" role="img" aria-label="مستوى المخزون '+pct+'٪"><i style="width:'+pct+'%"></i></div></div>':'<div class="spsum"><div class="spln">'+chip+'<span class="spmid mut">لم يُفعَّل تتبّع المخزون</span></div></div>';
     var qty=tr?'<div class="spq"><b>إدارة الكمية</b><div class="spst"><button type="button" class="spb" aria-label="زيادة '+w+'">+</button><span class="spv">'+stripsTxt(l,u,w)+'</span><button type="button" class="spm2" aria-label="نقص '+w+'">−</button></div></div><p class="sphint">كل ضغطة = '+w+' واحد. <button type="button" class="link spe">ضبط الكمية يدويًا</button></p>':'<div class="spq"><b>إدارة الكمية</b><button type="button" class="link spe">+ تفعيل تتبّع المخزون</button></div>';
     return '<div class="spr'+(open?' open':'')+'" data-i="'+i+'" data-st="'+S[0]+'"><button type="button" class="sph" aria-expanded="'+open+'"><span class="spi">'+spPill()+'</span><span class="spt"><b>'+esc(x.n)+'</b><small>'+spSub(x)+'</small></span><i class="spch" aria-hidden="true"></i></button>'+sum+
      '<div class="spbody"'+(open?'':' hidden')+'><div class="spnm"><label>اسم المكمل</label><input type="text" class="spn" value="'+esc(x.n)+'" maxlength="24" aria-label="اسم المكمل"></div>'+qty+'<div class="spset"><div class="spopt"><select class="spg" aria-label="التنبيه"><option value="bf"'+(x.g==='bf'?' selected':'')+'>بعد الفطار</option><option value="ln"'+(x.g==='ln'?' selected':'')+'>بعد الغداء</option><option value=""'+(!x.g?' selected':'')+'>بدون تنبيه</option></select><div class="useg" role="group" aria-label="العد بـ"><button type="button" class="spw" data-w="شريط" aria-pressed="'+(w==='شريط')+'">شريط</button><button type="button" class="spw" data-w="علبة" aria-pressed="'+(w==='علبة')+'">علبة</button></div></div><button type="button" class="spx spdel">حذف المكمل</button></div></div></div>'}).join('')+(suppList().length<8?'<button type="button" class="ghost" id="spadd">+ إضافة مكمل</button>':'');
@@ -3314,7 +3317,7 @@ function careNotes(E){
   var out=[], now=Date.now(), tk=lk(new Date()), yk=lk(new Date(now-DAY));
   if(settings.cgm&&settings.sensorStart){var sst=new Date(settings.sensorStart+'T00:00:00'), sday=Math.floor((now-sst.getTime())/864e5)+1, sleft=SENSOR_DAYS-sday;
     if(sday>=1&&sleft<=2)out.push(sleft<0?'انتهت مدة السينسر ('+SENSOR_DAYS+' يومًا). استبدله.':sleft===0?'اليوم آخر يوم للسينسر. جهّز سينسر جديد.':'متبقٍّ '+sleft+(sleft===1?' يوم':' يومان')+' على انتهاء السينسر. جهّز سينسر جديد.')}
-  try{suppList().forEach(function(x){var l=suppLeft(x); if(l==null)return; var u=x.u||10, w=unW(x); if(l<=0)out.push('انتهى '+x.n+'. جهّز '+(w==='علبة'?'علبة':'شريطًا')+' جديدًا.'); else if(l<=u)out.push('قارب '+x.n+' على النفاد: باقي '+stripsTxt(l,u,w)+'.')})}catch(_){}
+  try{suppList().forEach(function(x){var l=suppLeft(x); if(l==null)return; var u=x.u||10, w=unW(x); if(l<=0)out.push('انتهى '+x.n+'. جهّز '+(w==='علبة'?'علبة':'شريطًا')+' جديدًا.'); else if(suppDaysLeft(x,l)<7)out.push('قارب '+x.n+' على النفاد: باقي '+stripsTxt(l,u,w)+'.')})}catch(_){}
   var ni=needleInfo(E); if(ni&&ni.left<=10)out.push(ni.left<=0?'نفدت أسنان الأقلام. جهّز علبة جديدة.':'المتبقي '+ni.left+(ni.left<=10&&ni.left>2?' أسنان':' سنًّا')+' فقط في علبة أسنان الأقلام. جهّز علبة جديدة.');
   var si=stripInfo(E); if(si&&si.left<=5)out.push(si.left<=0?'نفدت شرائط السكر. جهّز علبة جديدة.':'المتبقي '+si.left+(si.left===1?' شريط':' شرائط')+' فقط في علبة الشرائط. جهّز علبة جديدة.');
   [['penAStart','أبيدرا'],['penTStart','ترسيبا']].forEach(function(x){var l=penLeft(settings[x[0]]); if(l!==null&&l<=7)out.push(l<0?'القلم '+x[1]+' مضى 28 يومًا على فتحه. استبدله.':'القلم '+x[1]+' متبقٍّ له '+l+' يومًا بعد الفتح.')});
@@ -5409,7 +5412,7 @@ function stockPopup(){
   var tk=lk(new Date()); if(lsGet('ysg:stockpop','')===tk){_spDone=true; return}
   var rows=[], E=prep();
   [['A','أقلام أبيدرا'],['T','أقلام ترسيبا']].forEach(function(x){var i=penStock(x[0],E); if(!i)return; rows.push([x[1],(Math.round(i.left/30)/10)+' قلم'+(i.days!==null?' · يكفي '+i.days+' يومًا':'')])});
-  suppList().forEach(function(x){var l=suppLeft(x); if(l!=null&&l<=14)rows.push([x.n,'باقي '+stripsTxt(l,x.u,unW(x))])});
+  suppList().forEach(function(x){var l=suppLeft(x); if(l!=null&&suppDaysLeft(x,l)<7)rows.push([x.n,'باقي '+stripsTxt(l,x.u,unW(x))])});
   var ni=needleInfo(E); if(ni)rows.push(['أسنان الأقلام','متبقٍّ '+Math.max(0,ni.left)]);
   var si=stripInfo(E); if(si)rows.push(['شرائط السكر','متبقٍّ '+Math.max(0,si.left)]);
   _spDone=true; if(!rows.length)return; lsSet('ysg:stockpop',tk);
