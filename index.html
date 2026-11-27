@@ -5567,6 +5567,16 @@ new MutationObserver(function(){ if(!fe.textContent.trim())return; try{fe.scroll
  var sv=document.getElementById('save');
  if(sv){sv.addEventListener('mousedown',function(e){var a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))e.preventDefault()});}
 })();
+
+/* number boxes: selecting the old value on focus, so the first key replaces it (in RTL the caret lands on the right and the old number was hard to delete) */
+(function(){
+  function isNum(el){return el&&el.tagName==='INPUT'&&el.type==='text'&&/^(decimal|numeric)$/.test(el.getAttribute('inputmode')||'')}
+  function sel(el){try{el.select(); el.setSelectionRange(0,el.value.length)}catch(_){}}
+  var last=null;
+  document.addEventListener('focusin',function(e){var el=e.target; if(!isNum(el)||!el.value)return; last=el; setTimeout(function(){if(document.activeElement===el)sel(el)},0); setTimeout(function(){if(document.activeElement===el&&last===el)sel(el)},80)});
+  ['mouseup','touchend'].forEach(function(n){document.addEventListener(n,function(e){var el=e.target; if(el===last&&isNum(el)&&document.activeElement===el){if(n==='touchend'&&e.cancelable)e.preventDefault(); sel(el); last=null}},true)});
+  document.addEventListener('focusout',function(e){if(e.target===last)last=null});
+})();
 </script>
 </body>
 </html>
