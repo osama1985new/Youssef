@@ -2042,6 +2042,7 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .panel.p-notes{--pc:var(--c-ext)}
 .p-notes .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .p-notes .stack{margin-top:2px}
+#khint{font-weight:700!important}
 </style>
 </head>
 <body>
@@ -2210,11 +2211,11 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
     </div>
     <div class="panel p-ket">
       <h3>اختبار كيتون</h3>
-    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0"><span id="showkt">إضافة نتيجة</span></button>
+    <button type="button" class="link" id="showk" style="align-self:flex-start; margin:0"><span id="showkt">إضافة</span></button>
     <div class="injrow" id="kbox" hidden>
       <div class="field"><label for="kt">نوع التحليل</label><select id="kt"><option value="u" selected>بول</option><option value="b">دم (mmol/L)</option></select></div>
       <div class="field" id="kvwrap"><label for="kv">النتيجة</label><input id="kv" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً 0.8"></div>
-      <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="neg">سالب أو أثر</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
+      <div class="field" id="kuwrap" hidden><label for="ku">النتيجة</label><select id="ku"><option value="" selected></option><option value="neg">سالب</option><option value="small">قليل</option><option value="mod">متوسط</option><option value="large">كبير</option></select></div>
     </div>
     <p class="msg" id="khint" hidden></p>
     </div>
@@ -2467,7 +2468,7 @@ var DEFSUPP=[{k:'omega',n:'أوميجا',g:'bf',pc:30},{k:'milga',n:'ميلجا 
 var SUPPS=DEFSUPP.map(function(x){return [x.k,x.n]});
 var SUPP_LABEL={vit:'فيتامينات'}; SUPPS.forEach(function(x){SUPP_LABEL[x[0]]=x[1]});
 var PREMEAL=['bf_before','ln_before','dn_before'];
-var KET_U={neg:'سالب أو أثر',small:'قليل',mod:'متوسط',large:'كبير'};
+var KET_U={neg:'سالب',small:'قليل',mod:'متوسط',large:'كبير'};
 var DEFAULT_CHECKS=[{n:'عيون',d:null,m:12},{n:'كلى',d:null,m:12},{n:'غدة درقية',d:null,m:12},{n:'فحص القدم',d:null,m:12}];
 var BEFORE=['fast','bf_before','ln_before','dn_before'];
 var LOC='ar-EG-u-nu-latn', DAY=864e5;
@@ -3560,10 +3561,10 @@ function ketUI(){
   if(!v||(!u&&isNaN(Number(v.replace(',','.'))))){h.hidden=true; return}
   var l=ketLevel(u?'u':'b',u?v:Number(v.replace(',','.'))); h.hidden=false; h.className='msg ket-'+l[0]; h.textContent=l[1];
 }
-function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#showkt').textContent='إضافة نتيجة'; $('#showk').setAttribute('aria-pressed','false'); $('#kt').value='u'; $('#kv').value=''; $('#ku').value='neg'; ketUI(); $('#khint').hidden=true}
+function clearKet(){$('#kbox').hidden=true; $('#showk').hidden=false; $('#showkt').textContent='إضافة'; $('#showk').setAttribute('aria-pressed','false'); $('#kt').value='u'; $('#kv').value=''; $('#ku').value=''; ketUI(); $('#khint').hidden=true}
 function readKet(){
   if($('#kbox').hidden)return {ok:true,t:null,v:null};
-  if($('#kt').value==='u')return {ok:true,t:'u',v:$('#ku').value};
+  if($('#kt').value==='u')return $('#ku').value?{ok:true,t:'u',v:$('#ku').value}:{ok:true,t:null,v:null};
   var raw=$('#kv').value.trim().replace(',','.'); if(!raw)return {ok:true,t:null,v:null};
   var n=Number(raw); if(!isFinite(n)||n<0||n>15)return {ok:false};
   return {ok:true,t:'b',v:String(n)};
@@ -4994,7 +4995,7 @@ document.addEventListener('click',function(ev){
     var nv=Math.max(0,Math.round((cur+Number(t.dataset.d))*2)/2); inp.value=nv===0?'':String(nv); syncInj(); return;
   }
   if(t.dataset.supp){if(t.disabled)return; t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true'); return}
-  if(t.closest&&t.closest('#showk')){if($('#kbox').hidden){$('#kbox').hidden=false; $('#kt').value='u'; ketUI(); $('#showkt').textContent='إلغاء النتيجة'; $('#showk').setAttribute('aria-pressed','true')} else clearKet(); return}
+  if(t.closest&&t.closest('#showk')){if($('#kbox').hidden){$('#kbox').hidden=false; $('#kt').value='u'; ketUI(); $('#showkt').textContent='إلغاء'; $('#showk').setAttribute('aria-pressed','true')} else clearKet(); return}
   if(t.id==='ckadd'){var cur=readChecks()||checksList(); settings=Object.assign({},settings,{checks:cur.concat([{n:'',d:null,m:12}])}); renderChecks(); var lastc=document.querySelector('#ckwrap .ckrow:last-child [data-ck=n]'); if(lastc)lastc.focus(); return}
   if(t.dataset.ckdel!==undefined){
     var idx=Number(t.dataset.ckdel), keep=[];
@@ -5288,7 +5289,7 @@ function startEdit(id){
   tAsked=e.tresiba>0;
   $('#n').value=e.note||'';
   $('#needle').value=e.apidra>0?(e.needle||''):''; $('#needleT').value=e.tresiba>0?penNeedle(e,'t')||'':''; $('#site').value=e.site||''; $('#ttime').value=e.tresibaTime||''; imode=e.slot==='sn'?'nofood':e.corr&&e.apidra>0?'corr':(e.apidra>0||(e.meal&&e.meal.length))?'meal':e.tresiba>0?'tres':PREMEAL.indexOf(e.slot)>=0?'meal':'read'; keepSlot=e.slot; slotKey=''; $('#slot').value=e.slot||defaultSlot(); setSupp(e.supp); syncInj(); if(e.slot&&e.slot!=='sn')$('#slot').value=e.slot; syncCorr();
-  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showkt').textContent='إلغاء النتيجة'; $('#showk').setAttribute('aria-pressed','true'); $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
+  clearKet(); if(e.ketT){$('#kbox').hidden=false; $('#showkt').textContent='إلغاء'; $('#showk').setAttribute('aria-pressed','true'); $('#kt').value=e.ketT; if(e.ketT==='u')$('#ku').value=e.ketV; else $('#kv').value=e.ketV; ketUI()}
   ['m1n','m1c','m2n','m2c'].forEach(function(i){$('#'+i).value=''});
   mealItems=(e.meal||[]).map(function(m,i){var c=m.x===1?null:(Number(m.c)||0); return {k:'ed'+i,fk:m.n,name:m.n,disp:m.n,d:m.d||'',dunk:!m.d,drev:'',raw:'',d0:m.x===2?'':(m.d||''),pend:m.x===2,w:0,c:c,est:false,q:Number(m.q)||1,mode:'n',gr:0,fruit:false,editc:false,u:m.u||'',step:m.u?0.5:0.5,src:'',bu:m.u||'',bc:c,bw:0,alts:[],cur:0}});
   renderMeal();
