@@ -3184,7 +3184,7 @@ function syncCorr(){
   var showT=imode==='tres'||(!!editingId&&num($('#t').value)>0);
   var showFood=imode==='meal'||imode==='nofood', showIns=imode==='meal'||imode==='corr'||showT;
   document.querySelector('.p-food').hidden=!showFood;
-  var pr=document.querySelector('.p-read'); if(pr)pr.hidden=(imode==='tres'&&!$('#g').value)||(imode==='corr'&&!editingId); paintG();
+  var pr=document.querySelector('.p-read'); if(pr)pr.hidden=(imode==='tres'&&(!editingId||!$('#g').value))||(imode==='corr'&&!editingId); paintG();
   var pk=document.querySelector('.p-ket'); if(pk){var kshow=imode==='corr'||(!!editingId&&!$('#kbox').hidden); if(!kshow&&!pk.hidden&&!editingId)clearKet(); pk.hidden=!kshow}
   if(imode==='corr'&&!editingId&&!$('#a').value){$('#a').value='2'; window._corrDef=true} else if(imode!=='corr'&&window._corrDef){if($('#a').value==='2')$('#a').value=''; window._corrDef=false}
   document.querySelector('.p-ins').hidden=!showIns||(isSnack()&&!settings.carbMode);
@@ -4269,7 +4269,7 @@ function presetGroupOrder(){
 var foodGrp=null, foodGrpManual=false;
 function curGrp(){if(!foodGrpManual||!foodGrp)foodGrp=slotGroup(curSlot()); return foodGrp}
 function isSnack(){return imode==='meal'&&foodGrpManual&&foodGrp==='sn'&&!editingId}
-function paintG(){try{var gf=$('#g').closest('.field'); gf.hidden=false; var pr=document.querySelector('.p-read'); if(!pr)return; var sn=(imode==='nofood'||isSnack())&&!editingId; pr.hidden=sn||(imode==='tres'&&!$('#g').value)||(imode==='corr'&&!editingId); if(sn&&$('#g').value)$('#g').value=''}catch(_){}}
+function paintG(){try{var gf=$('#g').closest('.field'); gf.hidden=false; var pr=document.querySelector('.p-read'); if(!pr)return; var sn=(imode==='nofood'||isSnack())&&!editingId; pr.hidden=sn||(imode==='tres'&&(!editingId||!$('#g').value))||(imode==='corr'&&!editingId); if(sn&&$('#g').value)$('#g').value=''}catch(_){}}
 function applySnack(){
   paintG();
   var sn=isSnack(), pe=document.querySelector('.p-extra'), c=$('#calc'), pi=document.querySelector('.p-ins');
@@ -5305,7 +5305,7 @@ $('#f').addEventListener('submit',async function(ev){
   var tdv=$('#tdt').value; if(!editingId)setNow();
   var d=new Date($('#dt').value);
   if(imode==='tres'&&!editingId&&tdv){var td=new Date(tdv); if(!isNaN(td)){if(td.getTime()>Date.now()+60000){err.textContent='وقت الجرعة في المستقبل. راجع اليوم والوقت.'; return} d=td}}
-  if(imode==='corr'&&!editingId)g=null;
+  if((imode==='corr'||imode==='tres')&&!editingId)g=null;
   if(isNaN(g)||isNaN(a)||isNaN(t)){err.textContent='توجد خانة فيها رقم غير مفهوم. اكتب أرقامًا فقط.'; return}
   if(g!=null&&(g<20||g>600)){err.textContent='يجب أن تكون قراءة السكر بين 20 و600. راجع الرقم.'; return}
   if(a!=null&&(a<0||a>50)){err.textContent='جرعة أبيدرا غير معتادة. راجع الرقم.'; return}
