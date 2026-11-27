@@ -551,9 +551,13 @@ async function runCron(host, force) {
       (settings.supps || []).forEach(x => {
         if (!(x.pc > 0) || x.base == null || !x.at) return;
         const un = x.un === 'علبة' || x.un === 'شريط' ? x.un : (x.k === 'omega' ? 'علبة' : 'شريط'), uu = x.u > 0 ? x.u : (x.k === 'omega' ? 30 : 10);
-        const used = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && stamp(e) >= x.at).length, left = Math.max(0, x.base - used), lvl = [0, uu].find(v => left <= v);
-        if (lvl === undefined) return;
-        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهى ' + x.n + '. جهّز ' + un + ' جديدًا' : 'قارب ' + x.n + ' على النفاد: باقي ' + un + ' واحد. جهّز غيره']);
+        const used = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && stamp(e) >= x.at).length, left = Math.max(0, x.base - used);
+        /* monthly use: last 30 days (one a day while under a week of data); alert when under 7 days are left */
+        const atMs = Date.parse(String(x.at) + 'Z') - 2 * 3600e3, from = Math.max(isNaN(atMs) ? 0 : atMs, now - 30 * 86400e3), obs = Math.min(30, Math.max(1, (now - from) / 86400e3));
+        const n30 = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && Date.parse(e.ts) >= from).length, rate = (obs >= 7 && n30 > 0) ? n30 / obs : 1, daysLeft = Math.floor(left / rate);
+        if (left > 0 && daysLeft >= 7) return;
+        const lvl = left <= 0 ? 0 : 1;
+        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهى ' + x.n + '. جهّز ' + un + ' جديدًا' : 'قارب ' + x.n + ' على النفاد: يكفي حوالي ' + Math.max(1, daysLeft) + ' يوم. جهّز غيره']);
       });
     }
   }
