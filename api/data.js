@@ -144,7 +144,7 @@ function cleanSettings(s) {
   })).filter(m => m.n && m.items.length) : [];
   out.cgm = s.cgm === true;
   out.careSeen = Array.isArray(s.careSeen) ? s.careSeen.slice(-40).map(k => T(k, 120)).filter(Boolean) : [];
-  out.careDis = {}; if (s.careDis && typeof s.careDis === 'object') Object.keys(s.careDis).slice(-40).forEach(k => { if (dOk(s.careDis[k])) out.careDis[T(k, 120)] = String(s.careDis[k]); });
+  out.careDis = {}; if (s.careDis && typeof s.careDis === 'object') Object.keys(s.careDis).slice(-150).forEach(k => { if (dOk(s.careDis[k])) out.careDis[T(k, 120)] = String(s.careDis[k]); });
   out.sensorStart = dOk(s.sensorStart) ? String(s.sensorStart) : null;
   out.tresAm = s.tresAm === true;
   out.carbMode = s.carbMode === true;
@@ -668,7 +668,7 @@ module.exports = async (req, res) => {
         if (b.dis && typeof b.dis === 'object') {
           cur.careDis = Object.assign({}, cur.careDis || {});
           Object.keys(b.dis).slice(0, 20).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(String(b.dis[k]))) cur.careDis[String(k).slice(0, 120)] = String(b.dis[k]); });
-          const keep = {}, ks = Object.keys(cur.careDis).sort((x, y) => cur.careDis[y].localeCompare(cur.careDis[x])).slice(0, 40); ks.forEach(k => { keep[k] = cur.careDis[k]; }); cur.careDis = keep;
+          const keep = {}, ks = Object.keys(cur.careDis).sort((x, y) => cur.careDis[y].localeCompare(cur.careDis[x])).slice(0, 150); ks.forEach(k => { keep[k] = cur.careDis[k]; }); cur.careDis = keep;
         }
         await redis(['SET', 'ysg:settings', JSON.stringify(cur)]);
         return res.status(200).json({ ok: true, settings: { careSeen: cur.careSeen || [], careDis: cur.careDis || {} } });
