@@ -5337,6 +5337,7 @@ $('#f').addEventListener('submit',async function(ev){
     var miss=[], isC=$('#corr').checked;
     if(isC){}
     else if(g==null&&!items.length)miss.push('قراءة السكر أو الأكل');
+    else if(g==null&&imode==='meal'&&(!editingId||(edE&&edE.glucose!=null)))miss.push('قراءة السكر');
     if(!(a>0)&&!isC)miss.push('جرعة أبيدرا');
     if(a>0){if(!$('#needle').value)miss.push('سن القلم'); if(!$('#site').value)miss.push('مكان الحقن')}
     if(miss.length){err.textContent='قبل الوجبة يجب أن تسجّل: '+miss.join('، ')+'.'; return}
@@ -5346,6 +5347,7 @@ $('#f').addEventListener('submit',async function(ev){
   if((a>0||t>0)&&!$('#site').value){err.textContent='اختر مكان الحقن ليُحفظ التسجيل كاملًا.'; $('#site').focus(); return}
   if($('#corr').checked&&!(a>0)){err.textContent='في جرعة التصحيح يجب أن تكتب عدد وحدات الأبيدرا.'; $('#a').focus(); return}
   if(a>0&&!items.length&&!$('#corr').checked&&!editingId){err.textContent='الأبيدرا مع الأكل تستلزم اختيار الأكل. وإن كانت جرعة تصحيح دون أكل فاختر "تصحيح" من الأعلى.'; $('#modebar').scrollIntoView({block:'center'}); return}
+  if(imode==='read'&&g==null&&(!editingId||(edE&&edE.glucose!=null))){err.textContent='اكتب قراءة السكر.'; $('#g').focus(); return}
   if(g==null&&!(a>0)&&!(t>0)&&!items.length&&!supp.length&&!ket.t){err.textContent='اكتب قراءة سكر أو جرعة أو أكل أو مكملات على الأقل.'; return}
   var liveItems=allMeal().filter(function(m){return (m.name&&m.name.trim())||m.fruit}), carbs=r1(mealCarbs(liveItems)), cx=unkItems(liveItems).length>0;
   if(!editingId&&!forceDup){
