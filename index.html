@@ -2049,13 +2049,14 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .p-notes .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .p-notes .stack{margin-top:2px}
 #khint{font-weight:700!important}
-/* loading skeleton: soft grey blocks with a slow shimmer while the first data is loading (removed once the app is ready) */
-#boot{display:block;margin-top:14px}
-.bhero{padding:18px;border-radius:20px;margin-bottom:12px;background:var(--card,transparent);border:1px solid color-mix(in srgb,var(--muted) 16%,transparent)}
+/* loading skeleton: the same boxes as the registration page, grey with a slow shimmer, removed once the data is ready */
+#boot{display:block}
+#boot .hero{border-inline-start-width:1px}
+#boot .card{margin-top:18px}
+.bk-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.bpill{height:48px;border-radius:14px;flex:1 1 0;min-width:0}.bin{height:50px;border-radius:14px;margin-top:6px}
 .sk{display:block;border-radius:10px;background:linear-gradient(90deg,color-mix(in srgb,var(--muted) 14%,transparent) 0%,color-mix(in srgb,var(--muted) 26%,transparent) 50%,color-mix(in srgb,var(--muted) 14%,transparent) 100%);background-size:220% 100%;animation:skm 1.4s ease-in-out infinite}
 .sktiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}.sktiles .sk{height:58px;border-radius:12px}
-.skrow{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:10px;border-radius:14px;background:var(--card,transparent);border:1px solid color-mix(in srgb,var(--muted) 16%,transparent)}.skrow>div{flex:1}
-.skc{width:40px;height:40px;border-radius:50%;flex:none}
 @keyframes skm{0%{background-position:120% 0}100%{background-position:-120% 0}}
 @media (prefers-reduced-motion:reduce){.sk{animation:none}}
 /* notification centre: grouped sections, icon chips, calm cards */
@@ -2103,7 +2104,10 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
   </section>
 
   <!-- ===== screen 1: new entry ===== -->
-  <div id="boot" aria-hidden="true"><div class="bhero"><i class="sk" style="width:36%;height:12px"></i><i class="sk" style="width:58%;height:46px;margin-top:10px"></i><i class="sk" style="width:46%;height:12px;margin-top:12px"></i><div class="sktiles"><i class="sk"></i><i class="sk"></i><i class="sk"></i></div></div><div class="skrow"><i class="sk skc"></i><div><i class="sk" style="width:46%;height:12px"></i><i class="sk" style="width:72%;height:10px;margin-top:8px"></i></div></div><div class="skrow"><i class="sk skc"></i><div><i class="sk" style="width:40%;height:12px"></i><i class="sk" style="width:64%;height:10px;margin-top:8px"></i></div></div><div class="skrow"><i class="sk skc"></i><div><i class="sk" style="width:52%;height:12px"></i><i class="sk" style="width:58%;height:10px;margin-top:8px"></i></div></div></div>
+  <div id="boot" aria-hidden="true">
+    <section class="hero" data-s="none"><i class="sk" style="width:86px;height:16px"></i><div class="bk-row"><i class="sk" style="width:150px;height:62px;border-radius:14px"></i><i class="sk" style="width:104px;height:40px;border-radius:999px"></i></div><i class="sk" style="width:58%;height:14px;margin-top:14px"></i><i class="sk" style="width:100%;height:12px;margin-top:37px;border-radius:99px"></i><div class="sktiles"><i class="sk"></i><i class="sk"></i><i class="sk"></i></div></section>
+    <div class="card stack"><h2><i class="sk" style="width:36%;height:20px"></i></h2><div class="modebar"><i class="sk bpill"></i><i class="sk bpill"></i><i class="sk bpill"></i><i class="sk bpill"></i></div><div class="panel" style="padding-bottom:35px"><i class="sk" style="width:38%;height:22px"></i><div class="two"><div class="field"><i class="sk" style="width:46%;height:14px"></i><i class="sk bin"></i></div><div class="field"><i class="sk" style="width:40%;height:14px"></i><i class="sk bin"></i></div></div></div><div class="panel"><i class="sk" style="width:30%;height:22px"></i><div class="field"><i class="sk" style="width:44%;height:14px"></i><i class="sk bin"></i></div></div></div>
+  </div>
   <section class="hero" id="hero" data-s="none" aria-live="polite" data-tab="add"></section>
 
   <div class="care" id="carebar" data-tab="add" hidden role="status"></div>
