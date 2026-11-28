@@ -2082,6 +2082,15 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .ncrem{display:flex;flex-direction:column;gap:10px;margin:0!important}
 .ncrem .rr{border-radius:18px!important;border:1px solid var(--gl-bd)!important;border-inline-start:3px solid #C9892B!important;padding:12px 14px!important}
 .ncempty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 10px 18px;text-align:center}.ncempty .nci{width:52px;height:52px}.ncempty .nci svg{width:26px;height:26px}.ncempty b{font-size:16px}.ncempty small{color:var(--muted);font-size:13.5px}
+/* quick menu on the + button */
+#tabs [data-go=add]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.qmenu{position:fixed;z-index:90;display:flex;gap:8px;padding:8px;border-radius:22px;background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--gl-bd);box-shadow:0 18px 40px rgba(20,40,50,.24),0 2px 6px rgba(20,40,50,.08);transform-origin:bottom center;animation:qpop .18s cubic-bezier(.2,.9,.3,1.2)}
+.qmenu button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:96px;padding:12px 10px 10px;border-radius:16px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.qmenu button:active{background:color-mix(in srgb,var(--muted) 14%,transparent)}
+.qi{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}.qi svg{width:22px;height:22px}
+.qr{background:color-mix(in srgb,#4A78B8 16%,transparent);color:#4A78B8}.qc{background:color-mix(in srgb,#D9633F 16%,transparent);color:#D9633F}
+@keyframes qpop{0%{opacity:0;transform:translateY(8px) scale(.9)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.qmenu{animation:none}}
 </style>
 </head>
 <body>
@@ -3023,6 +3032,34 @@ function go(t){
   }
 }
 document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
+/* long-press the + button: quick shortcuts to a correction or a quick reading */
+(function(){
+  var ab=document.querySelector('#tabs [data-go=add]'); if(!ab)return;
+  var timer=null, fired=false, menu=null, sx=0, sy=0;
+  function close(){ if(menu){menu.remove(); menu=null} document.removeEventListener('pointerdown',away,true) }
+  function away(e){ if(menu&&!menu.contains(e.target))close() }
+  function choose(m){
+    close(); if(editingId&&typeof cancelEdit==='function'){try{cancelEdit()}catch(_){}}
+    go('add'); setMode(m);
+    setTimeout(function(){try{var f=$(m==='corr'?'#a':'#g'); if(f){f.focus()}}catch(_){}},60);
+  }
+  function open(){
+    close(); if(window.hap)window.hap();
+    menu=document.createElement('div'); menu.className='qmenu'; menu.setAttribute('role','menu');
+    menu.innerHTML='<button type="button" role="menuitem" data-q="read"><i class="qi qr">'+ico('drop')+'</i><span>قراءة سريعة</span></button><button type="button" role="menuitem" data-q="corr"><i class="qi qc">'+ico('syr')+'</i><span>تصحيح</span></button>';
+    document.body.appendChild(menu);
+    var r=ab.getBoundingClientRect(), w=menu.offsetWidth, l=Math.max(10,Math.min(innerWidth-w-10,r.left+r.width/2-w/2));
+    menu.style.left=l+'px'; menu.style.bottom=(innerHeight-r.top+12)+'px';
+    menu.addEventListener('click',function(e){var b=e.target.closest('[data-q]'); if(b)choose(b.dataset.q)});
+    setTimeout(function(){document.addEventListener('pointerdown',away,true)},0);
+  }
+  function cancel(){ clearTimeout(timer); timer=null }
+  ab.addEventListener('pointerdown',function(e){ fired=false; sx=e.clientX; sy=e.clientY; cancel(); timer=setTimeout(function(){timer=null; fired=true; open()},450) });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){ab.addEventListener(n,cancel)});
+  ab.addEventListener('pointermove',function(e){ if(timer&&(Math.abs(e.clientX-sx)>12||Math.abs(e.clientY-sy)>12))cancel() });
+  ab.addEventListener('contextmenu',function(e){e.preventDefault()});
+  document.addEventListener('click',function(e){ if(fired&&e.target.closest&&e.target.closest('#tabs [data-go=add]')){e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); fired=false} },true);
+})();
 (function(){var g=$('#gearbtn'),prev='add'; if(g)g.addEventListener('click',function(){ if(tab==='set'){go(prev&&prev!=='set'?(role==='view'&&prev==='add'?'log':prev):(role==='view'?'log':'add'))} else {prev=tab; go('set')} })})();
 
 /* ---------- static UI ---------- */
