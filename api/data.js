@@ -462,7 +462,7 @@ async function runCron(host, force) {
   }
   if (vn && vn <= c.stamp && vn.slice(0, 10) === c.key) {
     const mins = (Date.parse(c.stamp + ':00Z') - Date.parse(vn + ':00Z')) / 60000;
-    if (mins >= 30 && mins <= 360) due.push(['visitdone:' + vn.slice(0, 10), 'زيارة الطبيب', 'فات موعد زيارة الطبيب. إن ذهبت، سجّلها واكتب الموعد القادم']);
+    if (mins >= 30 && mins <= 360) due.push(['visitdone:' + vn.slice(0, 10), 'زيارة الطبيب', 'فات الموعد. سجّل الزيارة واكتب الموعد القادم']);
   }
   /* settings alerts: ketone after high sugar (realtime) */
   const RR = recentAll.filter(e => e.glucose != null).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
@@ -471,7 +471,7 @@ async function runCron(host, force) {
     let t0 = Date.parse(lastR.ts);
     for (let i = RR.length - 2; i >= 0 && RR[i].glucose > kHi; i--) t0 = Date.parse(RR[i].ts);
     if (Date.parse(lastR.ts) - t0 >= (kHr - 0.25) * 3600e3 && !recentAll.some(e => e.ketT && Date.parse(e.ts) >= t0))
-      due.push(['ket:' + t0, 'كيتون', 'السكر فوق ' + kHi + ' منذ فترة. أجرِ تحليل الكيتون حسب خطة الطبيب']);
+      due.push(['ket:' + t0, 'كيتون', 'السكر فوق ' + kHi + ' منذ فترة. أجرِ تحليل الكيتون']);
   }
   /* before-meal reading logged but no Apidra dose logged afterwards */
   RR.filter(e => ['bf_before', 'ln_before', 'dn_before'].includes(e.slot) && !(e.apidra > 0)).forEach(e => {
@@ -483,7 +483,7 @@ async function runCron(host, force) {
   if (!settings.cgm) recentAll.filter(e => e.apidra > 0).forEach(e => {
     const t = Date.parse(e.ts), dt = now - t;
     if (dt >= 2 * 3600e3 && dt < 4 * 3600e3 && !RR.some(r => Date.parse(r.ts) >= t + 30 * 60e3))
-      due.push(['apd:' + t, 'قراءة بعد الأكل', 'مضت ساعتان على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قِس السكر وسجّله']);
+      due.push(['apd:' + t, 'قراءة بعد الأكل', 'مضت ساعتان على جرعة أبيدرا (' + (Number.isInteger(e.apidra) ? e.apidra : String(e.apidra)) + ' وحدة). قِس السكر']);
   });
   const SP = (Array.isArray(settings.supps) && settings.supps.length) ? settings.supps : [{ k: 'omega', n: 'الأوميجا', g: 'bf' }, { k: 'milga', n: 'ميلجا أدفانس', g: 'bf' }, { k: 'calmag', n: 'الكال ماج', g: 'ln' }, { k: 'd3', n: 'فيتامين D3', g: 'ln' }];
   /* omega after breakfast / vitamins after lunch: 1h after the meal's Apidra dose, or a fixed time when no dose was logged; once a day, only if not logged yet */
@@ -495,7 +495,7 @@ async function runCron(host, force) {
     let ok;
     if (meal) ok = now - meal >= 3600e3 && now - meal < 5 * 3600e3;
     else { const [hh, mm] = at.split(':').map(Number), mins = c.h * 60 + c.m, tgt = hh * 60 + mm; ok = mins >= tgt && mins < tgt + 180; }
-    if (ok) due.push(['sp_' + k, 'المكملات', 'حان وقت ' + miss.join(' و') + ' ' + when + '. لم يُسجَّل اليوم بعد']);
+    if (ok) due.push(['sp_' + k, 'المكملات', 'حان وقت ' + miss.join(' و') + ' ' + when + '. لم يُسجَّل بعد']);
   });
   /* yesterday's Tresiba missing */
   if (!settings.tresAm && c.h >= 8 && c.h < 11) {
@@ -503,14 +503,14 @@ async function runCron(host, force) {
     if (Y.length && !Y.some(e => e.tresiba > 0)) due.push(['trY', 'ترسيبا', 'جرعة ترسيبا أمس لم تُسجَّل']);
   }
   /* monthly medication: every day from the 1st until confirmed */
-  if (c.h === 10 && settings.medGot !== c.key.slice(0, 7)) due.push(['med', 'العلاج الشهري', 'لم تحصل عليه بعد. اضغط "حصلت عليه" في التطبيق عند استلامه']);
+  if (c.h === 10 && settings.medGot !== c.key.slice(0, 7)) due.push(['med', 'العلاج الشهري', 'لم تحصل عليه بعد. سجّل الاستلام في التطبيق']);
   /* low reading: remind to re-check 2 hours later if nothing newer was logged */
   if (lastR && !settings.cgm) {
     const dt = now - Date.parse(lastR.ts);
     if (lastR.glucose < (settings.low || 90)) {
       const t = Date.parse(lastR.ts);
-      if (dt >= 15 * 60e3 && dt < 30 * 60e3) due.push(['hypo15:' + t, 'أعد قياس السكر', 'مضت 15 دقيقة على قراءة ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب وسجّل القراءة']);
-      else if (dt >= 30 * 60e3 && dt < 60 * 60e3) due.push(['hypo30:' + t, 'أعد قياس السكر', 'لم تُسجَّل قراءة جديدة بعد ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب وسجّلها']);
+      if (dt >= 15 * 60e3 && dt < 30 * 60e3) due.push(['hypo15:' + t, 'أعد قياس السكر', 'مضت 15 دقيقة على ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب']);
+      else if (dt >= 30 * 60e3 && dt < 60 * 60e3) due.push(['hypo30:' + t, 'أعد قياس السكر', 'لا قراءة جديدة بعد ' + lastR.glucose + '. أعد القياس حسب خطة الطبيب']);
     }
     if (lastR.glucose < (settings.low || 90) && dt >= 2 * 3600e3 && dt < 6 * 3600e3)
       due.push(['low2h:' + Date.parse(lastR.ts), 'قراءة أخرى', 'آخر قراءة كانت ' + lastR.glucose + ' قبل ساعتين. قِس السكر مرة أخرى']);
@@ -527,13 +527,13 @@ async function runCron(host, force) {
       const stamp = e => cairo(Date.parse(e.ts)).stamp;
       if (settings.stripStart) {
         const total = settings.stripN || 50, used = all.filter(e => e.glucose != null && stamp(e) >= settings.stripStart).length, left = total - used;
-        if (left <= 2) due.push(['strips', 'شرائط السكر', left <= 0 ? 'انتهت الشرائط. جهّز علبة جديدة' : 'تبقّى ' + left + (left === 1 ? ' شريط' : ' شرائط') + ' فقط. جهّز علبة جديدة']);
+        if (left <= 2) due.push(['strips', 'شرائط السكر', left <= 0 ? 'انتهت الشرائط.' : 'باقي ' + left + (left === 1 ? ' شريط' : ' شرائط')]);
       }
       if (settings.needleStart) {
         const total = settings.needleN || 100; let used = settings.needleUsed || 0;
         all.forEach(e => { if (stamp(e) < settings.needleStart) return; if (e.apidra > 0 && e.needle === 'new') used++; if (e.tresiba > 0 && (e.needleT || (e.apidra > 0 ? null : e.needle)) === 'new') used++; });
         const left = total - used;
-        if (left <= 3) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'انتهت الأسنان. جهّز علبة جديدة' : 'تبقّى ' + left + (left > 2 ? ' أسنان' : ' سن') + ' فقط. جهّز علبة جديدة']);
+        if (left <= 3) due.push(['needles', 'أسنان الأقلام', left <= 0 ? 'انتهت الأسنان.' : 'باقي ' + left + (left > 2 ? ' أسنان' : ' سن')]);
       }
       [['A', 'apidra', 'أبيدرا'], ['T', 'tresiba', 'ترسيبا']].forEach(([k, f, nm]) => {
         const cnt = settings['stock' + k], at = settings['stockAt' + k];
@@ -546,7 +546,7 @@ async function runCron(host, force) {
         const left = Math.max(0, cnt * 300 - used), days = Math.floor(left / daily), thr = settings.stockDays || 14;
         const lvl = [7, 3, 1, 0].find(x => days <= x);
         if (lvl === undefined) return;
-        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون على وشك النفاد. جهّز أقلامًا جديدة' : 'يكفي حوالي ' + days + ' يوم (' + Math.round(left) + ' وحدة). جهّز أقلامًا جديدة']);
+        due.push(['stock' + k + lvl, 'مخزون ' + nm, days <= 0 ? 'المخزون شبه منتهٍ.' : 'يكفي ' + days + ' يومًا (' + Math.round(left) + ' وحدة)']);
       });
       (settings.supps || []).forEach(x => {
         if (!(x.pc > 0) || x.base == null || !x.at) return;
@@ -557,7 +557,7 @@ async function runCron(host, force) {
         const n30 = all.filter(e => Array.isArray(e.supp) && e.supp.includes(x.k) && Date.parse(e.ts) >= from).length, rate = (obs >= 7 && n30 > 0) ? n30 / obs : 1, daysLeft = Math.floor(left / rate);
         if (left > 0 && daysLeft >= 7) return;
         const lvl = left <= 0 ? 0 : 1;
-        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهى ' + x.n + '. جهّز ' + un + ' جديدًا' : 'قارب ' + x.n + ' على النفاد: يكفي حوالي ' + Math.max(1, daysLeft) + ' يوم. جهّز غيره']);
+        due.push(['stockS' + x.k + lvl, 'مخزون ' + x.n, left <= 0 ? 'انتهى ' + x.n + '.' : x.n + ': يكفي ' + Math.max(1, daysLeft) + ' يومًا']);
       });
     }
   }
