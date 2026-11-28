@@ -3315,7 +3315,8 @@ document.addEventListener('click',function(e){
   var rb=e.target.closest&&e.target.closest('[data-remslot]'); if(rb){go('add'); setMode('read'); $('#slot').value=rb.dataset.remslot; syncInj(); showForm(); return}
   if(e.target.closest&&e.target.closest('#tresgo')){go('add'); setMode('tres'); showForm()}});
 $('#modebar').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]'); if(!b)return;
-  setMode(b.dataset.mode)});
+  setMode(b.dataset.mode);
+  if(b.dataset.mode==='read'){var g=$('#g'); if(g&&!g.closest('[hidden]')){try{g.focus()}catch(_){}}}});
 imode=defMode(); syncCorr();
 function updateAplan(){var el=$('#aplan'); if(!el)return; el.innerHTML=''; return; var v={bf_before:settings.fixBf,ln_before:settings.fixLn,dn_before:settings.fixDn}[$('#slot').value]; el.innerHTML=(imode==='meal'&&v>0)?'جرعة الطبيب الثابتة: <b>'+fmt(v)+' وحدة</b> <button type="button" class="link" data-usefix="'+v+'">اكتبها في الخانة</button>':''}
 var lastLinkSlot=null, autoA=null, autoSup=[];
