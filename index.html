@@ -3441,7 +3441,7 @@ function careList(){
   var l=$('#cslist'), vis=careVisible(careN), rem=remItems(), nrem=remCount();
   var sub=$('#cssub'); if(sub){var tot=vis.length+nrem; sub.textContent=tot?(tot===1?'تنبيه واحد':tot===2?'تنبيهان':tot<=10?tot+' تنبيهات':tot+' تنبيهًا'):''}
   var ca=$('#csall'); if(ca)ca.hidden=!(vis.length+nrem);
-  if(!vis.length&&!rem){l.innerHTML='<div class="csempty ncempty"><span class="nci k-ok">'+ico('bell')+'</span><b>لا توجد تنبيهات</b><small>كل شيء تمام الآن</small></div>'; return}
+  if(!vis.length&&!rem){l.innerHTML='<div class="csempty ncempty"><span class="nci k-ok">'+ico('bell')+'</span><b>لا توجد تنبيهات</b></div>'; return}
   function card(t,i){var pp=t.split(' · '), tt=pp[0], tm=pp.length>1?pp.slice(1).join(' · '):'', k=careKind(t), nw=!!careNew[t];
     return '<div class="ncard k-'+k[0]+(nw?' isnew':'')+'"><span class="nci" aria-hidden="true">'+ico(k[1])+'</span><div class="ncb"><div class="nct">'+esc(tt)+'</div><div class="ncm">'+(tm?'<time>'+esc(tm)+'</time>':'')+(nw?'<span class="csnew">جديد</span>':'')+'</div></div><button type="button" class="csdis ncx" data-ci="'+i+'" aria-label="مسح"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>'}
   var H=[], O=[]; vis.forEach(function(t,i){((/^سكر |تحليل كيتون|نتيجة كيتون/.test(t))?H:O).push(card(t,i))});
