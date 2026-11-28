@@ -3039,9 +3039,11 @@ document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener
   function close(){ if(menu){menu.remove(); menu=null} document.removeEventListener('pointerdown',away,true) }
   function away(e){ if(menu&&!menu.contains(e.target))close() }
   function choose(m){
+    var tmp=document.createElement('input'); tmp.type='text'; tmp.inputMode='numeric'; tmp.setAttribute('aria-hidden','true'); tmp.style.cssText='position:fixed;left:0;top:40%;width:1px;height:1px;opacity:0;font-size:16px;border:0;padding:0'; document.body.appendChild(tmp); try{tmp.focus()}catch(_){}
     close(); if(editingId&&typeof cancelEdit==='function'){try{cancelEdit()}catch(_){}}
     go('add'); setMode(m);
-    setTimeout(function(){try{var f=$(m==='corr'?'#a':'#g'); if(f){f.focus()}}catch(_){}},60);
+    var ff=function(){try{var f=$(m==='corr'?'#a':'#g'); if(f&&document.activeElement!==f){f.focus()}}catch(_){}};
+    ff(); var n=0, iv=setInterval(function(){ n++; ff(); var f=$(m==='corr'?'#a':'#g'); if((f&&document.activeElement===f&&n>=3)||n>=12){clearInterval(iv); tmp.remove()} },90);
   }
   function open(){
     close(); if(window.hap)window.hap();
