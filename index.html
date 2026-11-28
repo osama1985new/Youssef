@@ -5564,9 +5564,9 @@ start(true);
 new MutationObserver(function(){ if(!fe.textContent.trim())return; try{fe.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){} try{if(navigator.vibrate)navigator.vibrate(60)}catch(_){} }).observe(fe,{childList:true,characterData:true,subtree:true});})();
 
 (function(){var lab,inp;
- function mk(){if(lab)return; lab=document.createElement('label'); lab.setAttribute('aria-hidden','true'); lab.setAttribute('data-hap','1'); lab.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none'; inp=document.createElement('input'); inp.type='checkbox'; inp.setAttribute('switch',''); inp.tabIndex=-1; lab.appendChild(inp); document.body.appendChild(lab)}
- window.hap=function(){try{if(navigator.vibrate){navigator.vibrate(8); return} mk(); lab.click()}catch(_){}};
- var SEL='#modebar button,#mealseg button,.presets button,.supp button,button[aria-pressed],button[aria-selected],[role=tab],[role=radio],.csall,.csdis';
+ function mk(){if(lab)return; lab=document.createElement('label'); lab.setAttribute('aria-hidden','true'); lab.setAttribute('data-hap','1'); lab.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:.01;pointer-events:none;overflow:hidden'; inp=document.createElement('input'); inp.type='checkbox'; inp.setAttribute('switch',''); inp.tabIndex=-1; lab.appendChild(inp); document.body.appendChild(lab)}
+ window.hap=function(){try{if(navigator.vibrate){navigator.vibrate(12); return} mk(); lab.click()}catch(_){}};
+ var SEL='button:not([disabled]),[role=button],[role=tab],[role=radio],[data-go],summary,.csall,.csdis';
  document.addEventListener('click',function(e){var t=e.target; if(!t||!t.closest||t.closest('[data-hap]'))return; if(t.closest(SEL))window.hap()},true);
  document.addEventListener('change',function(e){var t=e.target; if(!t||t.closest&&t.closest('[data-hap]'))return; if(e.isTrusted&&t.tagName==='SELECT')window.hap()},true);
  var sv=document.getElementById('save');
