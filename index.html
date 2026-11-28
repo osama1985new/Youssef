@@ -5565,7 +5565,7 @@ new MutationObserver(function(){ if(!fe.textContent.trim())return; try{fe.scroll
 
 (function(){var lab,inp;
  function mk(){if(lab)return; lab=document.createElement('label'); lab.setAttribute('aria-hidden','true'); lab.setAttribute('data-hap','1'); lab.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:.01;pointer-events:none;overflow:hidden'; inp=document.createElement('input'); inp.type='checkbox'; inp.setAttribute('switch',''); inp.tabIndex=-1; lab.appendChild(inp); document.body.appendChild(lab)}
- var lastH=0; window.hap=function(){try{var n=Date.now(); if(n-lastH<120)return; lastH=n; if(navigator.vibrate){navigator.vibrate(12); return} mk(); lab.click()}catch(_){}};
+ var lastH=0; window.hap=function(){try{var n=Date.now(); if(n-lastH<120)return; lastH=n; if(navigator.vibrate){navigator.vibrate(12); return} var l=document.createElement('label'); l.setAttribute('aria-hidden','true'); l.setAttribute('data-hap','1'); l.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:.01;pointer-events:none;overflow:hidden'; var i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.tabIndex=-1; l.appendChild(i); document.body.appendChild(l); l.click(); setTimeout(function(){try{l.remove()}catch(_){}},80)}catch(_){}};
  var SEL='button:not([disabled]),[role=button],[role=tab],[role=radio],[data-go],summary,.csall,.csdis';
  document.addEventListener('touchend',function(e){var t=e.target; if(!t||!t.closest||t.closest('[data-hap]'))return; if(t.closest(SEL))window.hap()},{capture:true,passive:true});
  document.addEventListener('click',function(e){var t=e.target; if(!t||!t.closest||t.closest('[data-hap]'))return; if(t.closest(SEL))window.hap()},true);
