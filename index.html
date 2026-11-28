@@ -2100,6 +2100,11 @@ button:not(:disabled):not([data-go=add]):not(.qmenu button):active{transform:sca
 .qmenu button:active{transform:scale(.96)}
 }
 @media (prefers-reduced-motion:reduce){button:active,#tabs [data-go=add]:active{transform:none!important}}
+/* hold-to-open: the + shrinks while held, menu floats */
+#tabs [data-go=add].hold{transform:scale(.86)!important;transition:transform .45s cubic-bezier(.3,.7,.3,1)}
+.qmenu{animation:qpop .22s cubic-bezier(.2,.9,.3,1.25),qfloat 3.2s ease-in-out .25s infinite;box-shadow:0 22px 44px rgba(20,40,50,.26),0 4px 10px rgba(20,40,50,.1)}
+@keyframes qfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.qmenu{animation:none}#tabs [data-go=add].hold{transform:none!important}}
 </style>
 </head>
 <body>
@@ -3060,12 +3065,12 @@ document.querySelectorAll('#tabs button').forEach(function(b){b.addEventListener
     menu.innerHTML='<button type="button" role="menuitem" data-q="read"><i class="qi qr">'+ico('drop')+'</i><span>قراءة سريعة</span></button><button type="button" role="menuitem" data-q="corr"><i class="qi qc">'+ico('syr')+'</i><span>تصحيح</span></button>';
     document.body.appendChild(menu);
     var r=ab.getBoundingClientRect(), w=menu.offsetWidth, l=Math.max(10,Math.min(innerWidth-w-10,r.left+r.width/2-w/2));
-    menu.style.left=l+'px'; menu.style.bottom=(innerHeight-r.top+12)+'px';
+    menu.style.left=l+'px'; menu.style.bottom=(innerHeight-r.top+16)+'px';
     menu.addEventListener('click',function(e){var b=e.target.closest('[data-q]'); if(b)choose(b.dataset.q)});
     setTimeout(function(){document.addEventListener('pointerdown',away,true)},0);
   }
-  function cancel(){ clearTimeout(timer); timer=null }
-  ab.addEventListener('pointerdown',function(e){ fired=false; sx=e.clientX; sy=e.clientY; cancel(); timer=setTimeout(function(){timer=null; fired=true; open()},450) });
+  function cancel(){ clearTimeout(timer); timer=null; ab.classList.remove('hold') }
+  ab.addEventListener('pointerdown',function(e){ ab.classList.add('hold'); fired=false; sx=e.clientX; sy=e.clientY; cancel(); timer=setTimeout(function(){timer=null; fired=true; open()},450) });
   ['pointerup','pointercancel','pointerleave'].forEach(function(n){ab.addEventListener(n,cancel)});
   ab.addEventListener('pointermove',function(e){ if(timer&&(Math.abs(e.clientX-sx)>12||Math.abs(e.clientY-sy)>12))cancel() });
   ab.addEventListener('contextmenu',function(e){e.preventDefault()});
