@@ -2091,6 +2091,15 @@ form#f .spr .spopt .spg,.spr .spopt .spg{-webkit-appearance:none!important;appea
 .qr{background:color-mix(in srgb,#4A78B8 16%,transparent);color:#4A78B8}.qc{background:color-mix(in srgb,#D9633F 16%,transparent);color:#D9633F}
 @keyframes qpop{0%{opacity:0;transform:translateY(8px) scale(.9)}100%{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.qmenu{animation:none}}
+/* soft press feedback (CSS only) */
+@media (hover:hover) and (pointer:fine),(hover:none){
+button:not(:disabled):not([data-go=add]):not(.qmenu button){transition:transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .2s,background-color .2s,border-color .2s,color .2s}
+button:not(:disabled):not([data-go=add]):not(.qmenu button):active{transform:scale(.96)}
+#tabs [data-go=add]{transition:transform .14s cubic-bezier(.2,.8,.3,1)}
+#tabs [data-go=add]:active{transform:scale(.92)}
+.qmenu button:active{transform:scale(.96)}
+}
+@media (prefers-reduced-motion:reduce){button:active,#tabs [data-go=add]:active{transform:none!important}}
 </style>
 </head>
 <body>
